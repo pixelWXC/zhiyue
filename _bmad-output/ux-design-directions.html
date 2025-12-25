@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zhiyue Design Direction: The Zen Notebook</title>
+    <style>
+        :root {
+            --primary-matcha: #98C9A3;
+            --surface-rice-paper: #F9F7F2;
+            --ink-charcoal: #2C3E50;
+            --interaction-deep-tea: #4A6C58;
+            --semantic-verb: #E07A5F;
+            --semantic-noun: #3D5A80;
+            --font-main: system-ui, -apple-system, sans-serif;
+            --font-hand: 'Yomogi', cursive; /* Fallback to cursive if not loaded */
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Yomogi&display=swap');
+
+        body {
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: var(--font-main);
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 667px;
+            background-color: var(--surface-rice-paper);
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            border: 8px solid #333;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 40px;
+            background: var(--surface-rice-paper);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--ink-charcoal);
+            font-weight: 600;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-matcha);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--ink-charcoal);
+        }
+
+        /* Main Content Stream */
+        .stream-container {
+            padding: 0 20px;
+            opacity: 0;
+            animation: fadeIn 1s forwards 0.5s;
+        }
+
+        .original-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--ink-charcoal);
+            margin-bottom: 30px;
+        }
+
+        .word-token {
+            display: inline-block;
+            position: relative;
+            margin-right: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .word-token:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Semantic Underlines */
+        .word-token.noun { border-bottom: 2px solid var(--semantic-noun); }
+        .word-token.verb { border-bottom: 2px solid var(--semantic-verb); }
+        .word-token.particle { border-bottom: 1px dotted #ccc; }
+
+        /* Ruby Text (Furigana) */
+        .furigana {
+            display: block;
+            font-size: 10px;
+            text-align: center;
+            color: #888;
+            margin-bottom: -4px;
+        }
+
+        /* Magic Card Button (FAB) */
+        .fab-container {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .fab {
+            background: var(--primary-matcha);
+            color: var(--ink-charcoal);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(152, 201, 163, 0.4);
+            font-family: var(--font-hand);
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .fab:hover {
+            transform: scale(1.05);
+        }
+
+        .doodle-helper {
+            font-family: var(--font-hand);
+            font-size: 14px;
+            color: var(--ink-charcoal);
+            background: white;
+            padding: 8px 12px;
+            border-radius: 12px 12px 12px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            border: 1px solid var(--primary-matcha);
+        }
+
+        /* Typewriter Animation */
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Cursor blinking */
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background: var(--interaction-deep-tea);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+
+        <div class="header">
+            <div class="logo">Z</div>
+            <div class="title">Zhiyue</div>
+        </div>
+
+        <div class="stream-container">
+            <div class="original-text">
+                <span class="word-token noun"><span class="furigana">ねこ</span>猫</span>
+                <span class="word-token particle">が</span>
+                <span class="word-token noun"><span class="furigana">べっど</span>ベッド</span>
+                <span class="word-token particle">で</span>
+                <span class="word-token verb"><span class="furigana">ね</span>寝</span>
+                <span class="word-token verb">ている</span>
+                <span class="cursor"></span>
+            </div>
+        </div>
+
+        <div class="fab-container">
+            <div class="doodle-helper">Collect this moment? 🎨</div>
+            <button class="fab">
+                ✨ Generate Magic Card
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>

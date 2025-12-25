@@ -1,0 +1,47 @@
+generated: "2025-12-25"
+project: "zhiyue"
+project_type: "greenfield"
+selected_track: "method"
+field_type: "greenfield"
+workflow_path: "_bmad/bmm/workflows/workflow-status/paths/method-greenfield.yaml"
+workflow_status:
+  - id: prd
+    status: done
+    name: "Product Requirements Document"
+    agent: pm
+    command: prd
+    
+  - id: create-ux-design
+    status: done
+    name: "UX Design"
+    agent: ux-designer
+    command: create-ux-design
+    file: _bmad-output/planning-artifacts/ux-design-specification.md
+    
+  - id: create-architecture
+    status: done
+    name: "System Architecture"
+    agent: architect
+    command: create-architecture
+    file: _bmad-output/architecture.md
+    
+  - id: create-epics-and-stories
+    status: done
+    name: "Epics & Stories"
+    agent: pm
+    command: create-epics-and-stories
+    file: _bmad-output/planning-artifacts/epics.md
+    
+  - id: implementation-readiness
+    status: done
+    name: "Check Readiness"
+    agent: architect
+    command: implementation-readiness
+    output: _bmad-output/planning-artifacts/implementation-readiness-report-2025-12-25.md
+    
+  - id: sprint-planning
+    status: done
+    name: "Sprint Planning"
+    agent: sm
+    command: sprint-planning
+    output: _bmad-output/implementation-artifacts/sprint-status.yaml

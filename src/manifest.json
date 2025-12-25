@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "zhiyue",
+  "version": "1.0.0",
+  "description": "Instant Analysis Companion for Japanese Learners",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open zhiyue"
+  },
+  "side_panel": {
+    "default_path": "src/side-panel/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_end"
+    }
+  ]
+}
