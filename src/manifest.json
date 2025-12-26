@@ -2,13 +2,22 @@
   "manifest_version": 3,
   "name": "zhiyue",
   "version": "1.0.0",
-  "description": "Instant Analysis Companion for Japanese Learners",
+  "description": "日语学习者的即时分析伴侣",
   "permissions": [
     "sidePanel",
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "clipboardRead"
   ],
+  "commands": {
+    "toggle-sidepanel": {
+      "suggested_key": {
+        "default": "Alt+U"
+      },
+      "description": "Toggle Side Panel and Capture Clipboard"
+    }
+  },
   "background": {
     "service_worker": "src/background/index.ts",
     "type": "module"

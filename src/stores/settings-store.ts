@@ -4,7 +4,8 @@
  */
 
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import { sendMessage } from 'webext-bridge/popup'
 import { useSettings } from '@/logic/storage'
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -21,9 +22,37 @@ export const useSettingsStore = defineStore('settings', () => {
         return window.matchMedia('(prefers-color-scheme: dark)').matches
     })
 
+    // State for validation UI
+    const validationStatus = ref<'idle' | 'validating' | 'valid' | 'invalid'>('idle')
+    const validationError = ref('')
+
     // Actions
     async function setApiKey(key: string) {
         storage.apiKey.value = key
+        // Reset validation status when manually setting (unless we want to force validate)
+        validationStatus.value = 'idle'
+    }
+
+    async function validateAndSaveApiKey(key: string) {
+        if (!key) return
+
+        validationStatus.value = 'validating'
+        validationError.value = ''
+
+        try {
+            const result = await sendMessage('validate-api-key', { apiKey: key }, 'background')
+
+            if (result.valid) {
+                validationStatus.value = 'valid'
+                storage.apiKey.value = key // Save only if valid
+            } else {
+                validationStatus.value = 'invalid'
+                validationError.value = result.error || 'Invalid API Key'
+            }
+        } catch (e) {
+            validationStatus.value = 'invalid'
+            validationError.value = (e as Error).message
+        }
     }
 
     async function setTheme(theme: 'light' | 'dark' | 'auto') {
@@ -41,6 +70,8 @@ export const useSettingsStore = defineStore('settings', () => {
         theme: storage.theme,
         autoCapture: storage.autoCapture,
         preferredModel: storage.preferredModel,
+        validationStatus,
+        validationError,
 
         // Getters
         hasApiKey,
@@ -48,6 +79,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
         // Actions
         setApiKey,
+        validateAndSaveApiKey,
         setTheme,
         toggleAutoCapture,
     }

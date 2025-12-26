@@ -1,31 +1,52 @@
-/**
- * AI Service Layer
- * Google GenAI SDK wrapper for Gemini API calls
- * 
- * This is a skeleton - full implementation in future stories
- */
+import { GoogleGenAI } from '@google/genai'
+import { ANALYSIS_SYSTEM_PROMPT } from '../prompts/analysis'
 
-export interface AIClientConfig {
-    apiKey: string
-    model: 'gemini-1.5-flash' | 'gemini-1.5-pro'
+// Strict user-mandated model constants
+export const MODEL_NAMES = {
+    FLASH: 'gemini-3-flash-preview',
+    PRO_THINKING: 'gemini-3-pro-preview',
+    IMAGE: 'gemini-3-pro-image-preview'
+} as const
+
+/**
+ * Initialize the GenAI Client
+ */
+export function getClient(apiKey: string) {
+    return new GoogleGenAI({ apiKey })
 }
 
 /**
- * Initialize AI client (placeholder)
- * Future implementation will use @google/generative-ai SDK
+ * Generate a streaming analysis using strict user-defined models
+ * @param apiKey User API key
+ * @param text Text to analyze
+ * @param mode 'flash' for speed (gemini-3-flash), 'thinking' for depth (gemini-3-pro-thinking)
  */
-export function createAIClient(config: AIClientConfig) {
-    console.log('AI Client initialized with model:', config.model)
+export async function createAnalysisStream(apiKey: string, text: string, mode: 'flash' | 'thinking' = 'thinking') {
+    const ai = getClient(apiKey)
 
-    return {
-        analyzeText: async (_text: string) => {
-            // Placeholder - will be implemented in Story 1-4
-            return { result: 'Analysis placeholder', tokens: 0 }
-        },
+    // Select model strictly based on user rules
+    const model = mode === 'flash' ? MODEL_NAMES.FLASH : MODEL_NAMES.PRO_THINKING
 
-        analyzeImage: async (_imageData: string) => {
-            // Placeholder - will be implemented in Story 1-8
-            return { text: 'OCR placeholder', result: 'Analysis placeholder' }
-        },
+    // Configure specific parameters for thinking models
+    const config: any = {}
+
+    if (mode === 'thinking') {
+        config.thinkingConfig = {
+            thinkingLevel: "low" // Start with low for standard analysis
+        }
     }
+
+    return await ai.models.generateContentStream({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { text: ANALYSIS_SYSTEM_PROMPT },
+                    { text: `Please analyze this text: "${text}"` }
+                ]
+            }
+        ],
+        config
+    })
 }

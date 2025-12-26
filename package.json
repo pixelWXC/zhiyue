@@ -10,9 +10,11 @@
     "build:content": "tailwindcss -i src/content/styles.css -o src/content/dist.css -c tailwind.content.config.js --minify"
   },
   "dependencies": {
+    "@google/genai": "^1.34.0",
     "@vueuse/core": "^14.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "jsonrepair": "^3.13.1",
     "lucide-vue-next": "^0.562.0",
     "pinia": "^3.0.4",
     "radix-vue": "^1.9.17",

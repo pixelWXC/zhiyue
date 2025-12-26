@@ -19,11 +19,9 @@ declare module 'webext-bridge' {
             { content: string; type: 'text' | 'image' }
         >
 
-        // AI Analysis Messages
-        'analyze-text': ProtocolWithReturn<
-            { text: string; mode: 'flash' | 'pro' },
-            { result: string; tokens: number }
-        >
+        'trigger-clipboard-read': ProtocolWithReturn<void, void>
+
+        // AI Analysis Messages (Note: Main streaming uses chrome.runtime.connect Ports)
         'analyze-image': ProtocolWithReturn<
             { imageData: string },
             { text: string; result: string }
@@ -34,6 +32,10 @@ declare module 'webext-bridge' {
         'update-settings': ProtocolWithReturn<
             { apiKey?: string; theme?: string },
             { success: boolean }
+        >
+        'validate-api-key': ProtocolWithReturn<
+            { apiKey: string },
+            { valid: boolean; error?: string }
         >
 
         // Card Generation Messages

@@ -109,8 +109,11 @@ npm create crxjs@latest .
 
 ### Communication Patterns
 
-**Decision: Typed Messaging via `webext-bridge`**
-*   **Rationale**: Provides type-safe communication between Side Panel, Background, and Content Scripts. solves common "port closed" issues in MV3.
+**Decision: Hybrid Messaging (Bridge + Ports)**
+*   **webext-bridge**: Used for all standard Request/Response interactions (Settings, Ping, One-off actions).
+    *   *Rationale*: Type safety and reliability.
+*   **Native Ports (`chrome.runtime.connect`)**: Used specifically for **AI Streaming**.
+    *   *Rationale*: Essential for maintaining **Service Worker Keep-Alive** during long generation tasks. Standard `sendMessage` channels may close prematurely, killing the process.
 *   **Version**: Latest Stable
 
 ### Frontend Architecture
@@ -173,6 +176,13 @@ export interface ProtocolMap {
     *   *Pattern*: `<div class="zy-bg-blue-500">`
 *   **Side Panel**: NO prefix usage. Standard utility classes.
     *   *Pattern*: `<div class="bg-blue-500">`
+
+### UX/Copywriting Rules
+
+**Language Localization:**
+*   **Target Audience**: Chinese users learning Japanese.
+*   **Enforcement**: All user-facing UI text (labels, buttons, error messages, help text) MUST be in **Simplified Chinese**.
+*   **Exception**: Debug logs, code comments, and variable names should remain in English/ASCII for maintainability.
 
 ### Enforcement Guidelines
 
