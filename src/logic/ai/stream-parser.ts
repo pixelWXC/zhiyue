@@ -23,7 +23,7 @@ export async function* parseStreamingJSON<T>(
             const chunk = decoder.decode(value, { stream: true })
 
             // Placeholder - will implement JSON repair logic in Story 1-4
-            yield { raw: chunk } as Partial<T>
+            yield { raw: chunk } as unknown as Partial<T>
         }
     } finally {
         reader.releaseLock()

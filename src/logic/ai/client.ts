@@ -18,12 +18,12 @@ export function createAIClient(config: AIClientConfig) {
     console.log('AI Client initialized with model:', config.model)
 
     return {
-        analyzeText: async (text: string) => {
+        analyzeText: async (_text: string) => {
             // Placeholder - will be implemented in Story 1-4
             return { result: 'Analysis placeholder', tokens: 0 }
         },
 
-        analyzeImage: async (imageData: string) => {
+        analyzeImage: async (_imageData: string) => {
             // Placeholder - will be implemented in Story 1-8
             return { text: 'OCR placeholder', result: 'Analysis placeholder' }
         },

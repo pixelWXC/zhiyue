@@ -7,6 +7,18 @@ import { ProtocolWithReturn } from 'webext-bridge'
 
 declare module 'webext-bridge' {
     export interface ProtocolMap {
+        // Test Messages (for Story 1-2)
+        'ping': ProtocolWithReturn<
+            { message: string; timestamp: number },
+            { pong: string; receivedAt: number }
+        >
+
+        // Clipboard Messages
+        'clipboard-read': ProtocolWithReturn<
+            void,
+            { content: string; type: 'text' | 'image' }
+        >
+
         // AI Analysis Messages
         'analyze-text': ProtocolWithReturn<
             { text: string; mode: 'flash' | 'pro' },

@@ -6,7 +6,6 @@
  */
 
 import { sendMessage as bridgeSendMessage, onMessage } from 'webext-bridge/window'
-import type { ProtocolMap } from '@/types/shim'
 
 /**
  * Type-safe message sender
@@ -27,30 +26,24 @@ export const onMessageTyped = onMessage
 /**
  * Send message to background script
  */
-export async function sendToBackground<K extends keyof ProtocolMap>(
-    type: K,
-    data: ProtocolMap[K] extends { data: infer D } ? D : never
-) {
-    return sendMessage(type, data, 'background')
+export async function sendToBackground<T = any>(type: string, data: T) {
+    return sendMessage(type, data as any, 'background')
 }
 
 /**
  * Send message to specific tab's content script
  */
-export async function sendToContentScript<K extends keyof ProtocolMap>(
-    type: K,
-    data: ProtocolMap[K] extends { data: infer D } ? D : never,
+export async function sendToContentScript<T = any>(
+    type: string,
+    data: T,
     tabId: number
 ) {
-    return sendMessage(type, data, `content-script@${tabId}`)
+    return sendMessage(type, data as any, `content-script@${tabId}`)
 }
 
 /**
  * Send message to side panel
  */
-export async function sendToSidePanel<K extends keyof ProtocolMap>(
-    type: K,
-    data: ProtocolMap[K] extends { data: infer D } ? D : never
-) {
-    return sendMessage(type, data, 'side-panel')
+export async function sendToSidePanel<T = any>(type: string, data: T) {
+    return sendMessage(type, data as any, 'side-panel')
 }

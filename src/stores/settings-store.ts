@@ -4,9 +4,8 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useSettings } from '@/logic/storage'
-import type { UserSettings } from '@/types/shim'
 
 export const useSettingsStore = defineStore('settings', () => {
     // Reactive storage composables
@@ -32,7 +31,8 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     async function toggleAutoCapture() {
-        storage.autoCapture.value = !storage.autoCapture.value
+        const currentValue = storage.autoCapture.value
+        storage.autoCapture.value = !currentValue
     }
 
     return {

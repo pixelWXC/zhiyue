@@ -29,9 +29,14 @@ export const STORAGE_KEYS = {
  * Storage adapter for chrome.storage.local
  */
 const chromeStorageAdapter = {
-    getItem: async (key: string) => {
+    getItem: async (key: string): Promise<string | null> => {
         const result = await chrome.storage.local.get(key)
-        return result[key] ?? null
+        const value = result[key]
+        // VueUse expects string or null
+        if (value === undefined || value === null) return null
+        if (typeof value === 'string') return value
+        // For non-string values, serialize them
+        return JSON.stringify(value)
     },
     setItem: async (key: string, value: string) => {
         await chrome.storage.local.set({ [key]: value })
@@ -87,10 +92,10 @@ export function useSettings() {
 export async function getSettings(): Promise<UserSettings> {
     const result = await chrome.storage.local.get(Object.values(STORAGE_KEYS))
     return {
-        apiKey: result[STORAGE_KEYS.API_KEY],
-        theme: result[STORAGE_KEYS.THEME] ?? 'auto',
-        autoCapture: result[STORAGE_KEYS.AUTO_CAPTURE] ?? true,
-        preferredModel: result[STORAGE_KEYS.PREFERRED_MODEL] ?? 'flash',
+        apiKey: (result[STORAGE_KEYS.API_KEY] as string | undefined),
+        theme: (result[STORAGE_KEYS.THEME] as 'light' | 'dark' | 'auto' | undefined) ?? 'auto',
+        autoCapture: (result[STORAGE_KEYS.AUTO_CAPTURE] as boolean | undefined) ?? true,
+        preferredModel: (result[STORAGE_KEYS.PREFERRED_MODEL] as 'flash' | 'pro' | undefined) ?? 'flash',
     }
 }
 

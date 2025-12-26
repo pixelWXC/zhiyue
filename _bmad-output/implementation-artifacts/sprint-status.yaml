@@ -37,7 +37,7 @@ development_status:
   # Epic 1: Instant Analysis Companion
   epic-1: in-progress
   1-1-project-initialization-build-setup: done
-  1-2-side-panel-ipc-bridge-architecture: backlog
+  1-2-side-panel-ipc-bridge-architecture: done
   1-3-secure-settings-api-key-management: backlog
   1-4-ai-service-layer-token-streaming: backlog
   1-5-text-analysis-ui-the-typewriter: backlog

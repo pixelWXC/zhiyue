@@ -1,4 +1,6 @@
 import styles from './dist.css?inline'
+// Initialize webext-bridge for Content Script context (for future stories)
+import 'webext-bridge/content-script'
 
 console.log('Zhiyue Content Script Loaded');
 
@@ -19,7 +21,7 @@ shadow.appendChild(style);
 const app = document.createElement('div');
 // Use zy- prefix as configured
 app.className = 'zy-bg-blue-600 zy-p-4 zy-text-white zy-rounded-lg zy-shadow-xl zy-font-bold';
-app.textContent = 'Zhiyue Active';
+app.textContent = 'Zhiyue Active (IPC Ready)';
 shadow.appendChild(app);
 
 document.body.appendChild(host);
