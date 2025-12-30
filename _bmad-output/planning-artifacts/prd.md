@@ -19,12 +19,13 @@
 ## 4. Functional Requirements
 
 ### 4.1. Input & Activation
-- **FR-001 Shortcut Activation**: Global shortcut (default Alt+U) to trigger the sidebar.
-- **FR-002 Clipboard Handling**:
-    - Auto-read system clipboard on activation.
-    - **Text Mode**: If clipboard contains text, immediately proceed to analysis.
-    - **Image Mode**: If clipboard contains an image, display thumbnail, perform OCR (using Gemini Flash Vision), then proceed to analysis.
-    - **Mixed/Error Mode**: If unclear, prompt user to choose between Text or Image analysis.
+- **FR-001 Primary Triggers**:
+    - **Smart Bubble**: Appears on text selection in webpages for instant access.
+    - **Sidebar Shortcut**: Global shortcut (default `Alt+U`) to toggle the sidebar.
+- **FR-002 Manual Input**:
+    - **Sidebar Paste**: Users manually paste text or images into the sidebar input area.
+    - **Get Selection**: Button to retrieve currently selected text from the active tab.
+    - **No Auto-Read**: System does not automatically read clipboard on open.
 
 ### 4.2. Sentence Structure Analysis (Core)
 - **FR-003 Tokenization & POS Tagging**:

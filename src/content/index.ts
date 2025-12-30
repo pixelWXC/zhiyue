@@ -9,8 +9,14 @@ host.id = 'zhiyue-extension-host';
 // Set extensive z-index to ensure visibility
 host.style.zIndex = '2147483647';
 host.style.position = 'fixed';
-host.style.top = '10px';
-host.style.right = '10px';
+host.style.top = '0';
+host.style.left = '0';
+host.style.width = '100%';
+host.style.height = '100%';
+host.style.pointerEvents = 'none'; // Allow clicks to pass through to the page
+
+import { createApp } from 'vue';
+import ContentOverlay from './ui/ContentOverlay.vue';
 
 // Shadow DOM
 const shadow = host.attachShadow({ mode: 'open' });
@@ -18,10 +24,12 @@ const style = document.createElement('style');
 style.textContent = styles;
 shadow.appendChild(style);
 
-const app = document.createElement('div');
-// Use zy- prefix as configured
-app.className = 'zy-bg-blue-600 zy-p-4 zy-text-white zy-rounded-lg zy-shadow-xl zy-font-bold';
-app.textContent = 'Zhiyue Active (IPC Ready)';
-shadow.appendChild(app);
+const appContainer = document.createElement('div');
+appContainer.id = 'zhiyue-app';
+shadow.appendChild(appContainer);
+
+// Mount Vue App
+const app = createApp(ContentOverlay);
+app.mount(appContainer);
 
 document.body.appendChild(host);

@@ -14,7 +14,7 @@ This document provides the complete epic and story breakdown for zhiyue, decompo
 ### Functional Requirements
 
 FR-001 Shortcut Activation: Global shortcut (default Alt+U) to trigger the sidebar.
-FR-002 Clipboard Handling: Auto-read system clipboard on activation. Differentiates between Text and Image modes.
+FR-002 Manual Input & Selection: Smart Bubble for web selection, Manual Paste for sidebar input. No auto-clipboard reading.
 FR-003 Tokenization & POS Tagging: Uses Gemini 3 Flash to break sentences into tokens with POS, grammar role, reading, and translation. Supports streaming output.
 FR-004 Interactive Tokens: Clickable tokens to reveal detailed dictionary info (Meaning, Pronunciation, Usage) and external links.
 FR-005 Error Handling: Implementation of `json-repair` to handle malformed LLM JSON output robustly.
@@ -253,20 +253,23 @@ So that I don't have to wait for the full process to finish before reading.
 **And** each token should display its word, reading (furigana), and POS tag
 **And** the layout should handle wrapping gracefully
 
-### Story 1.6: Clipboard Auto-Capture & Shortcut
+### Story 1.6: Smart Selection Bubble & Manual Input
 
-As a User,
-I want the extension to automatically read my clipboard when I press `Alt+U`,
-So that I can analyze text immediately without pasting it manually.
+As a Learner,
+I want to analyze text either by selecting it on a webpage or pasting it into the sidebar,
+So that I can get instant AI explanations regardless of whether I am browsing or have text from another source.
 
 **Acceptance Criteria:**
 
-**Given** I have Japanese text in my system clipboard
-**When** I press the global shortcut `Alt+U`
-**Then** the Side Panel should open
-**And** it should automatically populate the input area with the clipboard content
-**And** (if configured) it should auto-start the analysis
-**And** if the clipboard is empty or non-text, it should show a helpful specific prompt
+**Given** I am browsing a webpage
+**When** I select text
+**Then** a Smart Bubble should appear with "Analyze" and "Explain" options
+**And** clicking them should open the result in an In-Page Modal
+
+**Given** the Side Panel is open
+**When** I paste text or click "Get Selection"
+**Then** the input area should populate and trigger analysis
+**And** the system **must not** auto-read clipboard without user action
 
 ### Story 1.7: Interactive Dictionary & Q&A
 
@@ -291,10 +294,9 @@ So that I can learn from manga, screenshots, or raw scans.
 **Acceptance Criteria:**
 
 **Given** I have an image in my clipboard
-**When** I activate the extension
-**Then** it should detect the image data
-**And** send it to Gemini (Vision capability) for OCR
-**And** return recognized text to the main analysis pipeline automatically
-**And** display a thumbnail of the image being analyzed
+**When** I paste the image into the Sidebar
+**Then** it should display a preview thumbnail
+**And** automatically send it to Gemini (Vision) for OCR
+**And** return recognized text to the main analysis pipeline
 
 <!-- Repeat for each story (M = 1, 2, 3...) within epic N -->

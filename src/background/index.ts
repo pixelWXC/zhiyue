@@ -84,19 +84,7 @@ onMessage('ping', async ({ data }) => {
     }
 })
 
-/**
- * Clipboard read handler
- * Reads text/image data from system clipboard
- */
-onMessage('clipboard-read', async () => {
-    // Placeholder implementation - will be enhanced in Story 1-6
-    console.log('📋 Clipboard read requested')
 
-    return {
-        content: '',
-        type: 'text' as const
-    }
-})
 
 /**
  * Settings handlers
@@ -169,6 +157,45 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     }
 })
 
+// Native message listener for user-gesture-sensitive operations
+// This preserves the user gesture context better than webext-bridge
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'open-side-panel') {
+        const { text } = message
+
+        // ✅ 关键：立即调用 sidePanel.open()，不能有任何 await
+        // 任何异步操作都会丢失用户手势上下文
+        if (sender.tab?.id) {
+            chrome.sidePanel.open({ tabId: sender.tab.id })
+                .then(() => {
+                    console.log('✅ Side panel opened for tab:', sender.tab?.id)
+
+                    // 打开成功后再存储文本
+                    chrome.storage.local.set({ 'pending_analysis_text': text }).then(() => {
+                        // 发送触发消息到侧边栏
+                        setTimeout(() => {
+                            sendMessage('trigger-text-input', { text }, 'popup').catch(e => {
+                                console.warn('⚠️ Could not send trigger to side panel:', e)
+                            })
+                        }, 500)
+                    })
+
+                    sendResponse({ success: true })
+                })
+                .catch((error) => {
+                    console.error('❌ Failed to open side panel:', error)
+                    sendResponse({ success: false, error: error.message })
+                })
+        } else {
+            console.error('❌ No tab ID available from sender')
+            sendResponse({ success: false, error: 'No tab ID available' })
+        }
+
+        // ✅ 返回 true 表示异步响应
+        return true
+    }
+})
+
 // ====================
 // AI Streaming Handler (Native Ports)
 // ====================
@@ -220,5 +247,59 @@ chrome.runtime.onConnect.addListener((port) => {
         }
     })
 })
+
+// ====================
+// Content Script Support
+// ====================
+
+import { jsonrepair } from 'jsonrepair'
+
+onMessage('analyze-text-content-script', async ({ data }) => {
+    const { text } = data as { text: string }
+    console.log('🔍 Content Script requested analysis for:', String(text).substring(0, 10))
+
+    try {
+        const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
+        const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
+        const apiKey = storageResult[API_KEY_STORAGE_KEY]
+
+        if (!apiKey) {
+            return { success: false, error: 'API Key missing' }
+        }
+
+        // Use 'thinking' mode for best quality
+        const stream = await createAnalysisStream(String(apiKey), String(text), 'thinking')
+
+        // Accumulate full response
+        let fullText = ''
+        for await (const chunk of stream) {
+            if (chunk.text) fullText += chunk.text
+        }
+
+        console.log('🤖 Raw AI Response:', fullText.substring(0, 50) + '...')
+
+        // Parse JSON
+        let json: any
+        try {
+            // Attempt to find JSON block if wrapped
+            const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/) || fullText.match(/\{[\s\S]*\}/)
+            const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : fullText
+
+            const repaired = jsonrepair(jsonString)
+            json = JSON.parse(repaired)
+        } catch (e) {
+            console.error('JSON Parse Error:', e)
+            return { success: false, error: 'Failed to parse AI response' }
+        }
+
+        return { success: true, data: json }
+
+    } catch (error) {
+        console.error('❌ Analysis failed:', error)
+        return { success: false, error: (error as Error).message }
+    }
+})
+
+
 
 console.log('✅ Event listeners registered')

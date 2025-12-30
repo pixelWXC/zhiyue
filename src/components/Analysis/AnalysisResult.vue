@@ -12,6 +12,9 @@ const translation = computed(() => props.data?.translation || '')
 
 // POS Color mapping - Using premium palette
 const getPosColor = (pos: string) => {
+  // Add null check to prevent errors
+  if (!pos) return 'border-indigo-500 dark:border-indigo-400'
+  
   // Simple substring check for Chinese POS tags
   if (pos.includes('动词')) return 'border-rose-500 dark:border-rose-400'
   if (pos.includes('名词')) return 'border-sky-500 dark:border-sky-400'
@@ -35,7 +38,7 @@ const getPosColor = (pos: string) => {
         <!-- Ruby (Reading) - Always Visible -->
         <!-- Adjusted text color for better readability in both modes -->
         <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium mb-0.5 select-none leading-none tracking-wide">
-          {{ token.reading }}
+          {{ token.reading || '　' }}
         </span>
         
         <!-- Word with colored underline -->
@@ -53,8 +56,8 @@ const getPosColor = (pos: string) => {
         <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[220px] px-3 py-2.5 bg-zinc-900/95 dark:bg-black/95 backdrop-blur-sm text-white text-xs rounded-xl shadow-2xl opacity-0 group-hover/token:opacity-100 transition-all duration-200 transform -translate-y-2 group-hover/token:translate-y-0 pointer-events-none z-50 border border-zinc-700/50">
           
           <div class="flex items-center justify-between gap-3 mb-1.5 border-b border-zinc-700/50 pb-1">
-             <span class="font-mono text-zinc-300 text-[11px]">{{ token.romaji }}</span>
-             <span class="font-bold text-sky-300 text-[10px] px-1.5 py-0.5 bg-sky-500/10 rounded">{{ token.pos }}</span>
+             <span v-if="token.romaji" class="font-mono text-zinc-300 text-[11px]">{{ token.romaji }}</span>
+             <span v-if="token.pos" class="font-bold text-sky-300 text-[10px] px-1.5 py-0.5 bg-sky-500/10 rounded">{{ token.pos }}</span>
           </div>
 
           <div v-if="token.meaning" class="text-zinc-100 leading-normal">{{ token.meaning }}</div>

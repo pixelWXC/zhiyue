@@ -2,8 +2,8 @@
 export default {
     content: [
         "./src/content/**/*.{ts,vue,html}",
+        "./src/components/**/*.{ts,vue,html}", // Include shared components
     ],
-    prefix: 'zy-',
     theme: {
         extend: {},
     },

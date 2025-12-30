@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { pingBackground } from '../lib/ipc'
 import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, Send, Loader2, AlertCircle } from 'lucide-vue-next'
+import { Sparkles, Loader2, AlertCircle } from 'lucide-vue-next'
+import ManualInput from './components/ManualInput.vue'
+import { onMessage } from 'webext-bridge/popup'
 
 // AI Store
 const aiStore = useAiStore()
-const { streamingText, isStreaming, parsedData, currentResult, error: aiError, isLoading: isAiLoading } = storeToRefs(aiStore)
+const { streamingText, isStreaming, parsedData, currentResult, error: aiError } = storeToRefs(aiStore)
 
-// Input state
-const userInput = ref('')
+// Test state
+const testMessage = ref('Hello from Side Panel!')
+const testResult = ref('')
+const isPingLoading = ref(false)
 
 // Compute data to display
 const displayData = computed(() => {
@@ -20,17 +24,12 @@ const displayData = computed(() => {
     return currentResult.value?.data || null
 })
 
-// Test state
-const testMessage = ref('Hello from Side Panel!')
-const testResult = ref('')
-const isPingLoading = ref(false)
-
 /**
  * Handle AI Analysis
  */
-async function handleAnalyze() {
-    if (!userInput.value.trim()) return
-    await aiStore.analyzeText(userInput.value)
+async function handleAnalyze(text: string) {
+    if (!text || !text.trim()) return
+    await aiStore.analyzeText(text)
 }
 
 /**
@@ -49,26 +48,43 @@ async function testPing() {
     isPingLoading.value = false
   }
 }
+
+// Check for pending analysis on mount (from Open in Side Panel)
+onMounted(async () => {
+    try {
+        const data = await chrome.storage.local.get('pending_analysis_text')
+        const text = data['pending_analysis_text']
+        if (text) {
+            console.log('📬 Found pending analysis:', text)
+            // Clear it
+            await chrome.storage.local.remove('pending_analysis_text')
+            // Start analysis
+            handleAnalyze(text)
+        }
+    } catch (e) {
+        console.error('Failed to check pending analysis', e)
+    }
+})
+
 // IPC Listeners
-import { onMessage } from 'webext-bridge/popup'
+
+// Handle explicit trigger from background
+onMessage('trigger-text-input', ({ data }) => {
+    const text = (data as any).text
+    if (text) {
+        handleAnalyze(text)
+    }
+})
 
 onMessage('trigger-clipboard-read', async () => {
     console.log('📋 Shortcut Trigger: Reading clipboard...')
     try {
         const text = await navigator.clipboard.readText()
         if (text && text.trim()) {
-            console.log('📋 Clipboard content found:', text.substring(0, 20) + '...')
-            userInput.value = text
-            if (!isStreaming.value) {
-                await handleAnalyze()
-            }
-        } else {
-            console.log('⚠️ Clipboard is empty or non-text')
-            aiStore.setError('剪贴板为空或没有文本内容')
-            userInput.value = ''
+            handleAnalyze(text)
         }
     } catch (error) {
-        console.warn('📋 Clipboard read failed:', error)
+        console.warn('Clipboard read failed', error)
     }
 })
 </script>
@@ -105,25 +121,11 @@ onMessage('trigger-clipboard-read', async () => {
         </div>
 
         <div class="space-y-4">
-            <!-- Input Area -->
-            <div class="relative">
-                <textarea
-                    v-model="userInput"
-                    placeholder="输入日语文本进行分析..."
-                    class="w-full h-32 p-4 text-sm bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none shadow-sm transition-all"
-                    :disabled="isStreaming"
-                ></textarea>
-                
-                <button
-                    @click="handleAnalyze"
-                    :disabled="!userInput.trim() || isStreaming"
-                    class="absolute bottom-3 right-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all active:scale-95 flex items-center gap-2"
-                >
-                    <Loader2 v-if="isStreaming" class="w-4 h-4 animate-spin" />
-                    <Send v-else class="w-4 h-4" />
-                    {{ isStreaming ? '分析中...' : '开始分析' }}
-                </button>
-            </div>
+            <!-- Manual Input (shown when idle) -->
+            <ManualInput 
+                v-if="!isStreaming && !displayData"
+                @analyze="handleAnalyze" 
+            />
 
             <!-- Error Display -->
             <div v-if="aiError" class="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl flex items-start gap-3">

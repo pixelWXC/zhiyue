@@ -41,7 +41,7 @@ development_status:
   1-3-secure-settings-api-key-management: done
   1-4-ai-service-layer-token-streaming: done
   1-5-text-analysis-ui-the-typewriter: done
-  1-6-clipboard-auto-capture-shortcut: done
+  1-6-smart-selection-and-paste: done
   1-7-interactive-dictionary-q-a: backlog
   1-8-image-ocr-integration: backlog
   epic-1-retrospective: optional
