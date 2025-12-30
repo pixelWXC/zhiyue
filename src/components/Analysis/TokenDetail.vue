@@ -167,10 +167,7 @@ function renderMarkdown(text: string): string {
                 </div>
                 <!-- AI -->
                 <div class="flex gap-3">
-                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm">
-                        <Bot class="w-4 h-4 text-white" />
-                    </div>
-                    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[85%] leading-relaxed shadow-sm markdown-prose">
+                    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
                         <div v-html="renderMarkdown(msg.answer)"></div>
                     </div>
                 </div>
@@ -178,10 +175,7 @@ function renderMarkdown(text: string): string {
             
             <!-- Streaming Message -->
             <div v-if="isQaStreaming" class="flex gap-3">
-                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 shadow-sm">
-                     <Bot class="w-4 h-4 text-white animate-pulse" />
-                </div>
-                <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[85%] leading-relaxed shadow-sm markdown-prose">
+                <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
                     <div v-if="qaStreamText" v-html="renderMarkdown(qaStreamText)"></div>
                     <div v-else class="flex gap-1 items-center h-5">
                         <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>

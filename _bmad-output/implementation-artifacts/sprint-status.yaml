@@ -43,7 +43,7 @@ development_status:
   1-5-text-analysis-ui-the-typewriter: done
   1-6-smart-selection-and-paste: done
   1-7-interactive-dictionary-q-a: done
-  1-8-image-ocr-integration: backlog
+  1-8-image-ocr-integration: done
   epic-1-retrospective: optional
 
   # Epic 2: Deep Syntax Visualization

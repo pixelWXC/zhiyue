@@ -298,5 +298,6 @@ So that I can learn from manga, screenshots, or raw scans.
 **Then** it should display a preview thumbnail
 **And** automatically send it to Gemini (Vision) for OCR
 **And** return recognized text to the main analysis pipeline
+**And** the preview should remain visible alongside the extracted text
 
 <!-- Repeat for each story (M = 1, 2, 3...) within epic N -->

@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai'
 import { ANALYSIS_SYSTEM_PROMPT } from '../prompts/analysis'
 import { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from '../prompts/qa'
+import { OCR_PROMPT } from '../prompts/ocr'
 
 // Strict user-mandated model constants
 export const MODEL_NAMES = {
@@ -71,4 +72,36 @@ export async function createQaStream(apiKey: string, sentence: string, token: st
             }
         ]
     })
+}
+
+/**
+ * Recognize Japanese text from an image using Gemini Vision
+ * @param apiKey User API key
+ * @param base64Image Base64-encoded image data (without data:image/... prefix)
+ * @param mimeType Image MIME type (e.g., 'image/jpeg', 'image/png')
+ * @returns Extracted Japanese text
+ */
+export async function recognizeTextFromImage(apiKey: string, base64Image: string, mimeType: string): Promise<string> {
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.FLASH // Use Flash for cost efficiency
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    {
+                        inlineData: {
+                            mimeType,
+                            data: base64Image
+                        }
+                    },
+                    { text: OCR_PROMPT }
+                ]
+            }
+        ]
+    })
+
+    return response.text || ''
 }

@@ -1,104 +1,125 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Clipboard, ArrowDownToLine, Loader2 } from 'lucide-vue-next'
+import { Loader2, X, ImageIcon } from 'lucide-vue-next'
+import { blobToBase64, getMimeType } from '@/lib/utils'
+import { recognizeTextFromImage } from '@/logic/ai/client'
+import { useSettingsStore } from '@/stores/settings-store'
 
 // Props/Emits
 const emit = defineEmits<{
   (e: 'analyze', text: string): void
 }>()
 
+const settingsStore = useSettingsStore()
+
 const inputText = ref('')
-const isGettingSelection = ref(false)
+
+// Image OCR state
+const imagePreview = ref<string | null>(null)
+const isProcessingOcr = ref(false)
+const imageMimeType = ref('')
 
 // Actions
-const onPaste = (e: ClipboardEvent) => {
-    // Basic text paste handled by v-model usually, but we want to auto-submit?
-    // Story says: "Text: Automatically trigger the Analysis flow."
-    // We should probably wait for a small delay or check if it's substantial.
-    // Or just let user press Enter / Click button?
-    // "When the user pastes (Ctrl+V) text... The application should process the input immediately"
-    
-    // Let's grab the text
-    const text = e.clipboardData?.getData('text')
-    if (text) {
-        inputText.value = text // Update model
-        // Auto-analyze after a tick to ensure UI updates?
-        // Or just emit immediately.
-        if (text.trim().length > 0) {
-            emit('analyze', text)
+const onPaste = async (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    // Check for image first (priority over text)
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault() // Prevent default text paste
+            const blob = item.getAsFile()
+            if (blob) {
+                await handleImagePaste(blob)
+                return
+            }
         }
     }
     
-    // Image handling (Story 1.8 reserved, but good to have placeholder)
-    if (e.clipboardData?.files.length) {
-        // Placeholder for image
-        console.log('Image pasted', e.clipboardData.files)
+    // If no image, handle text paste
+    const text = e.clipboardData?.getData('text')
+    if (text && text.trim().length > 0) {
+        inputText.value = text
+        emit('analyze', text)
     }
 }
 
-const onGetSelection = async () => {
-    isGettingSelection.value = true
+const handleImagePaste = async (blob: Blob) => {
     try {
-        // Send message to active tab to get selection
-        // We can use `sendMessage` with destination 'content-script' and specific tabId?
-        // webext-bridge handles 'content-script' destination as active tab usually? 
-        // Or we need to specify tabId.
-        
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-        if (tabs[0]?.id) {
-             // We can use scripting API if content script isn't responsive, but we have a content script.
-             // Let's try sending message.
-             // We need to implement 'get-selection' handler in content script?
-             // Or better: Use scripting execution to get selection text which is more robust if CS is not loaded.
-             
-            const results = await chrome.scripting.executeScript({
-                target: { tabId: tabs[0].id },
-                func: () => window.getSelection()?.toString() || ''
-            })
-            
-            const text = results[0]?.result
-            if (text) {
-                inputText.value = text.trim()
-                if (inputText.value) {
-                    emit('analyze', inputText.value)
-                }
-            } else {
-                 // Nothing selected
-                 // Maybe flash a toast?
-            }
+        // Create preview URL
+        imagePreview.value = URL.createObjectURL(blob)
+        imageMimeType.value = getMimeType(blob)
+        isProcessingOcr.value = true
+
+        // Convert to Base64
+        const base64 = await blobToBase64(blob)
+
+        // Get API key
+        const apiKey = settingsStore.apiKey
+        if (!apiKey) {
+            throw new Error('请先配置 API 密钥')
         }
-    } catch (e) {
-        console.error('Failed to get selection:', e)
+
+        // Call OCR
+        const extractedText = await recognizeTextFromImage(apiKey, base64, imageMimeType.value)
+        
+        // Fill input with extracted text
+        inputText.value = extractedText.trim()
+        
+        // Auto-trigger analysis if text was extracted
+        if (inputText.value) {
+            emit('analyze', inputText.value)
+        }
+    } catch (error) {
+        console.error('OCR 失败:', error)
+        alert(`图片识别失败: ${(error as Error).message}`)
+        removeImage()
     } finally {
-        isGettingSelection.value = false
+        isProcessingOcr.value = false
     }
+}
+
+const removeImage = () => {
+    if (imagePreview.value) {
+        URL.revokeObjectURL(imagePreview.value)
+    }
+    imagePreview.value = null
+    imageMimeType.value = ''
+    inputText.value = ''
 }
 </script>
 
 <template>
   <div class="flex flex-col gap-4 p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 transition-colors hover:border-indigo-300 dark:hover:border-indigo-700 group">
       
-      <!-- Placeholder / Empty State Visual -->
-      <div v-if="!inputText" class="flex flex-col items-center justify-center py-6 text-zinc-400 gap-2 pointer-events-none">
-          <Clipboard class="w-8 h-8 opacity-50 mb-1" />
-          <p class="text-xs font-medium">粘贴文本 (Ctrl+V) 或</p>
-          <button class="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 hover:border-indigo-200 transition-all" @click.stop="onGetSelection">
-              <Loader2 v-if="isGettingSelection" class="w-3.5 h-3.5 animate-spin" />
-              <ArrowDownToLine v-else class="w-3.5 h-3.5" />
-              获取选中
+      <!-- Image Preview Area -->
+      <div v-if="imagePreview" class="relative rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+          <img :src="imagePreview" alt="Preview" class="w-full h-auto max-h-[200px] object-contain" />
+          <button 
+            @click="removeImage"
+            class="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+            title="移除图片"
+          >
+            <X class="w-4 h-4" />
           </button>
+          <div v-if="isProcessingOcr" class="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <div class="flex flex-col items-center gap-2 text-white">
+                  <Loader2 class="w-8 h-8 animate-spin" />
+                  <p class="text-sm font-medium">正在提取文本...</p>
+              </div>
+          </div>
       </div>
-
-      <!-- Real Input (Invisible opacity but covers area to catch paste?) 
-           Actually user needs to focus it to paste. 
-           So we should make it visible or use a global listner?
-           "Sidebar Manual Input" -> A dedicated input area.
-      -->
+      
+      <!-- Placeholder / Empty State Visual -->
+      <div v-if="!inputText && !imagePreview" class="flex flex-col items-center justify-center py-6 text-zinc-400 gap-2 pointer-events-none">
+          <ImageIcon class="w-8 h-8 opacity-50 mb-1" />
+          <p class="text-xs font-medium">粘贴文本或图片 (Ctrl+V)</p>
+      </div>
       
       <textarea
         v-model="inputText"
         @paste="onPaste"
-        placeholder="在此输入或粘贴文本..."
+        placeholder="在此输入或粘贴文本/图片..."
         class="w-full bg-transparent border-none resize-none focus:ring-0 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 min-h-[100px]"
       ></textarea>
       

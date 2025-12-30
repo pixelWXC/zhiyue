@@ -167,20 +167,18 @@ date: '2025-12-25'
 2.  **Performance**: Minimal bundle size using atomic CSS (Tailwind). We only ship the CSS and JS we actually use, crucial for instant extension startup (NFR-002).
 3.  **Aesthetics**: The default minimalist, clean aesthetic of Shadcn aligns perfectly with Zhiyue's "Calm" and "Intellectually Satisfied" emotional goals.
 
-### Implementation Approach (Dual-Environment Strategy)
-
-To address the browser extension's unique constraints (style isolation), we will split the implementation:
-
-1.  **Side Panel (Independent Context)**:
-    *   Full usage of **Shadcn-vue + Tailwind**.
-    *   Acts as a standard Single Page Application (SPA).
-
-2.  **Content Script (Host Page Context)**:
-    *   **Technique**: **Shadow DOM** encapsulation to prevent style leakage (protecting user's web page).
-    *   **Styling**: Use **Tailwind with Prefix (`zy-`)** or scoped CSS variables derived from the design tokens.
-    *   **Constraint**: Avoid heavy Shadcn components (e.g., Dialogs, Popovers) inside the host page; keep inline interactions lightweight.
-
-### Customization Strategy
+### Component Specifications
+ 
+#### Side Panel (Sidebar)
+*   **Structure**:
+    *   **Header**: Logo + Settings Trigger.
+    *   **Content Area**:
+        *   **Manual Input**:
+            *   **Rich Input Container**: Supports Text and **Image Paste**.
+            *   **Image State**: When an image is pasted, display a thumbnail preview ABOVE the text field with a "Remove" button. The text field remains editable to display the OCR result or for manual correction.
+        *   **Analysis Feed**: Scrollable area for result cards.
+        *   **Sticky Bottom Input** (Optional): For Q&A.
+    *   **State**: Persistent state across tab switches (via Pinia).
 
 *   **Prefixing**: Apply a `zy-` prefix to all Tailwind classes to prevent conflicts with host pages.
 *   **Shared Tokens**: Define colors/spacing as CSS Variables at the root, shared by both the Side Panel and Shadow DOM styles to ensure visual consistency.

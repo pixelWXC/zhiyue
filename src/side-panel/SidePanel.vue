@@ -5,7 +5,7 @@ import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, Loader2, AlertCircle } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2 } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import { onMessage } from 'webext-bridge/popup'
@@ -19,6 +19,9 @@ const testMessage = ref('Hello from Side Panel!')
 const testResult = ref('')
 const isPingLoading = ref(false)
 
+// Store last analyzed text for retry
+const lastAnalyzedText = ref('')
+
 // Compute data to display
 const displayData = computed(() => {
     if (isStreaming.value) return parsedData.value
@@ -30,7 +33,25 @@ const displayData = computed(() => {
  */
 async function handleAnalyze(text: string) {
     if (!text || !text.trim()) return
+    lastAnalyzedText.value = text
     await aiStore.analyzeText(text)
+}
+
+/**
+ * Retry last analysis
+ */
+function handleRetry() {
+    if (lastAnalyzedText.value) {
+        handleAnalyze(lastAnalyzedText.value)
+    }
+}
+
+/**
+ * Clear analysis results
+ */
+function handleClear() {
+    aiStore.clearResults()
+    lastAnalyzedText.value = ''
 }
 
 function handleSelectToken(token: any) {
@@ -62,8 +83,8 @@ async function testPing() {
 onMounted(async () => {
     try {
         const data = await chrome.storage.local.get('pending_analysis_text')
-        const text = data['pending_analysis_text']
-        if (text) {
+        const text = data['pending_analysis_text'] as string | undefined
+        if (text && typeof text === 'string') {
             console.log('📬 Found pending analysis:', text)
             // Clear it
             await chrome.storage.local.remove('pending_analysis_text')
@@ -148,25 +169,48 @@ onMessage('trigger-clipboard-read', async () => {
             <!-- Result Area -->
             <div v-if="displayData || isStreaming" class="relative group">
                 <div v-if="!isStreaming" class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-10 transition duration-500 blur"></div>
-                <div class="relative bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 p-6 shadow-sm min-h-[100px]">
-                    <div v-show="!selectedToken">
-                        <AnalysisResult 
-                            :data="displayData" 
-                            :isLoading="isStreaming"
-                            @select-token="handleSelectToken" 
-                        />
-                        
-                         <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
-                         <div v-if="isStreaming && (!displayData || displayData.tokens.length === 0) && streamingText" class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-zinc-800">
-                            <p class="text-xs text-gray-400 mb-1">Raw Stream (Parsing...)</p>
-                            <div class="font-mono text-xs text-gray-500 whitespace-pre-wrap break-all">{{ streamingText }}</div>
-                         </div>
-                    </div>
+                <div class="relative bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[100px]">
+                    <div class="p-6">
+                        <div v-show="!selectedToken">
+                            <AnalysisResult 
+                                :data="displayData" 
+                                :isLoading="isStreaming"
+                                @select-token="handleSelectToken" 
+                            />
+                            
+                             <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
+                             <div v-if="isStreaming && (!displayData || displayData.tokens.length === 0) && streamingText" class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-zinc-800">
+                                <p class="text-xs text-gray-400 mb-1">Raw Stream (Parsing...)</p>
+                                <div class="font-mono text-xs text-gray-500 whitespace-pre-wrap break-all">{{ streamingText }}</div>
+                             </div>
 
-                    <TokenDetail 
-                        v-if="selectedToken"
-                        @back="handleBack"
-                    />
+                             <!-- Action Buttons (below analysis result) -->
+                             <div v-if="!isStreaming" class="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-end gap-2">
+                                <button 
+                                    @click="handleRetry"
+                                    :disabled="!lastAnalyzedText"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="重新分析"
+                                >
+                                    <RotateCw class="w-4 h-4" />
+                                    <span>重新分析</span>
+                                </button>
+                                <button 
+                                    @click="handleClear"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
+                                    title="清除结果"
+                                >
+                                    <Trash2 class="w-4 h-4" />
+                                    <span>清除结果</span>
+                                </button>
+                             </div>
+                        </div>
+
+                        <TokenDetail 
+                            v-if="selectedToken"
+                            @back="handleBack"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

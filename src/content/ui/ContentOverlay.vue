@@ -174,6 +174,11 @@ const onExplain = () => {
 
 const onCloseModal = () => {
     modalVisible.value = false
+    // Reset to main analysis view when closing modal
+    selectedToken.value = null
+    qaHistory.value = []
+    qaStreamText.value = ''
+    isQaStreaming.value = false
 }
 
 const onOpenSidePanel = () => {

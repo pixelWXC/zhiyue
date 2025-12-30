@@ -91,6 +91,17 @@ export const useAiStore = defineStore('ai', () => {
         history.value = history.value.filter(r => r.id !== id)
     }
 
+    function clearResults() {
+        currentResult.value = null
+        streamingText.value = ''
+        parsedData.value = null
+        error.value = null
+        selectedToken.value = null
+        qaHistory.value = []
+        qaStreamText.value = ''
+        isQaStreaming.value = false
+    }
+
     // Main Analysis Action with Port connection
     async function analyzeText(text: string) {
         if (!text.trim()) return
@@ -274,6 +285,7 @@ export const useAiStore = defineStore('ai', () => {
         finishStreaming,
         clearHistory,
         removeFromHistory,
+        clearResults,
 
         // Q&A
         selectedToken,
