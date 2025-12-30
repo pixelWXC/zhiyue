@@ -29,7 +29,9 @@ appContainer.id = 'zhiyue-app';
 shadow.appendChild(appContainer);
 
 // Mount Vue App
+import { createPinia } from 'pinia';
 const app = createApp(ContentOverlay);
+app.use(createPinia()); // Install Pinia
 app.mount(appContainer);
 
 document.body.appendChild(host);

@@ -42,6 +42,12 @@ export const useAiStore = defineStore('ai', () => {
     const isStreaming = ref(false)
     const parsedData = ref<AnalysisData | null>(null)
 
+    // Q&A State
+    const selectedToken = ref<Token | null>(null)
+    const qaHistory = ref<{ question: string, answer: string }[]>([])
+    const isQaStreaming = ref(false)
+    const qaStreamText = ref('')
+
     // Getters
     const hasHistory = computed(() => history.value.length > 0)
     const lastResult = computed(() => history.value[0])
@@ -189,6 +195,62 @@ export const useAiStore = defineStore('ai', () => {
         }
     }
 
+    // Q&A Actions
+    function selectToken(token: Token | null) {
+        selectedToken.value = token
+        qaHistory.value = [] // Reset chat when changing token (or keep it?) -> Let's reset for context switch
+        qaStreamText.value = ''
+        isQaStreaming.value = false
+    }
+
+    async function askQuestion(question: string) {
+        if (!question.trim() || !currentResult.value) return
+
+        isQaStreaming.value = true
+        qaStreamText.value = ''
+
+        let port: chrome.runtime.Port | null = null
+
+        try {
+            port = chrome.runtime.connect({ name: 'ai-stream' })
+
+            port.onMessage.addListener((msg) => {
+                if (msg.error) {
+                    // Handle error (append to chat?)
+                    qaStreamText.value = `❌ 错误: ${msg.error}`
+                    isQaStreaming.value = false
+                    port?.disconnect()
+                } else if (msg.chunk) {
+                    qaStreamText.value += msg.chunk
+                } else if (msg.done) {
+                    isQaStreaming.value = false
+                    qaHistory.value.push({
+                        question,
+                        answer: qaStreamText.value
+                    })
+                    qaStreamText.value = ''
+                    port?.disconnect()
+                }
+            })
+
+            // Context construction
+            const contextSentence = currentResult.value.text
+            const contextToken = selectedToken.value?.word || '全文'
+
+            port.postMessage({
+                action: 'ask-question',
+                sentence: contextSentence,
+                token: contextToken,
+                question
+            })
+
+        } catch (e) {
+            console.error('QA Connection failed', e)
+            qaStreamText.value = `❌ 连接失败: ${(e as Error).message}`
+            isQaStreaming.value = false
+        }
+    }
+
     return {
         // State
         isLoading,
@@ -212,5 +274,13 @@ export const useAiStore = defineStore('ai', () => {
         finishStreaming,
         clearHistory,
         removeFromHistory,
+
+        // Q&A
+        selectedToken,
+        qaHistory,
+        isQaStreaming,
+        qaStreamText,
+        selectToken,
+        askQuestion
     }
 })

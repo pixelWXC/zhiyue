@@ -1,17 +1,28 @@
 <script setup lang="ts">
 import { X, ExternalLink } from 'lucide-vue-next'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
+import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import type { AnalysisData } from '@/stores/ai-store'
 
-defineProps<{
+interface Props {
   visible: boolean
   analysisData: AnalysisData | null
   isStreaming: boolean
-}>()
+  // Q&A state from parent (for content script mode)
+  selectedToken?: any
+  qaHistory?: { question: string, answer: string }[]
+  isQaStreaming?: boolean
+  qaStreamText?: string
+}
+
+defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'open-sidebar'): void
+  (e: 'select-token', token: any): void
+  (e: 'back'): void
+  (e: 'ask-question', question: string): void
 }>()
 </script>
 
@@ -48,13 +59,31 @@ const emit = defineEmits<{
         </div>
 
         <!-- Content -->
-        <div class="p-4">
-            <AnalysisResult :data="analysisData" :is-loading="isStreaming" />
-            
-             <!-- Error/Empty State fallback (if needed, though AnalysisResult handles loading) -->
-             <div v-if="!isStreaming && !analysisData" class="flex flex-col items-center justify-center py-8 text-zinc-400">
-                <p class="text-xs">暂无分析结果</p>
+        <div class="p-4 flex flex-col">
+            <!-- Main Analysis View -->
+            <div v-show="!selectedToken" class="animate-in fade-in zoom-in-95 duration-200">
+                <AnalysisResult 
+                    :data="analysisData" 
+                    :is-loading="isStreaming" 
+                    @select-token="$emit('select-token', $event)"
+                />
+                
+                 <!-- Error/Empty State fallback -->
+                 <div v-if="!isStreaming && !analysisData" class="flex flex-col items-center justify-center py-8 text-zinc-400">
+                    <p class="text-xs">暂无分析结果</p>
+                </div>
             </div>
+
+            <!-- Token Detail View -->
+            <TokenDetail 
+                v-if="selectedToken" 
+                :external-selected-token="selectedToken"
+                :external-qa-history="qaHistory"
+                :external-is-qa-streaming="isQaStreaming"
+                :external-qa-stream-text="qaStreamText"
+                @back="$emit('back')"
+                @ask-question="$emit('ask-question', $event)"
+            />
         </div>
     </div>
   </div>

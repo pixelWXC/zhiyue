@@ -200,7 +200,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // AI Streaming Handler (Native Ports)
 // ====================
 
-import { createAnalysisStream } from '../logic/ai/client'
+import { createAnalysisStream, createQaStream } from '../logic/ai/client'
 
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name !== 'ai-stream') return
@@ -243,6 +243,33 @@ chrome.runtime.onConnect.addListener((port) => {
             } catch (error) {
                 console.error('❌ AI Stream Error:', error)
                 port.postMessage({ error: (error as Error).message || 'AI 服务请求失败' })
+            }
+        } else if (msg.action === 'ask-question') {
+            const { sentence, token, question } = msg
+
+            try {
+                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
+                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
+                const apiKey = storageResult[API_KEY_STORAGE_KEY]
+
+                if (!apiKey) {
+                    port.postMessage({ error: '请先配置 API 密钥' })
+                    return
+                }
+
+                console.log('🤔 AI QA:', question)
+                const result = await createQaStream(String(apiKey), sentence, token, question)
+
+                for await (const chunk of result) {
+                    const chunkText = chunk.text
+                    if (chunkText) {
+                        port.postMessage({ chunk: chunkText })
+                    }
+                }
+                port.postMessage({ done: true })
+
+            } catch (error) {
+                port.postMessage({ error: (error as Error).message })
             }
         }
     })

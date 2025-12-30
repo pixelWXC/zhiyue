@@ -7,11 +7,12 @@ import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
 import { Sparkles, Loader2, AlertCircle } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
+import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import { onMessage } from 'webext-bridge/popup'
 
 // AI Store
 const aiStore = useAiStore()
-const { streamingText, isStreaming, parsedData, currentResult, error: aiError } = storeToRefs(aiStore)
+const { streamingText, isStreaming, parsedData, currentResult, error: aiError, selectedToken } = storeToRefs(aiStore)
 
 // Test state
 const testMessage = ref('Hello from Side Panel!')
@@ -30,6 +31,14 @@ const displayData = computed(() => {
 async function handleAnalyze(text: string) {
     if (!text || !text.trim()) return
     await aiStore.analyzeText(text)
+}
+
+function handleSelectToken(token: any) {
+  aiStore.selectToken(token)
+}
+
+function handleBack() {
+  aiStore.selectToken(null)
 }
 
 /**
@@ -140,16 +149,24 @@ onMessage('trigger-clipboard-read', async () => {
             <div v-if="displayData || isStreaming" class="relative group">
                 <div v-if="!isStreaming" class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-10 transition duration-500 blur"></div>
                 <div class="relative bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 p-6 shadow-sm min-h-[100px]">
-                    <AnalysisResult 
-                        :data="displayData" 
-                        :isLoading="isStreaming" 
+                    <div v-show="!selectedToken">
+                        <AnalysisResult 
+                            :data="displayData" 
+                            :isLoading="isStreaming"
+                            @select-token="handleSelectToken" 
+                        />
+                        
+                         <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
+                         <div v-if="isStreaming && (!displayData || displayData.tokens.length === 0) && streamingText" class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-zinc-800">
+                            <p class="text-xs text-gray-400 mb-1">Raw Stream (Parsing...)</p>
+                            <div class="font-mono text-xs text-gray-500 whitespace-pre-wrap break-all">{{ streamingText }}</div>
+                         </div>
+                    </div>
+
+                    <TokenDetail 
+                        v-if="selectedToken"
+                        @back="handleBack"
                     />
-                    
-                     <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
-                     <div v-if="isStreaming && (!displayData || displayData.tokens.length === 0) && streamingText" class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-zinc-800">
-                        <p class="text-xs text-gray-400 mb-1">Raw Stream (Parsing...)</p>
-                        <div class="font-mono text-xs text-gray-500 whitespace-pre-wrap break-all">{{ streamingText }}</div>
-                     </div>
                 </div>
             </div>
         </div>

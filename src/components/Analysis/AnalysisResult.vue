@@ -7,6 +7,10 @@ const props = defineProps<{
   isLoading?: boolean
 }>()
 
+const emit = defineEmits<{
+  (e: 'select-token', token: any): void
+}>()
+
 const tokens = computed(() => props.data?.tokens || [])
 const translation = computed(() => props.data?.translation || '')
 
@@ -33,7 +37,8 @@ const getPosColor = (pos: string) => {
       <div
         v-for="(token, index) in tokens"
         :key="index"
-        class="group/token relative flex flex-col items-center cursor-pointer"
+        class="group/token relative flex flex-col items-center cursor-pointer active:scale-95 transition-transform"
+        @click="$emit('select-token', token)"
       >
         <!-- Ruby (Reading) - Always Visible -->
         <!-- Adjusted text color for better readability in both modes -->
@@ -63,7 +68,7 @@ const getPosColor = (pos: string) => {
           <div v-if="token.meaning" class="text-zinc-100 leading-normal">{{ token.meaning }}</div>
           <div v-else class="text-zinc-500 italic text-[10px] flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-            点击查看释义
+            点击详情 / 提问
           </div>
           
           <!-- Triangle -->

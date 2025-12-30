@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import { ANALYSIS_SYSTEM_PROMPT } from '../prompts/analysis'
+import { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from '../prompts/qa'
 
 // Strict user-mandated model constants
 export const MODEL_NAMES = {
@@ -48,5 +49,26 @@ export async function createAnalysisStream(apiKey: string, text: string, mode: '
             }
         ],
         config
+    })
+}
+
+/**
+ * Generate a Q&A answer stream
+ */
+export async function createQaStream(apiKey: string, sentence: string, token: string, question: string) {
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.FLASH // Use Flash for Q&A speed
+
+    return await ai.models.generateContentStream({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { text: QA_SYSTEM_PROMPT },
+                    { text: QA_USER_PROMPT(sentence, token, question) }
+                ]
+            }
+        ]
     })
 }

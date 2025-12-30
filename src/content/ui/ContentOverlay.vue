@@ -194,6 +194,70 @@ const onOpenSidePanel = () => {
     
     modalVisible.value = false
 }
+
+// Q&A State Management for Content Script
+const selectedToken = ref<any>(null)
+const qaHistory = ref<{ question: string, answer: string }[]>([])
+const isQaStreaming = ref(false)
+const qaStreamText = ref('')
+
+function handleSelectToken(token: any) {
+    selectedToken.value = token
+    qaHistory.value = []
+    qaStreamText.value = ''
+    isQaStreaming.value = false
+}
+
+function handleBack() {
+    selectedToken.value = null
+}
+
+async function handleAskQuestion(question: string) {
+    if (!question.trim() || !selectedText.value) return
+    
+    isQaStreaming.value = true
+    qaStreamText.value = ''
+    
+    let port: chrome.runtime.Port | null = null
+    
+    try {
+        port = chrome.runtime.connect({ name: 'ai-stream' })
+        
+        port.onMessage.addListener((msg) => {
+            if (msg.error) {
+                qaStreamText.value = `❌ 错误: ${msg.error}`
+                isQaStreaming.value = false
+                port?.disconnect()
+            } else if (msg.chunk) {
+                qaStreamText.value += msg.chunk
+            } else if (msg.done) {
+                isQaStreaming.value = false
+                qaHistory.value.push({
+                    question,
+                    answer: qaStreamText.value
+                })
+                qaStreamText.value = ''
+                port?.disconnect()
+            }
+        })
+        
+        // Context construction
+        const contextSentence = selectedText.value
+        const contextToken = selectedToken.value?.word || '全文'
+        
+        port.postMessage({
+            action: 'ask-question',
+            sentence: contextSentence,
+            token: contextToken,
+            question
+        })
+        
+    } catch (error) {
+        console.error('QA Connection failed', error)
+        qaStreamText.value = `❌ 连接失败: ${(error as Error).message}`
+        isQaStreaming.value = false
+    }
+}
 </script>
 
 <template>
@@ -211,8 +275,15 @@ const onOpenSidePanel = () => {
         :visible="modalVisible"
         :analysis-data="parsedData"
         :is-streaming="isStreaming"
+        :selected-token="selectedToken"
+        :qa-history="qaHistory"
+        :is-qa-streaming="isQaStreaming"
+        :qa-stream-text="qaStreamText"
         @close="onCloseModal"
         @open-sidebar="onOpenSidePanel"
+        @select-token="handleSelectToken"
+        @back="handleBack"
+        @ask-question="handleAskQuestion"
       />
   </div>
 </template>
