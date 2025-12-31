@@ -66,6 +66,11 @@ export const useAiStore = defineStore('ai', () => {
     const isGeneratingCard = ref(false)
     const cardError = ref<string | null>(null)
 
+    // Image Generation State
+    const isGeneratingImage = ref(false)
+    const imageResult = ref<string | null>(null) // Base64 data URL
+    const imageError = ref<string | null>(null)
+
     // Getters
     const hasHistory = computed(() => history.value.length > 0)
     const lastResult = computed(() => history.value[0])
@@ -123,6 +128,9 @@ export const useAiStore = defineStore('ai', () => {
         cardData.value = null
         isGeneratingCard.value = false
         cardError.value = null
+        imageResult.value = null
+        isGeneratingImage.value = false
+        imageError.value = null
     }
 
     // Main Analysis Action with Port connection
@@ -360,6 +368,52 @@ export const useAiStore = defineStore('ai', () => {
         cardError.value = null
     }
 
+    /**
+     * Generate flashcard illustration from scene description
+     * @param sceneDescription Scene description to convert into an image
+     */
+    async function generateCardImage(sceneDescription: string) {
+        if (!sceneDescription.trim()) {
+            imageError.value = '场景描述不能为空'
+            return
+        }
+
+        isGeneratingImage.value = true
+        imageResult.value = null
+        imageError.value = null
+
+        try {
+            // Import storage utility to get API key
+            const { getSettings } = await import('../logic/storage')
+            const settings = await getSettings()
+
+            if (!settings.apiKey) {
+                throw new Error('未配置 API Key，请先在设置中配置')
+            }
+
+            // Import and call image generation service
+            const { generateImage } = await import('../logic/ai/client')
+            const dataUrl = await generateImage(settings.apiKey, sceneDescription)
+
+            imageResult.value = dataUrl
+
+        } catch (e) {
+            console.error('[AI Store] Image generation failed', e)
+            imageError.value = (e as Error).message
+        } finally {
+            isGeneratingImage.value = false
+        }
+    }
+
+    /**
+     * Clear only image generation state
+     */
+    function clearImageData() {
+        imageResult.value = null
+        isGeneratingImage.value = false
+        imageError.value = null
+    }
+
 
     return {
         // State
@@ -404,6 +458,13 @@ export const useAiStore = defineStore('ai', () => {
         isGeneratingCard,
         cardError,
         generateCard,
-        clearCardData
+        clearCardData,
+
+        // Image Generation
+        isGeneratingImage,
+        imageResult,
+        imageError,
+        generateCardImage,
+        clearImageData
     }
 })

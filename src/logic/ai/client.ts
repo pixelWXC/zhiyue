@@ -139,3 +139,56 @@ export async function createSyntaxStream(apiKey: string, text: string) {
         config
     })
 }
+
+/**
+ * Generate an illustration from a scene description
+ * @param apiKey User API key (must not be empty)
+ * @param sceneDescription Scene description to convert into an image (must not be empty)
+ * @returns Base64 data URL for the generated image (format: data:image/[type];base64,...)
+ * @throws {Error} 场景描述不能为空 - if sceneDescription is empty or whitespace
+ * @throws {Error} API Key 不能为空 - if apiKey is empty or whitespace
+ * @throws {Error} 图像生成失败：API 未返回图像数据 - if no image data in response
+ * @throws {Error} API errors (quota exceeded, network errors, invalid prompts, etc.)
+ */
+export async function generateImage(apiKey: string, sceneDescription: string): Promise<string> {
+    // Input validation (defensive programming)
+    if (!apiKey?.trim()) {
+        throw new Error('API Key 不能为空')
+    }
+    if (!sceneDescription?.trim()) {
+        throw new Error('场景描述不能为空')
+    }
+
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.IMAGE // gemini-3-pro-image-preview
+
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: sceneDescription
+        })
+
+        // Extract inline image data from response
+        if (response.candidates && response.candidates[0]) {
+            const candidate = response.candidates[0]
+            const parts = candidate.content?.parts
+
+            if (parts) {
+                for (const part of parts) {
+                    if (part.inlineData) {
+                        // Return as data URL for direct use in <img> src
+                        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+                    }
+                }
+            }
+        }
+
+        // No image data found in response
+        throw new Error('图像生成失败：API 未返回图像数据')
+
+    } catch (error) {
+        console.error('[AI Client] Image generation failed:', error)
+        throw error instanceof Error ? error : new Error('图像生成失败')
+    }
+}
+
