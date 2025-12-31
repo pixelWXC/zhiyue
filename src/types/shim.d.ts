@@ -26,6 +26,7 @@ declare module 'webext-bridge' {
             { imageData: string },
             { text: string; result: string }
         >
+        'analyze-syntax': ProtocolWithReturn<{ text: string }, any>
 
         // Settings Messages
         'get-settings': ProtocolWithReturn<void, { apiKey?: string; theme?: string }>

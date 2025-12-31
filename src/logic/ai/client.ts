@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai'
 import { ANALYSIS_SYSTEM_PROMPT } from '../prompts/analysis'
 import { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from '../prompts/qa'
 import { OCR_PROMPT } from '../prompts/ocr'
+import { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from '../prompts/syntax-analysis'
 
 // Strict user-mandated model constants
 export const MODEL_NAMES = {
@@ -104,4 +105,37 @@ export async function recognizeTextFromImage(apiKey: string, base64Image: string
     })
 
     return response.text || ''
+}
+
+/**
+ * Generate a deep syntax analysis stream using Thinking Mode
+ * @param apiKey User API key
+ * @param text Text to analyze
+ */
+export async function createSyntaxStream(apiKey: string, text: string) {
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.PRO_THINKING
+
+    // High thinking level for deep structural analysis
+    const config: any = {
+        thinkingConfig: {
+            thinkingLevel: "high",
+            includeThoughts: false // We only want the final JSON
+        },
+        responseMimeType: 'application/json' // Enforce JSON mode if supported or just helps hint
+    }
+
+    return await ai.models.generateContentStream({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { text: SYNTAX_ANALYSIS_SYSTEM_PROMPT },
+                    { text: `Analyze this sentence: "${text}"` }
+                ]
+            }
+        ],
+        config
+    })
 }

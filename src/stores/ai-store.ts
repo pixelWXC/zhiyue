@@ -20,6 +20,14 @@ export interface AnalysisData {
     translation?: string
 }
 
+export interface SyntaxNode {
+    token: string
+    reading?: string
+    partOfSpeech: string
+    role: string
+    children: SyntaxNode[]
+}
+
 export interface AnalysisResult {
     id: string
     text: string
@@ -41,6 +49,10 @@ export const useAiStore = defineStore('ai', () => {
     const streamingText = ref('')
     const isStreaming = ref(false)
     const parsedData = ref<AnalysisData | null>(null)
+
+    // Syntax State
+    const syntaxData = ref<SyntaxNode | null>(null)
+    const isSyntaxLoading = ref(false)
 
     // Q&A State
     const selectedToken = ref<Token | null>(null)
@@ -100,6 +112,8 @@ export const useAiStore = defineStore('ai', () => {
         qaHistory.value = []
         qaStreamText.value = ''
         isQaStreaming.value = false
+        syntaxData.value = null
+        isSyntaxLoading.value = false
     }
 
     // Main Analysis Action with Port connection
@@ -262,6 +276,31 @@ export const useAiStore = defineStore('ai', () => {
         }
     }
 
+    // Syntax Analysis Action
+    async function analyzeSyntax(text: string) {
+        if (!text.trim()) return
+
+        isSyntaxLoading.value = true
+        syntaxData.value = null
+        error.value = null
+
+        try {
+            const { sendMessage } = await import('webext-bridge/popup')
+            const response = await sendMessage('analyze-syntax', { text }, 'background')
+
+            if (response.success && response.data) {
+                syntaxData.value = response.data
+            } else if (response.error) {
+                error.value = response.error
+            }
+        } catch (e) {
+            console.error('Syntax Analysis failed', e)
+            error.value = (e as Error).message
+        } finally {
+            isSyntaxLoading.value = false
+        }
+    }
+
     return {
         // State
         isLoading,
@@ -286,6 +325,11 @@ export const useAiStore = defineStore('ai', () => {
         clearHistory,
         removeFromHistory,
         clearResults,
+
+        // Syntax
+        syntaxData,
+        isSyntaxLoading,
+        analyzeSyntax,
 
         // Q&A
         selectedToken,

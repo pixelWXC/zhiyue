@@ -5,14 +5,18 @@ import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, AlertCircle, RotateCw, Trash2 } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2, Network } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
+import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import { onMessage } from 'webext-bridge/popup'
 
 // AI Store
 const aiStore = useAiStore()
-const { streamingText, isStreaming, parsedData, currentResult, error: aiError, selectedToken } = storeToRefs(aiStore)
+const { 
+    streamingText, isStreaming, parsedData, currentResult, error: aiError, selectedToken,
+    syntaxData, isSyntaxLoading
+} = storeToRefs(aiStore)
 
 // Test state
 const testMessage = ref('Hello from Side Panel!')
@@ -60,6 +64,16 @@ function handleSelectToken(token: any) {
 
 function handleBack() {
   aiStore.selectToken(null)
+}
+
+// Tab Logic
+const currentTab = ref<'analysis' | 'syntax'>('analysis')
+
+async function handleTabChange(tab: 'analysis' | 'syntax') {
+    currentTab.value = tab
+    if (tab === 'syntax' && !syntaxData.value && lastAnalyzedText.value) {
+        await aiStore.analyzeSyntax(lastAnalyzedText.value)
+    }
 }
 
 /**
@@ -143,11 +157,31 @@ onMessage('trigger-clipboard-read', async () => {
       
       <!-- AI Analysis Section -->
       <section>
-        <div class="flex items-center gap-2 mb-4">
-            <h2 class="text-sm font-semibold tracking-wide uppercase text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                <Sparkles class="w-4 h-4" /> 智能分析
-            </h2>
-            <div class="h-px bg-gray-200 dark:bg-zinc-800 flex-1"></div>
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold tracking-wide uppercase text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                    <Sparkles class="w-4 h-4" /> 智能分析
+                </h2>
+            </div>
+            
+            <!-- View Toggle -->
+            <div v-if="lastAnalyzedText" class="flex p-0.5 bg-gray-100 dark:bg-zinc-800 rounded-lg">
+                <button 
+                    @click="handleTabChange('analysis')"
+                    class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+                    :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                >
+                    分析
+                </button>
+                <button 
+                     @click="handleTabChange('syntax')"
+                     class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                     :class="currentTab === 'syntax' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                >
+                    <Network class="w-3 h-3" />
+                    句法
+                </button>
+            </div>
         </div>
 
         <div class="space-y-4">
@@ -171,7 +205,8 @@ onMessage('trigger-clipboard-read', async () => {
                 <div v-if="!isStreaming" class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-10 transition duration-500 blur"></div>
                 <div class="relative bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[100px]">
                     <div class="p-6">
-                        <div v-show="!selectedToken">
+                        <!-- Analysis View -->
+                        <div v-show="!selectedToken && currentTab === 'analysis'">
                             <AnalysisResult 
                                 :data="displayData" 
                                 :isLoading="isStreaming"
@@ -207,9 +242,25 @@ onMessage('trigger-clipboard-read', async () => {
                         </div>
 
                         <TokenDetail 
-                            v-if="selectedToken"
                             @back="handleBack"
                         />
+
+                        <!-- Syntax Tree View -->
+                        <div v-if="currentTab === 'syntax'" class="animate-in fade-in zoom-in-95 duration-300">
+                             <div v-if="isSyntaxLoading && !syntaxData" class="flex flex-col items-center justify-center py-12 text-gray-400">
+                                <RotateCw class="w-6 h-6 animate-spin mb-2 text-indigo-500" />
+                                <span class="text-xs">深度思考中...</span>
+                             </div>
+                             
+                             <SyntaxTree 
+                                v-else-if="syntaxData"
+                                :data="syntaxData"
+                             />
+                             
+                             <div v-else class="text-center py-8 text-gray-400 text-xs">
+                                暂无句法数据
+                             </div>
+                        </div>
                     </div>
                 </div>
             </div>

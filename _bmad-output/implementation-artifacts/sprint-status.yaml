@@ -35,7 +35,7 @@ story_location: "_bmad-output/implementation-artifacts"
 
 development_status:
   # Epic 1: Instant Analysis Companion
-  epic-1: in-progress
+  epic-1: done
   1-1-project-initialization-build-setup: done
   1-2-side-panel-ipc-bridge-architecture: done
   1-3-secure-settings-api-key-management: done
@@ -44,12 +44,12 @@ development_status:
   1-6-smart-selection-and-paste: done
   1-7-interactive-dictionary-q-a: done
   1-8-image-ocr-integration: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Deep Syntax Visualization
-  epic-2: backlog
-  2-1-gemini-pro-thinking-mode-service-integration: backlog
-  2-2-recursive-syntax-visualization-component: backlog
+  epic-2: in-progress
+  2-1-gemini-pro-thinking-mode-service-integration: done
+  2-2-recursive-syntax-visualization-component: review
   epic-2-retrospective: optional
 
   # Epic 3: Magical Memory Cards

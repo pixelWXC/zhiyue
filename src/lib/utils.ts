@@ -17,7 +17,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
             const result = reader.result as string
             // Remove the data:image/xxx;base64, prefix
             const parts = result.split(',')
-            const base64 = parts.length > 1 ? parts[1] : parts[0]
+            const base64 = (parts.length > 1 ? parts[1] : parts[0]) ?? ''
             resolve(base64)
         }
         reader.onerror = reject

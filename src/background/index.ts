@@ -200,7 +200,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // AI Streaming Handler (Native Ports)
 // ====================
 
-import { createAnalysisStream, createQaStream } from '../logic/ai/client'
+import { createAnalysisStream, createQaStream, createSyntaxStream } from '../logic/ai/client'
 
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name !== 'ai-stream') return
@@ -323,6 +323,56 @@ onMessage('analyze-text-content-script', async ({ data }) => {
 
     } catch (error) {
         console.error('❌ Analysis failed:', error)
+        return { success: false, error: (error as Error).message }
+    }
+})
+
+/**
+ * Deep Syntax Analysis Handler (Story 2-1)
+ * Buffers the stream from Gemini Pro and returns the full JSON tree
+ */
+onMessage('analyze-syntax', async ({ data }) => {
+    const { text } = data
+    console.log('🌳 Syntax Analysis requested for:', String(text).substring(0, 10))
+
+    try {
+        const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
+        const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
+        const apiKey = storageResult[API_KEY_STORAGE_KEY]
+
+        if (!apiKey) {
+            return { success: false, error: 'API Key missing' }
+        }
+
+        // Use new createSyntaxStream
+        const stream = await createSyntaxStream(String(apiKey), String(text))
+
+        // Accumulate full response
+        let fullText = ''
+        for await (const chunk of stream) {
+            if (chunk.text) fullText += chunk.text
+        }
+
+        console.log('🧠 Raw Syntax Response:', fullText.substring(0, 20) + '...')
+
+        // Parse JSON
+        let json: any
+        try {
+            // Attempt to find JSON block if wrapped
+            const jsonMatch = fullText.match(/```json\n([\s\S]*?)\n```/) || fullText.match(/\{[\s\S]*\}/)
+            const jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : fullText
+
+            const repaired = jsonrepair(jsonString)
+            json = JSON.parse(repaired)
+        } catch (e) {
+            console.error('JSON Parse Error:', e)
+            return { success: false, error: 'Failed to parse AI response' }
+        }
+
+        return { success: true, data: json }
+
+    } catch (error) {
+        console.error('❌ Syntax Analysis failed:', error)
         return { success: false, error: (error as Error).message }
     }
 })
