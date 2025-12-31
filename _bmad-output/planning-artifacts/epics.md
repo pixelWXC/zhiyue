@@ -139,7 +139,7 @@ So that I have the structured content needed to create a high-quality Anki card.
 ### Story 3.2: AI Illustration Generation Integration
 
 As a Developer,
-I want to connect to an image generation model (e.g., Nano Banana Pro via Gemini or external API) using the generated scene descriptions,
+I want to connect to an image generation model (using **gemini-3-pro-image-preview** via Gemini API) using the generated scene descriptions,
 So that I can create a unique visual aid for the flashcard.
 
 **Acceptance Criteria:**

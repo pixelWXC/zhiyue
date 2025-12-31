@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { jsonrepair } from 'jsonrepair'
+import type { FlashcardData } from '../types/card'
 
 export interface Token {
     word: string
@@ -59,6 +60,11 @@ export const useAiStore = defineStore('ai', () => {
     const qaHistory = ref<{ question: string, answer: string }[]>([])
     const isQaStreaming = ref(false)
     const qaStreamText = ref('')
+
+    // Card Generation State
+    const cardData = ref<FlashcardData | null>(null)
+    const isGeneratingCard = ref(false)
+    const cardError = ref<string | null>(null)
 
     // Getters
     const hasHistory = computed(() => history.value.length > 0)
@@ -114,6 +120,9 @@ export const useAiStore = defineStore('ai', () => {
         isQaStreaming.value = false
         syntaxData.value = null
         isSyntaxLoading.value = false
+        cardData.value = null
+        isGeneratingCard.value = false
+        cardError.value = null
     }
 
     // Main Analysis Action with Port connection
@@ -301,6 +310,57 @@ export const useAiStore = defineStore('ai', () => {
         }
     }
 
+    // Card Generation Action
+    async function generateCard(
+        sentence: string,
+        targetToken?: Token,
+        options?: { model?: 'flash' | 'pro', enablePerfLog?: boolean }
+    ) {
+        if (!sentence.trim()) return
+
+        isGeneratingCard.value = true
+        cardData.value = null
+        cardError.value = null
+
+        try {
+            // Import storage utility to get API key
+            const { getSettings } = await import('../logic/storage')
+            const settings = await getSettings()
+
+            if (!settings.apiKey) {
+                throw new Error('未配置 API Key，请先在设置中配置')
+            }
+
+            // Import and call card generator with options
+            const { generateCardContent } = await import('../logic/ai/card-generator')
+            const result = await generateCardContent(
+                settings.apiKey,
+                sentence,
+                targetToken,
+                options
+            )
+
+            cardData.value = result
+
+        } catch (e) {
+            console.error('[AI Store] Card generation failed', e)
+            cardError.value = (e as Error).message
+        } finally {
+            isGeneratingCard.value = false
+        }
+    }
+
+    /**
+     * Clear only card generation state
+     * Useful when user wants to generate a new card without clearing analysis results
+     */
+    function clearCardData() {
+        cardData.value = null
+        isGeneratingCard.value = false
+        cardError.value = null
+    }
+
+
     return {
         // State
         isLoading,
@@ -337,6 +397,13 @@ export const useAiStore = defineStore('ai', () => {
         isQaStreaming,
         qaStreamText,
         selectToken,
-        askQuestion
+        askQuestion,
+
+        // Card Generation
+        cardData,
+        isGeneratingCard,
+        cardError,
+        generateCard,
+        clearCardData
     }
 })

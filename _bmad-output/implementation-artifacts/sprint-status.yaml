@@ -47,14 +47,14 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: Deep Syntax Visualization
-  epic-2: in-progress
+  epic-2: done
   2-1-gemini-pro-thinking-mode-service-integration: done
-  2-2-recursive-syntax-visualization-component: review
-  epic-2-retrospective: optional
+  2-2-recursive-syntax-visualization-component: done
+  epic-2-retrospective: done
 
   # Epic 3: Magical Memory Cards
-  epic-3: backlog
-  3-1-magic-card-content-generation-service: backlog
+  epic-3: in-progress
+  3-1-magic-card-content-generation-service: done
   3-2-ai-illustration-generation-integration: backlog
   3-3-card-preview-ui-sketching-animation: backlog
   3-4-anki-export-format-tsv: backlog
