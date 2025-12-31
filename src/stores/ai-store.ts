@@ -5,6 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useClipboard } from '@vueuse/core'
 import { jsonrepair } from 'jsonrepair'
 import type { FlashcardData } from '../types/card'
 
@@ -414,6 +415,45 @@ export const useAiStore = defineStore('ai', () => {
         imageError.value = null
     }
 
+    /**
+     * Copy flashcard to clipboard in Anki TSV format
+     * @returns Promise<{ success: boolean, error?: string }>
+     */
+    async function copyCardToClipboard(): Promise<{ success: boolean, error?: string }> {
+        if (!cardData.value) {
+            return {
+                success: false,
+                error: '没有可导出的卡片数据'
+            }
+        }
+
+        try {
+            // Dynamically import the formatter
+            const { formatDataForAnki } = await import('../logic/anki/exporter')
+
+            // Format the card data into Anki TSV format
+            const tsvContent = formatDataForAnki(cardData.value, imageResult.value)
+
+            // Use VueUse's useClipboard for cross-browser compatibility
+            const { copy, isSupported } = useClipboard()
+
+            if (!isSupported.value) {
+                throw new Error('您的浏览器不支持剪贴板操作')
+            }
+
+            await copy(tsvContent)
+
+            return { success: true }
+        } catch (e) {
+            console.error('[AI Store] Copy to clipboard failed', e)
+            return {
+                success: false,
+                error: (e as Error).message
+            }
+        }
+    }
+
+
 
     return {
         // State
@@ -465,6 +505,9 @@ export const useAiStore = defineStore('ai', () => {
         imageResult,
         imageError,
         generateCardImage,
-        clearImageData
+        clearImageData,
+
+        // Anki Export
+        copyCardToClipboard
     }
 })

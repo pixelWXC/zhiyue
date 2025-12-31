@@ -30,4 +30,10 @@ export interface FlashcardData {
      * - white background
      */
     sceneDescription: string
+
+    /**
+     * Translation of the full sentence (Target Language -> Native Language)
+     * Essential for the back of the card to understand the context.
+     */
+    translation?: string
 }

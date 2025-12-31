@@ -5,7 +5,7 @@ import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, AlertCircle, RotateCw, Trash2, Network } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Check } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
@@ -77,12 +77,35 @@ async function handleGenerateCard() {
   
   showCardModal.value = true
   
-  // Generate card content
-  await aiStore.generateCard(lastAnalyzedText.value)
+  // Generate card content with context (selectedToken) if available
+  const targetToken = aiStore.selectedToken || undefined
+  await aiStore.generateCard(lastAnalyzedText.value, targetToken)
   
   // If card generation succeeded and has sceneDescription, generate image
   if (aiStore.cardData?.sceneDescription) {
     await aiStore.generateCardImage(aiStore.cardData.sceneDescription)
+  }
+}
+
+// Toast State
+const toast = ref<{ message: string, type: 'success' | 'error' | null }>({ message: '', type: null })
+let toastTimeout: any = null
+
+function showToast(message: string, type: 'success' | 'error' = 'success') {
+    if (toastTimeout) clearTimeout(toastTimeout)
+    toast.value = { message, type }
+    toastTimeout = setTimeout(() => {
+        toast.value.message = ''
+        toast.value.type = null
+    }, 3000)
+}
+
+async function handleExportCard() {
+  const result = await aiStore.copyCardToClipboard()
+  if (result.success) {
+    showToast('已复制到剪贴板，可直接导入 Anki', 'success')
+  } else {
+    showToast(`导出失败: ${result.error}`, 'error')
   }
 }
 
@@ -373,9 +396,22 @@ onMessage('trigger-clipboard-read', async () => {
             :image="imageResult"
             :error="cardError || imageError"
             @retry="handleRetryCard"
+            @export="handleExportCard"
           />
         </div>
       </div>
+    </Transition>
+
+    <!-- Toast Notification -->
+    <Transition name="toast">
+        <div v-if="toast.message" 
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg font-medium text-sm z-[100] flex items-center gap-2"
+             :class="toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'"
+        >
+            <Check v-if="toast.type === 'success'" class="w-4 h-4" />
+            <AlertCircle v-else class="w-4 h-4" />
+            {{ toast.message }}
+        </div>
     </Transition>
   </div>
 </template>
@@ -390,5 +426,17 @@ onMessage('trigger-clipboard-read', async () => {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+}
+
+/* Toast Transition */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
 }
 </style>

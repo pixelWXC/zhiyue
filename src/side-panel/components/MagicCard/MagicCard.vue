@@ -56,6 +56,12 @@
           <p class="field-value">{{ data.meaning }}</p>
         </div>
 
+        <!-- Translation (New) -->
+        <div v-if="data.translation" class="card-field">
+          <label class="field-label">翻译</label>
+          <p class="field-value">{{ data.translation }}</p>
+        </div>
+
         <!-- Sentence -->
         <div class="card-field">
           <label class="field-label">例句</label>
@@ -72,9 +78,9 @@
       <!-- Footer Actions (for Story 3.4) -->
       <div class="card-footer">
         <button
-          disabled
-          class="export-button"
-          title="导出功能即将推出"
+          @click="$emit('export')"
+          class="export-button active"
+          title="导出到 Anki (TSV 格式)"
         >
           <Download class="w-4 h-4" />
           导出 Anki
@@ -106,6 +112,7 @@ defineProps<Props>()
 
 defineEmits<{
   retry: []
+  export: []
 }>()
 
 </script>
@@ -143,8 +150,7 @@ defineEmits<{
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  px: 16px;
-  py: 8px;
+  padding: 8px 16px;
   background: #fbbf24;
   color: white;
   border: none;
@@ -204,7 +210,9 @@ defineEmits<{
 /* Card Content */
 .card-content {
   padding: 24px;
-  space-y: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .card-field {
@@ -280,16 +288,25 @@ defineEmits<{
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  px: 12px;
-  py: 6px;
+  padding: 6px 12px;
   background: #e5e7eb;
-  color: #9ca3af;
+  color: #4b5563;
   border: none;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-button:hover {
+  background: #d1d5db;
+  color: #1f2937;
+}
+
+.export-button.active {
+  /* Active logic handled by hover above, just ensuring base is good */
+
 }
 
 /* Empty State */

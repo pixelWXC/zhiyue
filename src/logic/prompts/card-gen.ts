@@ -12,6 +12,7 @@ export const CARD_GEN_SYSTEM_PROMPT = `你是一位资深的日语教学课程�
   "targetWord": "目标词汇（日语原文）",
   "reading": "假名读音（平假名/片假名）",
   "sentence": "完整例句（原文）",
+  "translation": "例句的中文翻译",
   "meaning": "词汇含义（简洁、聚焦于句子上下文）",
   "hint": "学习提示（相关语法点、用法注意事项、记忆技巧等）",
   "sceneDescription": "场景描述（用于生成插图，见下文详细要求）"
@@ -47,7 +48,8 @@ export const CARD_GEN_SYSTEM_PROMPT = `你是一位资深的日语教学课程�
 
 1. 所有字段必须完整填写，不得留空
 2. reading 必须是假名形式（不要罗马字）
-3. meaning 限制在 30 字以内，简洁准确
+3. translation 必须提供准确自然的中文翻译
+4. meaning 限制在 30 字以内，简洁准确
 4. hint 应该实用且有助于记忆，可以包含：
    - 语法点（如「～ている 表示正在进行」）
    - 常见搭配（如「友達と話す」）
@@ -76,18 +78,18 @@ export const CARD_GEN_SYSTEM_PROMPT = `你是一位资深的日语教学课程�
  * ```
  */
 export function CARD_GEN_USER_PROMPT(sentence: string, targetWord?: string): string {
-    if (targetWord) {
-        return `请从以下句子中，为目标词汇「${targetWord}」生成完整的学习卡片数据：
+  if (targetWord) {
+    return `请从以下句子中，为目标词汇「${targetWord}」生成完整的学习卡片数据：
 
 **句子**：${sentence}
 **目标词汇**：${targetWord}
 
 请按照系统指令中的 JSON 格式输出。`
-    } else {
-        return `请从以下句子中，选择一个核心词汇（通常是动词、形容词或名词），并为其生成完整的学习卡片数据：
+  } else {
+    return `请从以下句子中，选择一个核心词汇（通常是动词、形容词或名词），并为其生成完整的学习卡片数据：
 
 **句子**：${sentence}
 
 请按照系统指令中的 JSON 格式输出。`
-    }
+  }
 }

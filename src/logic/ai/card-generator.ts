@@ -115,6 +115,7 @@ export async function generateCardContent(
             'targetWord',
             'reading',
             'sentence',
+            'translation',
             'meaning',
             'hint',
             'sceneDescription'
