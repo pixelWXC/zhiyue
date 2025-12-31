@@ -9,13 +9,16 @@ import { Sparkles, AlertCircle, RotateCw, Trash2, Network } from 'lucide-vue-nex
 import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
+import MagicCard from './components/MagicCard/MagicCard.vue'
 import { onMessage } from 'webext-bridge/popup'
 
 // AI Store
 const aiStore = useAiStore()
 const { 
     streamingText, isStreaming, parsedData, currentResult, error: aiError, selectedToken,
-    syntaxData, isSyntaxLoading
+    syntaxData, isSyntaxLoading,
+    cardData, isGeneratingCard, cardError,
+    imageResult, imageError
 } = storeToRefs(aiStore)
 
 // Test state
@@ -64,6 +67,31 @@ function handleSelectToken(token: any) {
 
 function handleBack() {
   aiStore.selectToken(null)
+}
+
+// Card Generation Logic
+const showCardModal = ref(false)
+
+async function handleGenerateCard() {
+  if (!lastAnalyzedText.value) return
+  
+  showCardModal.value = true
+  
+  // Generate card content
+  await aiStore.generateCard(lastAnalyzedText.value)
+  
+  // If card generation succeeded and has sceneDescription, generate image
+  if (aiStore.cardData?.sceneDescription) {
+    await aiStore.generateCardImage(aiStore.cardData.sceneDescription)
+  }
+}
+
+function handleCloseCard() {
+  showCardModal.value = false
+}
+
+function handleRetryCard() {
+  handleGenerateCard()
 }
 
 // Tab Logic
@@ -210,7 +238,8 @@ onMessage('trigger-clipboard-read', async () => {
                             <AnalysisResult 
                                 :data="displayData" 
                                 :isLoading="isStreaming"
-                                @select-token="handleSelectToken" 
+                                @select-token="handleSelectToken"
+                                @generate-card="handleGenerateCard"
                             />
                             
                              <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
@@ -316,5 +345,50 @@ onMessage('trigger-clipboard-read', async () => {
       </section>
 
     </main>
+
+    <!-- Magic Card Modal -->
+    <Transition name="modal">
+      <div
+        v-if="showCardModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        @click.self="handleCloseCard"
+      >
+        <div class="relative max-w-[420px] w-full animate-in zoom-in-95 duration-300">
+          <!-- Close Button -->
+          <button
+            @click="handleCloseCard"
+            class="absolute -top-10 right-0 p-2 text-white hover:text-gray-300 transition-colors"
+            title="关闭"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          <!-- Magic Card Component -->
+          <MagicCard
+            :data="cardData"
+            :isLoading="isGeneratingCard"
+            :image="imageResult"
+            :error="cardError || imageError"
+            @retry="handleRetryCard"
+          />
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+/* Modal Transition */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+</style>
