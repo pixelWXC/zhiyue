@@ -1,30 +1,30 @@
 /**
- * System Prompt Templates
- * All LLM prompts must be defined here as constants
+ * System Prompt Templates - Unified Export
  * 
- * Architecture Rule: Never hardcode prompts in components
+ * All LLM prompts are defined in separate files and re-exported here.
+ * The PromptService provides runtime access with customization support.
+ * 
+ * Architecture Rules:
+ * - Never hardcode prompts in components
+ * - Use PromptService for runtime prompt access (supports user customization)
+ * - Import from this index for static prompt constants
  */
 
-/**
- * Text analysis prompt template
- */
-export const TEXT_ANALYSIS_PROMPT = `あなたは日本語学習者のための親切な分析アシスタントです。
+// Re-export all prompt constants
+export { ANALYSIS_SYSTEM_PROMPT, ANALYSIS_USER_PROMPT } from './analysis'
+export { CARD_GEN_SYSTEM_PROMPT, CARD_GEN_USER_PROMPT } from './card-gen'
+export { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from './qa'
+export { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
+export { OCR_PROMPT } from './ocr'
 
-以下のテキストを分析してください：
-{text}
+// Re-export PromptService and utilities
+export {
+    PromptService,
+    promptService,
+    usePromptService,
+    PROMPT_KEYS,
+    PROMPT_METADATA,
+    type PromptKey,
+    type PromptMetadata,
+} from './prompt-service'
 
-以下の形式で応答してください：
-- 文法ポイント
-- 重要な語彙
-- 文化的な文脈
-` as const
-
-/**
- * Image OCR prompt (placeholder)
- */
-export const IMAGE_OCR_PROMPT = `画像からテキストを抽出して分析してください。` as const
-
-/**
- * Magic card generation prompt (placeholder)
- */
-export const CARD_GENERATION_PROMPT = `この文から記憶カードを生成してください：{sentence}` as const

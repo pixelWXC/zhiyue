@@ -12,6 +12,7 @@ defineProps<{
   visible: boolean
   x: number
   y: number
+  hasApiKey?: boolean
 }>()
 
 // 悬浮状态
@@ -37,7 +38,7 @@ const isExpanded = ref(false)
         width: isExpanded ? 'auto' : '40px',
         height: '40px',
         borderRadius: isExpanded ? '9999px' : '50%',
-        background: 'linear-gradient(135deg, rgb(59, 130, 246), rgb(79, 70, 229))',
+        background: hasApiKey ? 'linear-gradient(135deg, rgb(59, 130, 246), rgb(79, 70, 229))' : 'linear-gradient(135deg, rgb(245, 158, 11), rgb(234, 88, 12))',
       }"
     >
       <!-- Logo 图标 -->
@@ -53,23 +54,38 @@ const isExpanded = ref(false)
           width: isExpanded ? 'auto' : '0px',
         }"
       >
-        <!-- 分析按钮 -->
-        <button
-          @click="$emit('analyze')"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
-        >
-          <Sparkles class="w-3.5 h-3.5" />
-          <span>分析</span>
-        </button>
+        <template v-if="hasApiKey">
+            <!-- 分析按钮 -->
+            <button
+            @click="$emit('analyze')"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+            >
+            <Sparkles class="w-3.5 h-3.5" />
+            <span>分析</span>
+            </button>
 
-        <!-- 解释按钮 -->
-        <button
-          @click="$emit('explain')"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
-        >
-          <MessageSquare class="w-3.5 h-3.5" />
-          <span>解释</span>
-        </button>
+            <!-- 解释按钮 -->
+            <button
+            @click="$emit('explain')"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+            >
+            <MessageSquare class="w-3.5 h-3.5" />
+            <span>解释</span>
+            </button>
+        </template>
+        
+        <template v-else>
+             <!-- 配置按钮 -->
+            <div class="flex items-center gap-2">
+                 <span class="text-xs text-white/90 whitespace-nowrap font-medium">未配置 API Key</span>
+                 <button
+                    @click="$emit('analyze')"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white hover:text-orange-600 text-white transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+                    >
+                    <span>去配置</span>
+                 </button>
+            </div>
+        </template>
 
         <!-- 关闭按钮 -->
         <button

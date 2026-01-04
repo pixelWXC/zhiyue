@@ -1,8 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
-import { ANALYSIS_SYSTEM_PROMPT } from '../prompts/analysis'
-import { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from '../prompts/qa'
-import { OCR_PROMPT } from '../prompts/ocr'
-import { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from '../prompts/syntax-analysis'
+import { QA_USER_PROMPT } from '../prompts/qa'
+import { promptService, PROMPT_KEYS } from '../prompts/prompt-service'
 
 // Strict user-mandated model constants
 export const MODEL_NAMES = {
@@ -39,13 +37,16 @@ export async function createAnalysisStream(apiKey: string, text: string, mode: '
         }
     }
 
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.ANALYSIS_SYSTEM)
+
     return await ai.models.generateContentStream({
         model,
         contents: [
             {
                 role: 'user',
                 parts: [
-                    { text: ANALYSIS_SYSTEM_PROMPT },
+                    { text: systemPrompt },
                     { text: `Please analyze this text: "${text}"` }
                 ]
             }
@@ -61,13 +62,16 @@ export async function createQaStream(apiKey: string, sentence: string, token: st
     const ai = getClient(apiKey)
     const model = MODEL_NAMES.FLASH // Use Flash for Q&A speed
 
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.QA_SYSTEM)
+
     return await ai.models.generateContentStream({
         model,
         contents: [
             {
                 role: 'user',
                 parts: [
-                    { text: QA_SYSTEM_PROMPT },
+                    { text: systemPrompt },
                     { text: QA_USER_PROMPT(sentence, token, question) }
                 ]
             }
@@ -86,6 +90,9 @@ export async function recognizeTextFromImage(apiKey: string, base64Image: string
     const ai = getClient(apiKey)
     const model = MODEL_NAMES.FLASH // Use Flash for cost efficiency
 
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.OCR)
+
     const response = await ai.models.generateContent({
         model,
         contents: [
@@ -98,7 +105,7 @@ export async function recognizeTextFromImage(apiKey: string, base64Image: string
                             data: base64Image
                         }
                     },
-                    { text: OCR_PROMPT }
+                    { text: systemPrompt }
                 ]
             }
         ]
@@ -116,6 +123,9 @@ export async function createSyntaxStream(apiKey: string, text: string) {
     const ai = getClient(apiKey)
     const model = MODEL_NAMES.PRO_THINKING
 
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.SYNTAX_ANALYSIS_SYSTEM)
+
     // High thinking level for deep structural analysis
     const config: any = {
         thinkingConfig: {
@@ -131,7 +141,7 @@ export async function createSyntaxStream(apiKey: string, text: string) {
             {
                 role: 'user',
                 parts: [
-                    { text: SYNTAX_ANALYSIS_SYSTEM_PROMPT },
+                    { text: systemPrompt },
                     { text: `Analyze this sentence: "${text}"` }
                 ]
             }

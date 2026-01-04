@@ -4,7 +4,8 @@
  */
 
 import { getClient, MODEL_NAMES } from './client'
-import { CARD_GEN_SYSTEM_PROMPT, CARD_GEN_USER_PROMPT } from '../prompts/card-gen'
+import { CARD_GEN_USER_PROMPT } from '../prompts/card-gen'
+import { promptService, PROMPT_KEYS } from '../prompts/prompt-service'
 import type { FlashcardData } from '../../types/card'
 import { jsonrepair } from 'jsonrepair'
 import type { Token } from '../../stores/ai-store'
@@ -66,13 +67,16 @@ export async function generateCardContent(
     const perfStart = enablePerfLog ? performance.now() : 0
 
     try {
+        // Load dynamic prompt
+        const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.CARD_GEN_SYSTEM)
+
         const response = await ai.models.generateContent({
             model,
             contents: [
                 {
                     role: 'user',
                     parts: [
-                        { text: CARD_GEN_SYSTEM_PROMPT },
+                        { text: systemPrompt },
                         { text: CARD_GEN_USER_PROMPT(sentence, targetToken?.word) }
                     ]
                 }

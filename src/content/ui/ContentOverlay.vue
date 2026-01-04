@@ -4,6 +4,7 @@ import SelectionBubble from './SelectionBubble.vue'
 import AnalysisModal from './AnalysisModal.vue'
 import type { AnalysisData } from '@/stores/ai-store'
 import { jsonrepair } from 'jsonrepair'
+import { STORAGE_KEYS } from '@/logic/storage'
 
 // State
 const bubbleVisible = ref(false)
@@ -77,16 +78,45 @@ const onMouseUp = () => {
     setTimeout(handleSelection, 10)
 }
 
+// Actions - Streaming Analysis
+const hasApiKey = ref(false)
+
+const checkApiKey = async () => {
+    try {
+        // Use local storage as defined in logic/storage
+        const result = await chrome.storage.local.get(STORAGE_KEYS.API_KEY)
+        hasApiKey.value = !!result[STORAGE_KEYS.API_KEY]
+    } catch (e) {
+        console.warn('Failed to check API key', e)
+        hasApiKey.value = false
+    }
+}
+
+// Listen for storage changes
+const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+    if (areaName === 'local' && changes[STORAGE_KEYS.API_KEY]) {
+        hasApiKey.value = !!changes[STORAGE_KEYS.API_KEY]?.newValue
+    }
+}
+
 onMounted(() => {
     document.addEventListener('mouseup', onMouseUp)
+    checkApiKey()
+    chrome.storage.onChanged.addListener(onStorageChange)
 })
 
 onUnmounted(() => {
     document.removeEventListener('mouseup', onMouseUp)
+    chrome.storage.onChanged.removeListener(onStorageChange)
 })
 
-// Actions - Streaming Analysis
 const onAnalyze = async () => {
+    // If no API key, open side panel directly (which will likely show settings or error)
+    if (!hasApiKey.value) {
+        onOpenSidePanel()
+        return
+    }
+
     bubbleVisible.value = false
     modalVisible.value = true
     isStreaming.value = true
@@ -271,6 +301,7 @@ async function handleAskQuestion(question: string) {
         :visible="bubbleVisible" 
         :x="bubbleX" 
         :y="bubbleY"
+        :has-api-key="hasApiKey"
         @analyze="onAnalyze"
         @explain="onExplain"
         @close="bubbleVisible = false"

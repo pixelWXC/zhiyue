@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { pingBackground } from '../lib/ipc'
-import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Check } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Check, Settings as SettingsIcon, Home } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import MagicCard from './components/MagicCard/MagicCard.vue'
+import Settings from './components/Settings/Settings.vue'
 import { onMessage } from 'webext-bridge/popup'
+
+// View Management
+const currentView = ref<'home' | 'settings'>('home')
 
 // AI Store
 const aiStore = useAiStore()
@@ -20,11 +22,6 @@ const {
     cardData, isGeneratingCard, cardError,
     imageResult, imageError
 } = storeToRefs(aiStore)
-
-// Test state
-const testMessage = ref('Hello from Side Panel!')
-const testResult = ref('')
-const isPingLoading = ref(false)
 
 // Store last analyzed text for retry
 const lastAnalyzedText = ref('')
@@ -127,22 +124,7 @@ async function handleTabChange(tab: 'analysis' | 'syntax') {
     }
 }
 
-/**
- * Test ping-pong communication
- */
-async function testPing() {
-  isPingLoading.value = true
-  testResult.value = '发送中...'
-  
-  try {
-    const response = await pingBackground(testMessage.value)
-    testResult.value = `✅ 成功！\n响应: ${response.pong}\n延迟: ${Date.now() - response.receivedAt}ms`
-  } catch (error) {
-    testResult.value = `❌ 错误: ${error}`
-  } finally {
-    isPingLoading.value = false
-  }
-}
+
 
 // Check for pending analysis on mount (from Open in Side Panel)
 onMounted(async () => {
@@ -196,15 +178,31 @@ onMessage('trigger-clipboard-read', async () => {
           <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">即时分析助手</p>
         </div>
         <div class="flex items-center gap-2">
-            <button class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full text-gray-400 transition-colors">
-                <span class="sr-only">菜单</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            <button 
+              @click="currentView = 'home'"
+              :class="currentView === 'home' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              class="p-2 rounded-lg transition-colors"
+              title="主页"
+            >
+              <Home class="w-5 h-5" />
+            </button>
+            <button 
+              @click="currentView = 'settings'"
+              :class="currentView === 'settings' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              class="p-2 rounded-lg transition-colors"
+              title="设置"
+            >
+              <SettingsIcon class="w-5 h-5" />
             </button>
         </div>
       </div>
     </header>
 
-    <main class="p-6 max-w-2xl mx-auto space-y-8">
+    <!-- Settings View -->
+    <Settings v-if="currentView === 'settings'" />
+
+    <!-- Main Analysis View -->
+    <main v-else class="p-6 max-w-2xl mx-auto space-y-8">
       
       <!-- AI Analysis Section -->
       <section>
@@ -315,54 +313,6 @@ onMessage('trigger-clipboard-read', async () => {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-      </section>
-
-      <!-- Configuration Section -->
-      <section>
-        <div class="flex items-center gap-2 mb-4">
-            <h2 class="text-sm font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">配置</h2>
-            <div class="h-px bg-gray-200 dark:bg-zinc-800 flex-1"></div>
-        </div>
-        <ApiKeyInput />
-      </section>
-
-      <!-- Dev / Debug Section -->
-      <section class="opacity-80 hover:opacity-100 transition-opacity">
-        <div class="flex items-center gap-2 mb-4">
-            <h2 class="text-sm font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">系统状态</h2>
-            <div class="h-px bg-gray-200 dark:bg-zinc-800 flex-1"></div>
-        </div>
-        
-        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-4 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-sm font-medium">IPC 通信连接</span>
-                <span 
-                    class="w-2.5 h-2.5 rounded-full"
-                    :class="testResult.includes('✅') ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-amber-500'"
-                ></span>
-            </div>
-            
-            <div class="flex gap-2">
-                <input
-                  v-model="testMessage"
-                  type="text"
-                  placeholder="Ping 消息..."
-                  class="flex-1 px-3 py-1.5 text-xs border border-gray-200 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  @keydown.enter="testPing"
-                />
-                <button
-                  @click="testPing"
-                  :disabled="isPingLoading"
-                  class="px-3 py-1.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-xs font-medium rounded transition-colors"
-                >
-                  发送 Ping
-                </button>
-            </div>
-            
-            <div v-if="testResult" class="mt-3 p-2 bg-gray-50 dark:bg-zinc-950 rounded border border-gray-100 dark:border-zinc-800">
-                <pre class="text-[10px] font-mono whitespace-pre-wrap text-gray-600 dark:text-gray-300">{{ testResult }}</pre>
             </div>
         </div>
       </section>

@@ -53,10 +53,18 @@ development_status:
   epic-2-retrospective: done
 
   # Epic 3: Magical Memory Cards
-  epic-3: in-progress
+  epic-3: done
   3-1-magic-card-content-generation-service: done
   3-2-ai-illustration-generation-integration: done
   3-3-card-preview-ui-sketching-animation: done
   3-4-anki-export-format-tsv: done
   epic-3-retrospective: optional
+
+  # Epic 4: Polishing & UX Refinement
+  epic-4: in-progress
+  4-1-system-settings-prompt-management: done
+  4-2-bubble-ui-simplification-sidebar-migration: backlog
+  4-3-rapid-ai-services-translation-token-detail: backlog
+  4-4-anki-export-strategy-refactor: backlog
+  4-5-ui-visual-enhancements: backlog
 
