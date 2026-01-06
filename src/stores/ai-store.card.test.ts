@@ -28,9 +28,18 @@ vi.mock('../logic/ai/card-generator', () => ({
 }))
 
 describe('AI Store - Card Generation', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         setActivePinia(createPinia())
         vi.clearAllMocks()
+
+        // Reset storage mock to default success state
+        const { getSettings } = await import('../logic/storage')
+            ; (getSettings as any).mockResolvedValue({
+                apiKey: 'test-api-key',
+                theme: 'auto',
+                autoCapture: true,
+                preferredModel: 'flash'
+            })
     })
 
     describe('初始状态', () => {

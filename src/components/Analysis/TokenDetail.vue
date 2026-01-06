@@ -2,8 +2,10 @@
 import { ref, watch, nextTick, computed } from 'vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Send, BookOpen, ExternalLink, ArrowLeft, Bot, User } from 'lucide-vue-next'
+import { Send, BookOpen, ExternalLink, ArrowLeft, Bot, User, Sparkles, X } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
+import WordCard from '@/side-panel/components/MagicCard/WordCard.vue'
+import type { WordContext } from '@/logic/prompts'
 
 // Props for content script mode (optional)
 interface Props {
@@ -47,6 +49,22 @@ const qaStreamText = computed(() => isContentScriptMode.value ? (props.externalQ
 
 const questionInput = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
+const showWordCard = ref(false)
+
+const wordCardContext = computed<WordContext | null>(() => {
+    if (!selectedToken.value) return null
+    // Use rapid detail meaning if available and original is missing/empty, or combine?
+    // Using selectedToken.meaning (original) is safer for context, but rapid detail might be better.
+    // Let's prefer original meaning from analysis if present, else rapid detail.
+    const meaning = selectedToken.value.meaning || props.tokenDetailData?.definition || ''
+    
+    return {
+        word: selectedToken.value.word,
+        kana: selectedToken.value.reading || props.tokenDetailData?.pronunciation || '',
+        meaning: meaning,
+        sentence: aiStore.currentResult?.text || ''
+    }
+})
 
 // Auto-scroll to bottom when chat updates
 watch([qaHistory, qaStreamText], async () => {
@@ -138,13 +156,23 @@ function speakJapanese(text: string): void {
                 </div>
             </div>
             
-            <!-- Dict Links -->
-            <div class="flex flex-col gap-1.5">
-                <button @click="openDictionary('jisho')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
-                    <BookOpen class="w-3.5 h-3.5" /> Jisho
-                </button>
-                <button @click="openDictionary('weblio')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
-                    <ExternalLink class="w-3.5 h-3.5" /> Weblio
+            <!-- Dict Links & Magic Card -->
+            <div class="flex flex-col gap-1.5 items-end">
+                <div class="flex gap-1.5">
+                    <button @click="openDictionary('jisho')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+                        <BookOpen class="w-3.5 h-3.5" /> Jisho
+                    </button>
+                    <button @click="openDictionary('weblio')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
+                        <ExternalLink class="w-3.5 h-3.5" /> Weblio
+                    </button>
+                </div>
+                 <!-- Magic Card Button -->
+                <button 
+                    @click="showWordCard = true" 
+                    title="生成单词魔法卡片"
+                    class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 rounded border border-transparent shadow-sm transition-all"
+                >
+                    <Sparkles class="w-3.5 h-3.5" /> 魔法卡片
                 </button>
             </div>
         </div>
@@ -277,6 +305,23 @@ function speakJapanese(text: string): void {
                 >
                     <Send class="w-4 h-4" />
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Card Modal Overlay -->
+    <div v-if="showWordCard && wordCardContext" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
+            <button 
+                @click="showWordCard = false"
+                class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors z-10"
+            >
+                <X class="w-5 h-5" />
+            </button>
+            
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-center mb-4 text-zinc-800 dark:text-zinc-100">单词魔法卡片</h3>
+                <WordCard :context="wordCardContext" />
             </div>
         </div>
     </div>

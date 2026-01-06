@@ -8,6 +8,7 @@ import { ref, computed } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import { jsonrepair } from 'jsonrepair'
 import type { FlashcardData } from '../types/card'
+import type { WordContext } from '../logic/prompts'
 
 export interface Token {
     word: string
@@ -76,6 +77,11 @@ export const useAiStore = defineStore('ai', () => {
     const isSentenceCardGenerating = ref(false)
     const sentenceCardImage = ref<string | null>(null) // Base64 data URL
     const sentenceCardError = ref<string | null>(null)
+
+    // Word Card State
+    const isWordCardGenerating = ref(false)
+    const wordCardImage = ref<string | null>(null) // Base64 data URL
+    const wordCardError = ref<string | null>(null)
 
     // Rapid Services State
     const rapidTranslationText = ref('')
@@ -631,6 +637,37 @@ export const useAiStore = defineStore('ai', () => {
         sentenceCardError.value = null
     }
 
+    /**
+     * Generate word magic card image
+     */
+    async function generateWordCard(context: WordContext): Promise<void> {
+        isWordCardGenerating.value = true
+        wordCardImage.value = null
+        wordCardError.value = null
+
+        try {
+            const { getSettings } = await import('../logic/storage')
+            const settings = await getSettings()
+            if (!settings.apiKey) throw new Error('未配置 API Key')
+
+            const { generateWordImage } = await import('../logic/ai/card-generator')
+            const imageDataUrl = await generateWordImage(settings.apiKey, context)
+
+            wordCardImage.value = imageDataUrl
+        } catch (e) {
+            console.error('[AI Store] Word card generation failed', e)
+            wordCardError.value = (e as Error).message
+        } finally {
+            isWordCardGenerating.value = false
+        }
+    }
+
+    function clearWordCard() {
+        wordCardImage.value = null
+        isWordCardGenerating.value = false
+        wordCardError.value = null
+    }
+
 
 
     return {
@@ -701,6 +738,13 @@ export const useAiStore = defineStore('ai', () => {
         sentenceCardError,
         generateSentenceCard,
         clearSentenceCard,
+
+        // Word Card
+        isWordCardGenerating,
+        wordCardImage,
+        wordCardError,
+        generateWordCard,
+        clearWordCard,
 
         // Anki Export
         copyCardToClipboard

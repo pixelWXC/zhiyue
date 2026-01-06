@@ -18,6 +18,7 @@ import { OCR_PROMPT } from './ocr'
 import { RAPID_TRANSLATION_PROMPT } from './rapid-translation'
 import { TOKEN_DETAIL_PROMPT } from './token-detail'
 import { SENTENCE_CARD_IMAGE_PROMPT } from './sentence-card'
+import { WORD_CARD_IMAGE_PROMPT } from './word-card'
 
 /**
  * Prompt identifiers for storage and management
@@ -31,6 +32,7 @@ export const PROMPT_KEYS = {
     RAPID_TRANSLATION: 'rapid_translation',
     TOKEN_DETAIL: 'token_detail',
     SENTENCE_CARD_IMAGE: 'sentence_card_image',
+    WORD_CARD_IMAGE: 'word_card_image',
 } as const
 
 export type PromptKey = typeof PROMPT_KEYS[keyof typeof PROMPT_KEYS]
@@ -106,6 +108,13 @@ export const PROMPT_METADATA: PromptMetadata[] = [
         category: '卡片',
         isJsonOutput: false,
     },
+    {
+        id: PROMPT_KEYS.WORD_CARD_IMAGE,
+        name: '单词魔法卡片图片',
+        description: '生成单词的手绘卡通风格场景图片提示',
+        category: '卡片',
+        isJsonOutput: false,
+    },
 ]
 
 /**
@@ -125,6 +134,7 @@ const DEFAULT_PROMPTS: Record<PromptKey, string> = {
     [PROMPT_KEYS.RAPID_TRANSLATION]: RAPID_TRANSLATION_PROMPT,
     [PROMPT_KEYS.TOKEN_DETAIL]: TOKEN_DETAIL_PROMPT,
     [PROMPT_KEYS.SENTENCE_CARD_IMAGE]: SENTENCE_CARD_IMAGE_PROMPT,
+    [PROMPT_KEYS.WORD_CARD_IMAGE]: WORD_CARD_IMAGE_PROMPT,
 }
 
 /**

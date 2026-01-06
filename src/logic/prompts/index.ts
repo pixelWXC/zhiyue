@@ -17,6 +17,7 @@ export { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from './qa'
 export { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
 export { OCR_PROMPT } from './ocr'
 export { SENTENCE_CARD_IMAGE_PROMPT, buildSentenceCardPrompt } from './sentence-card'
+export { WORD_CARD_IMAGE_PROMPT, buildWordCardPrompt, type WordContext } from './word-card'
 
 // Re-export PromptService and utilities
 export {

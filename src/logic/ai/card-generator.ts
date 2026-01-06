@@ -187,3 +187,36 @@ export async function generateSentenceImage(
         throw error instanceof Error ? error : new Error('整句卡片图片生成失败')
     }
 }
+
+/**
+ * Generate word magic card image from word context
+ * @param apiKey - User's Gemini API key for authentication
+ * @param context - Word context including word, pronunciation, meaning, and sentence
+ * @returns Promise resolving to base64 data URL of the generated image
+ * @throws Error if API call fails
+ */
+export async function generateWordImage(
+    apiKey: string,
+    context: import('../prompts/word-card').WordContext
+): Promise<string> {
+    try {
+        // Load user-configured prompt template (or default)
+        const template = await promptService.getPrompt(PROMPT_KEYS.WORD_CARD_IMAGE)
+
+        // Import builder
+        const { buildWordCardPrompt } = await import('../prompts/word-card')
+
+        // Build prompt
+        const finalPrompt = buildWordCardPrompt(template, context)
+
+        // Call image generation AI service
+        const { generateImage } = await import('./client')
+        const imageDataUrl = await generateImage(apiKey, finalPrompt)
+
+        return imageDataUrl
+
+    } catch (error) {
+        console.error('[Card Gen] ❌ Word image generation failed:', error)
+        throw error instanceof Error ? error : new Error('单词卡片图片生成失败')
+    }
+}
