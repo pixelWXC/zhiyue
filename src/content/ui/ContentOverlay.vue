@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import SelectionBubble from './SelectionBubble.vue'
 import AnalysisModal from './AnalysisModal.vue'
+import SentenceCardOverlay from './SentenceCardOverlay.vue'
 import type { AnalysisData } from '@/stores/ai-store'
 import { jsonrepair } from 'jsonrepair'
 import { STORAGE_KEYS } from '@/logic/storage'
@@ -22,6 +23,20 @@ const rapidTranslationEnabled = ref(true) // Default enabled
 const rapidTranslationText = ref('')
 const isRapidTranslating = ref(false)
 const rapidTranslationError = ref('')
+
+// Sentence Card Overlay State
+const sentenceCardVisible = ref(false)
+const sentenceCardImage = ref('')
+
+// Watch for overlay visibility to toggle host pointer-events
+watch(sentenceCardVisible, (newValue) => {
+    const host = document.getElementById('zhiyue-extension-host')
+    if (host) {
+        // When overlay is visible, enable pointer events on host to ensure interaction
+        // When hidden, disable pointer events to let clicks pass through to the page
+        host.style.pointerEvents = newValue ? 'auto' : 'none'
+    }
+})
 
 // Selection Handler
 const handleSelection = () => {
@@ -127,6 +142,15 @@ onMounted(() => {
     checkApiKey()
     loadRapidSettings()
     chrome.storage.onChanged.addListener(onStorageChange)
+
+    // Listen for messages from Sidebar/Background
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+        if (message.action === 'show-sentence-card' && message.image) {
+            sentenceCardImage.value = message.image
+            sentenceCardVisible.value = true
+            sendResponse({ success: true })
+        }
+    })
 })
 
 onUnmounted(() => {
@@ -450,6 +474,12 @@ async function handleAskQuestion(question: string) {
         @select-token="handleSelectToken"
         @back="handleBack"
         @ask-question="handleAskQuestion"
+      />
+
+      <SentenceCardOverlay 
+        :visible="sentenceCardVisible"
+        :image="sentenceCardImage"
+        @close="sentenceCardVisible = false"
       />
   </div>
 </template>

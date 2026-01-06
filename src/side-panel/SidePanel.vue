@@ -8,6 +8,7 @@ import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import MagicCard from './components/MagicCard/MagicCard.vue'
+import SentenceCard from './components/MagicCard/SentenceCard.vue'
 import Settings from './components/Settings/Settings.vue'
 import { onMessage } from 'webext-bridge/popup'
 
@@ -84,6 +85,18 @@ async function handleGenerateCard() {
   if (aiStore.cardData?.sceneDescription) {
     await aiStore.generateCardImage(aiStore.cardData.sceneDescription)
   }
+}
+
+// Sentence Card Logic
+const showSentenceCardModal = ref(false)
+
+async function handleGenerateSentenceCard() {
+  if (!lastAnalyzedText.value) return
+  showSentenceCardModal.value = true
+}
+
+function handleCloseSentenceCard() {
+  showSentenceCardModal.value = false
 }
 
 // Toast State
@@ -291,6 +304,7 @@ onMessage('trigger-clipboard-read', async () => {
                                 :show-magic-card="true"
                                 @select-token="handleSelectToken"
                                 @generate-card="handleGenerateCard"
+                                @generate-sentence-card="handleGenerateSentenceCard"
                             />
                             
                              <!-- Raw Text Fallback (Debug or if parse fails entirely but we have text) -->
@@ -381,6 +395,32 @@ onMessage('trigger-clipboard-read', async () => {
             @retry="handleRetryCard"
             @export="handleExportCard"
           />
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Sentence Magic Card Modal -->
+    <Transition name="modal">
+      <div
+        v-if="showSentenceCardModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        @click.self="handleCloseSentenceCard"
+      >
+        <div class="relative max-w-[520px] w-full animate-in zoom-in-95 duration-300">
+          <!-- Close Button -->
+          <button
+            @click="handleCloseSentenceCard"
+            class="absolute -top-10 right-0 p-2 text-white hover:text-gray-300 transition-colors"
+            title="关闭"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          <!-- Sentence Card Component -->
+          <SentenceCard :sentence="lastAnalyzedText" />
         </div>
       </div>
     </Transition>

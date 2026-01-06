@@ -34,16 +34,32 @@ Based on the feedback from the "Party Mode" session, this epic focuses on resolv
     - Token Detail: Click token -> fetch simple definition/grammar/audio via cheap model.
     - Settings: Toggles for auto-trigger.
 
-### Story 4-4: Anki Export Strategy Refactor
-- **Goal**: Make Anki/Flashcard export robust and database-friendly.
-- **Features**:
-    - Remove Base64 embedding from export string.
-    - "Download Image" button.
-    - "Copy Front" / "Copy Back" buttons with file references.
+### Story 4-4: 整句魔法卡片 (Sentence Magic Card)
+- **Goal**: 实现基于整句的魔法卡片生成功能，支持用户自定义绘图风格模板。
+- **核心改动**:
+    - 在 Prompt Management 中新增 `sentence_card_image` 提示词模板。
+    - 用户可自定义绘图风格（手绘卡通、写实、极简等）。
+    - 分析结果面板的"生成魔法卡片"入口改为整句魔法卡片。
+    - 简化输出流程：只展示图片 + 下载按钮，无 Anki 相关流程。
+- **技术实现**:
+    - 模板 + 当前整句动态拼接后直接调用多模态绘图模型。
+    - 去除中间的"模型生成场景描述"步骤，提升响应速度。
 
-### Story 4-5: UI Visual Enhancements
-- **Goal**: Polish the visual experience.
+### Story 4-5: 单词魔法卡片 (Word Magic Card)
+- **Goal**: 实现基于单词上下文的魔法卡片生成功能，与 Anki 导入流程结合。
+- **核心改动**:
+    - 在 Prompt Management 中新增 `word_card_image` 提示词模板。
+    - 制卡按钮入口移动到 `TokenDetail` 组件内。
+    - 正确传递完整上下文：单词、读音、释义、例句。
+    - Anki 卡片布局优化：图片居中显示，符合记忆卡片设计规范。
+- **技术实现**:
+    - 模板 + 单词上下文动态拼接后调用绘图模型。
+    - 保留 Anki 导入功能（下载图片 + 复制卡片内容）。
+    - 优化卡片预览 UI 布局。
+
+### Story 4-6: UI Visual Enhancements
+- **Goal**: 视觉体验优化和收尾工作。
 - **Features**:
     - Image Lightbox/Preview for Magic Cards.
     - Global toast notifications cleanup.
-    - "Premium" feel adjustements.
+    - "Premium" feel adjustments.

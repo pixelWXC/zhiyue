@@ -144,3 +144,46 @@ export async function generateCardContent(
         throw error instanceof Error ? error : new Error(ERROR_MESSAGES.GENERATION_FAILED)
     }
 }
+
+/**
+ * Generate sentence magic card image from Japanese sentence
+ * Uses user-configured prompt template with sentence appended
+ * @param apiKey - User's Gemini API key for authentication
+ * @param sentence - The complete Japanese sentence to generate card image for
+ * @returns Promise resolving to base64 data URL of the generated image
+ * @throws Error if API call fails or prompt not configured
+ * 
+ * @example
+ * ```typescript
+ * const imageDataUrl = await generateSentenceImage(
+ *   'your-api-key',
+ *   '猫がりんごを食べる'
+ * )
+ * // imageDataUrl: "data:image/png;base64,iVBORw0K..."
+ * ```
+ */
+export async function generateSentenceImage(
+    apiKey: string,
+    sentence: string
+): Promise<string> {
+    try {
+        // Load user-configured prompt template (or default)
+        const template = await promptService.getPrompt(PROMPT_KEYS.SENTENCE_CARD_IMAGE)
+
+        // Import buildSentenceCardPrompt function
+        const { buildSentenceCardPrompt } = await import('../prompts/sentence-card')
+
+        // Build final prompt: template + sentence
+        const finalPrompt = buildSentenceCardPrompt(template, sentence)
+
+        // Call image generation AI service
+        const { generateImage } = await import('./client')
+        const imageDataUrl = await generateImage(apiKey, finalPrompt)
+
+        return imageDataUrl
+
+    } catch (error) {
+        console.error('[Card Gen] ❌ Sentence image generation failed:', error)
+        throw error instanceof Error ? error : new Error('整句卡片图片生成失败')
+    }
+}

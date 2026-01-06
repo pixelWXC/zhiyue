@@ -11,6 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'select-token', token: any): void
   (e: 'generate-card'): void
+  (e: 'generate-sentence-card'): void
 }>()
 
 const tokens = computed(() => props.data?.tokens || [])
@@ -107,6 +108,18 @@ const getPosColor = (pos: string) => {
         <path d="M7 15h0M2 9.5h20"/>
       </svg>
       生成魔法卡片
+    </button>
+
+    <!-- Sentence Magic Card Button -->
+    <button
+      v-if="tokens.length > 0 && !isLoading"
+      @click="$emit('generate-sentence-card')"
+      class="w-full mt-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      生成整句魔法卡片
     </button>
   </div>
 </template>

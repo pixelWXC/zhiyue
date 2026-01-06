@@ -16,6 +16,7 @@ export { CARD_GEN_SYSTEM_PROMPT, CARD_GEN_USER_PROMPT } from './card-gen'
 export { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from './qa'
 export { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
 export { OCR_PROMPT } from './ocr'
+export { SENTENCE_CARD_IMAGE_PROMPT, buildSentenceCardPrompt } from './sentence-card'
 
 // Re-export PromptService and utilities
 export {

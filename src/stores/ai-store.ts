@@ -72,6 +72,11 @@ export const useAiStore = defineStore('ai', () => {
     const imageResult = ref<string | null>(null) // Base64 data URL
     const imageError = ref<string | null>(null)
 
+    // Sentence Card State
+    const isSentenceCardGenerating = ref(false)
+    const sentenceCardImage = ref<string | null>(null) // Base64 data URL
+    const sentenceCardError = ref<string | null>(null)
+
     // Rapid Services State
     const rapidTranslationText = ref('')
     const isRapidTranslating = ref(false)
@@ -579,6 +584,53 @@ export const useAiStore = defineStore('ai', () => {
         }
     }
 
+    /**
+     * Generate sentence magic card image
+     * @param sentence - Japanese sentence to generate card for
+     * @returns Promise resolving when generation completes
+     */
+    async function generateSentenceCard(sentence: string): Promise<void> {
+        if (!sentence.trim()) {
+            sentenceCardError.value = '句子不能为空'
+            return
+        }
+
+        isSentenceCardGenerating.value = true
+        sentenceCardImage.value = null
+        sentenceCardError.value = null
+
+        try {
+            // Import storage utility to get API key
+            const { getSettings } = await import('../logic/storage')
+            const settings = await getSettings()
+
+            if (!settings.apiKey) {
+                throw new Error('未配置 API Key,请先在设置中配置')
+            }
+
+            // Import and call sentence card image generator
+            const { generateSentenceImage } = await import('../logic/ai/card-generator')
+            const imageDataUrl = await generateSentenceImage(settings.apiKey, sentence)
+
+            sentenceCardImage.value = imageDataUrl
+
+        } catch (e) {
+            console.error('[AI Store] Sentence card generation failed', e)
+            sentenceCardError.value = (e as Error).message
+        } finally {
+            isSentenceCardGenerating.value = false
+        }
+    }
+
+    /**
+     * Clear sentence card generation state
+     */
+    function clearSentenceCard() {
+        sentenceCardImage.value = null
+        isSentenceCardGenerating.value = false
+        sentenceCardError.value = null
+    }
+
 
 
     return {
@@ -642,6 +694,13 @@ export const useAiStore = defineStore('ai', () => {
         tokenDetailError,
         triggerRapidTranslation,
         triggerTokenDetail,
+
+        // Sentence Card Generation
+        isSentenceCardGenerating,
+        sentenceCardImage,
+        sentenceCardError,
+        generateSentenceCard,
+        clearSentenceCard,
 
         // Anki Export
         copyCardToClipboard
