@@ -13,6 +13,14 @@ interface Props {
   qaHistory?: { question: string, answer: string }[]
   isQaStreaming?: boolean
   qaStreamText?: string
+  // Rapid Translation state
+  rapidTranslationText?: string
+  isRapidTranslating?: boolean
+  rapidTranslationError?: string
+  // Token Detail Rapid Query state
+  tokenDetailData?: any
+  isTokenDetailLoading?: boolean
+  tokenDetailError?: string
 }
 
 defineProps<Props>()
@@ -60,6 +68,33 @@ const emit = defineEmits<{
 
         <!-- Content -->
         <div class="p-4 flex flex-col">
+            <!-- Rapid Translation Section (Top Priority Display) - Only show when NOT viewing token detail -->
+            <div 
+                v-if="!selectedToken && (rapidTranslationText || isRapidTranslating || rapidTranslationError)" 
+                class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+            >
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-amber-600 dark:text-amber-400">⚡</span>
+                    <h4 class="text-xs font-semibold text-amber-700 dark:text-amber-300">快速翻译</h4>
+                </div>
+                
+                <!-- Loading State -->
+                <div v-if="isRapidTranslating && !rapidTranslationText" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <div class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>翻译中...</span>
+                </div>
+                
+                <!-- Translation Result -->
+                <p v-else-if="rapidTranslationText" class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                    {{ rapidTranslationText }}
+                </p>
+                
+                <!-- Error State -->
+                <p v-else-if="rapidTranslationError" class="text-xs text-rose-600 dark:text-rose-400">
+                    ⚠️ {{ rapidTranslationError }}（不影响深度分析）
+                </p>
+            </div>
+
             <!-- Main Analysis View -->
             <div v-show="!selectedToken" class="animate-in fade-in zoom-in-95 duration-200">
                 <AnalysisResult 
@@ -81,6 +116,9 @@ const emit = defineEmits<{
                 :external-qa-history="qaHistory"
                 :external-is-qa-streaming="isQaStreaming"
                 :external-qa-stream-text="qaStreamText"
+                :token-detail-data="tokenDetailData"
+                :is-token-detail-loading="isTokenDetailLoading"
+                :token-detail-error="tokenDetailError"
                 @back="$emit('back')"
                 @ask-question="$emit('ask-question', $event)"
             />

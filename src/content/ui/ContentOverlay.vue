@@ -17,6 +17,12 @@ const isStreaming = ref(false)
 const streamingText = ref('')
 const parsedData = ref<AnalysisData | null>(null)
 
+// Rapid Translation State
+const rapidTranslationEnabled = ref(true) // Default enabled
+const rapidTranslationText = ref('')
+const isRapidTranslating = ref(false)
+const rapidTranslationError = ref('')
+
 // Selection Handler
 const handleSelection = () => {
     // If modal is open, ignore selection changes
@@ -92,16 +98,34 @@ const checkApiKey = async () => {
     }
 }
 
+// Load rapid services settings
+const loadRapidSettings = async () => {
+    try {
+        const result = await chrome.storage.local.get([
+            STORAGE_KEYS.RAPID_TRANSLATION,
+            STORAGE_KEYS.RAPID_TOKEN_DETAIL
+        ])
+        rapidTranslationEnabled.value = result[STORAGE_KEYS.RAPID_TRANSLATION] !== false // Default true
+        rapidTokenDetailEnabled.value = result[STORAGE_KEYS.RAPID_TOKEN_DETAIL] !== false // Default true
+    } catch (e) {
+        console.warn('Failed to load rapid settings', e)
+    }
+}
+
 // Listen for storage changes
 const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
     if (areaName === 'local' && changes[STORAGE_KEYS.API_KEY]) {
         hasApiKey.value = !!changes[STORAGE_KEYS.API_KEY]?.newValue
+    }
+    if (areaName === 'local' && changes[STORAGE_KEYS.RAPID_TRANSLATION]) {
+        rapidTranslationEnabled.value = changes[STORAGE_KEYS.RAPID_TRANSLATION]?.newValue !== false
     }
 }
 
 onMounted(() => {
     document.addEventListener('mouseup', onMouseUp)
     checkApiKey()
+    loadRapidSettings()
     chrome.storage.onChanged.addListener(onStorageChange)
 })
 
@@ -122,6 +146,16 @@ const onAnalyze = async () => {
     isStreaming.value = true
     streamingText.value = ''
     parsedData.value = { tokens: [] }
+    
+    // Reset rapid translation state
+    rapidTranslationText.value = ''
+    rapidTranslationError.value = ''
+    isRapidTranslating.value = false
+    
+    // Trigger rapid translation in parallel (non-blocking)
+    if (rapidTranslationEnabled.value) {
+        triggerRapidTranslation(selectedText.value)
+    }
     
     let port: chrome.runtime.Port | null = null
     
@@ -196,10 +230,42 @@ const onAnalyze = async () => {
     }
 }
 
+// Rapid Translation Trigger (Parallel, Non-blocking)
+const triggerRapidTranslation = async (text: string) => {
+    isRapidTranslating.value = true
+    rapidTranslationText.value = ''
+    rapidTranslationError.value = ''
+    
+    let port: chrome.runtime.Port | null = null
+    
+    try {
+        port = chrome.runtime.connect({ name: 'ai-stream' })
+        
+        port.onMessage.addListener((msg) => {
+            if (msg.error) {
+                rapidTranslationError.value = msg.error
+                isRapidTranslating.value = false
+                port?.disconnect()
+            } else if (msg.chunk) {
+                rapidTranslationText.value += msg.chunk
+            } else if (msg.done) {
+                isRapidTranslating.value = false
+                port?.disconnect()
+            }
+        })
+        
+        port.postMessage({ action: 'rapid-translation', text })
+        
+    } catch (error) {
+        console.error('Rapid translation failed', error)
+        rapidTranslationError.value = '快速翻译失败'
+        isRapidTranslating.value = false
+    }
+}
+
 const onExplain = () => {
-    // Similar to analyze but maybe different prompt?
-    // For now, map to analyze
-    onAnalyze()
+    // Explanation requests should go to the heavy-feature Sidebar
+    onOpenSidePanel()
 }
 
 const onCloseModal = () => {
@@ -236,11 +302,69 @@ const qaHistory = ref<{ question: string, answer: string }[]>([])
 const isQaStreaming = ref(false)
 const qaStreamText = ref('')
 
+// Token Detail Rapid Query State
+const rapidTokenDetailEnabled = ref(true) // Default enabled
+const tokenDetailData = ref<any>(null)
+const isTokenDetailLoading = ref(false)
+const tokenDetailError = ref('')
+
 function handleSelectToken(token: any) {
     selectedToken.value = token
     qaHistory.value = []
     qaStreamText.value = ''
     isQaStreaming.value = false
+    
+    // Reset token detail state
+    tokenDetailData.value = null
+    tokenDetailError.value = ''
+    
+    // Trigger rapid token detail query if enabled
+    if (rapidTokenDetailEnabled.value && token?.word) {
+        triggerTokenDetail(token.word)
+    }
+}
+
+// Token Detail Rapid Query Trigger
+const triggerTokenDetail = async (tokenWord: string) => {
+    isTokenDetailLoading.value = true
+    tokenDetailData.value = null
+    tokenDetailError.value = ''
+    
+    let port: chrome.runtime.Port | null = null
+    let fullResponse = ''
+    
+    try {
+        port = chrome.runtime.connect({ name: 'ai-stream' })
+        
+        port.onMessage.addListener((msg) => {
+            if (msg.error) {
+                tokenDetailError.value = msg.error
+                isTokenDetailLoading.value = false
+                port?.disconnect()
+            } else if (msg.chunk) {
+                fullResponse += msg.chunk
+            } else if (msg.done) {
+                isTokenDetailLoading.value = false
+                
+                // Parse JSON response
+                try {
+                    tokenDetailData.value = JSON.parse(fullResponse)
+                } catch (e) {
+                    console.error('Failed to parse token detail JSON:', e)
+                    tokenDetailError.value = '解析失败'
+                }
+                
+                port?.disconnect()
+            }
+        })
+        
+        port.postMessage({ action: 'token-detail', token: tokenWord })
+        
+    } catch (error) {
+        console.error('Token detail query failed', error)
+        tokenDetailError.value = '查询失败'
+        isTokenDetailLoading.value = false
+    }
 }
 
 function handleBack() {
@@ -315,6 +439,12 @@ async function handleAskQuestion(question: string) {
         :qa-history="qaHistory"
         :is-qa-streaming="isQaStreaming"
         :qa-stream-text="qaStreamText"
+        :rapid-translation-text="rapidTranslationText"
+        :is-rapid-translating="isRapidTranslating"
+        :rapid-translation-error="rapidTranslationError"
+        :token-detail-data="tokenDetailData"
+        :is-token-detail-loading="isTokenDetailLoading"
+        :token-detail-error="tokenDetailError"
         @close="onCloseModal"
         @open-sidebar="onOpenSidePanel"
         @select-token="handleSelectToken"

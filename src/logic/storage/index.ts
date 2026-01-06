@@ -23,6 +23,8 @@ export const STORAGE_KEYS = {
     PREFERRED_MODEL: `${PREFIX}preferredModel`,
     HISTORY: `${PREFIX}history`,
     CARDS: `${PREFIX}cards`,
+    RAPID_TRANSLATION: `${PREFIX}rapidTranslation`,
+    RAPID_TOKEN_DETAIL: `${PREFIX}rapidTokenDetail`,
 } as const
 
 /**
@@ -78,11 +80,27 @@ export function useSettings() {
         { mergeDefaults: true }
     )
 
+    const rapidTranslation = useStorageAsync(
+        STORAGE_KEYS.RAPID_TRANSLATION,
+        true, // Default: enabled
+        chromeStorageAdapter,
+        { mergeDefaults: true }
+    )
+
+    const rapidTokenDetail = useStorageAsync(
+        STORAGE_KEYS.RAPID_TOKEN_DETAIL,
+        true, // Default: enabled
+        chromeStorageAdapter,
+        { mergeDefaults: true }
+    )
+
     return {
         apiKey,
         theme,
         autoCapture,
         preferredModel,
+        rapidTranslation,
+        rapidTokenDetail,
     }
 }
 
@@ -96,6 +114,8 @@ export async function getSettings(): Promise<UserSettings> {
         theme: (result[STORAGE_KEYS.THEME] as 'light' | 'dark' | 'auto' | undefined) ?? 'auto',
         autoCapture: (result[STORAGE_KEYS.AUTO_CAPTURE] as boolean | undefined) ?? true,
         preferredModel: (result[STORAGE_KEYS.PREFERRED_MODEL] as 'flash' | 'pro' | undefined) ?? 'flash',
+        rapidTranslation: (result[STORAGE_KEYS.RAPID_TRANSLATION] as boolean | undefined) ?? true,
+        rapidTokenDetail: (result[STORAGE_KEYS.RAPID_TOKEN_DETAIL] as boolean | undefined) ?? true,
     }
 }
 

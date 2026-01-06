@@ -20,7 +20,9 @@ const {
     streamingText, isStreaming, parsedData, currentResult, error: aiError, selectedToken,
     syntaxData, isSyntaxLoading,
     cardData, isGeneratingCard, cardError,
-    imageResult, imageError
+    imageResult, imageError,
+    rapidTranslationText, isRapidTranslating, rapidTranslationError,
+    tokenDetailData, isTokenDetailLoading, tokenDetailError
 } = storeToRefs(aiStore)
 
 // Store last analyzed text for retry
@@ -256,9 +258,37 @@ onMessage('trigger-clipboard-read', async () => {
                     <div class="p-6">
                         <!-- Analysis View -->
                         <div v-show="!selectedToken && currentTab === 'analysis'">
+                            <!-- Rapid Translation Section (Only show when NOT viewing token detail) -->
+                            <div 
+                                v-if="rapidTranslationText || isRapidTranslating || rapidTranslationError" 
+                                class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                            >
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-amber-600 dark:text-amber-400">⚡</span>
+                                    <h4 class="text-xs font-semibold text-amber-700 dark:text-amber-300">快速翻译</h4>
+                                </div>
+                                
+                                <!-- Loading State -->
+                                <div v-if="isRapidTranslating && !rapidTranslationText" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                                    <div class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <span>翻译中...</span>
+                                </div>
+                                
+                                <!-- Translation Result -->
+                                <p v-else-if="rapidTranslationText" class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ rapidTranslationText }}
+                                </p>
+                                
+                                <!-- Error State -->
+                                <p v-else-if="rapidTranslationError" class="text-xs text-rose-600 dark:text-rose-400">
+                                    ⚠️ {{ rapidTranslationError }}（不影响深度分析）
+                                </p>
+                            </div>
+
                             <AnalysisResult 
                                 :data="displayData" 
                                 :isLoading="isStreaming"
+                                :show-magic-card="true"
                                 @select-token="handleSelectToken"
                                 @generate-card="handleGenerateCard"
                             />
@@ -292,6 +322,9 @@ onMessage('trigger-clipboard-read', async () => {
                         </div>
 
                         <TokenDetail 
+                            :token-detail-data="tokenDetailData"
+                            :is-token-detail-loading="isTokenDetailLoading"
+                            :token-detail-error="tokenDetailError"
                             @back="handleBack"
                         />
 

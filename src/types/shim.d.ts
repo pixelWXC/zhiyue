@@ -67,4 +67,6 @@ export interface UserSettings {
     theme: 'light' | 'dark' | 'auto'
     autoCapture: boolean
     preferredModel: 'flash' | 'pro'
+    rapidTranslation?: boolean
+    rapidTokenDetail?: boolean
 }

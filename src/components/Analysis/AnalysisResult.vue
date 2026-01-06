@@ -5,6 +5,7 @@ import type { AnalysisData } from '@/stores/ai-store'
 const props = defineProps<{
   data: AnalysisData | null
   isLoading?: boolean
+  showMagicCard?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -97,7 +98,7 @@ const getPosColor = (pos: string) => {
 
     <!-- Magic Card Generation Button -->
     <button
-      v-if="tokens.length > 0 && !isLoading"
+      v-if="tokens.length > 0 && !isLoading && showMagicCard"
       @click="$emit('generate-card')"
       class="w-full mt-4 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group"
     >

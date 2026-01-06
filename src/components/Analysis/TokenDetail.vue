@@ -12,6 +12,10 @@ interface Props {
   externalQaHistory?: { question: string, answer: string }[]
   externalIsQaStreaming?: boolean
   externalQaStreamText?: string
+  // Token Detail Rapid Query state
+  tokenDetailData?: any
+  isTokenDetailLoading?: boolean
+  tokenDetailError?: string | null
 }
 
 const props = defineProps<Props>()
@@ -87,6 +91,21 @@ function openDictionary(type: 'jisho' | 'weblio') {
 function renderMarkdown(text: string): string {
     return md.render(text)
 }
+
+// Speak Japanese text using Web Speech API
+function speakJapanese(text: string): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+        
+        const utterance = new SpeechSynthesisUtterance(text)
+        utterance.lang = 'ja-JP'
+        utterance.rate = 0.9
+        utterance.pitch = 1
+        window.speechSynthesis.speak(utterance)
+    } else {
+        console.warn('浏览器不支持语音朗读功能')
+    }
+}
 </script>
 
 <template>
@@ -130,8 +149,62 @@ function renderMarkdown(text: string): string {
             </div>
         </div>
         
-        <div v-if="selectedToken.meaning" class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-            <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{{ selectedToken.meaning }}</p>
+        <!-- Meaning Section: Show rapid detail if available, otherwise show original meaning -->
+        <div v-if="tokenDetailData || isTokenDetailLoading || tokenDetailError || selectedToken.meaning" class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            <!-- Rapid Token Detail (Replaces original meaning) -->
+            <div v-if="tokenDetailData || isTokenDetailLoading || tokenDetailError">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-amber-600 dark:text-amber-400">⚡</span>
+                    <h3 class="text-xs font-semibold text-amber-700 dark:text-amber-300">快速词典</h3>
+                </div>
+                
+                <!-- Loading State -->
+                <div v-if="isTokenDetailLoading && !tokenDetailData" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                    <div class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>查询中...</span>
+                </div>
+                
+                <!-- Token Detail Result -->
+                <div v-else-if="tokenDetailData" class="space-y-3">
+                    <div v-if="tokenDetailData.definition">
+                        <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">释义</p>
+                        <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.definition }}</p>
+                    </div>
+                    
+                    <div v-if="tokenDetailData.grammar">
+                        <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">语法</p>
+                        <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.grammar }}</p>
+                    </div>
+                    
+                    <div v-if="tokenDetailData.pronunciation">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">读音</p>
+                                <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.pronunciation }}</p>
+                            </div>
+                            <button 
+                                @click="speakJapanese(selectedToken.word)"
+                                class="ml-3 p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
+                                title="朗读"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error State -->
+                <p v-else-if="tokenDetailError" class="text-xs text-rose-600 dark:text-rose-400">
+                    ⚠️ {{ tokenDetailError }}
+                </p>
+            </div>
+            
+            <!-- Original Meaning (Fallback when no rapid detail) -->
+            <p v-else-if="selectedToken.meaning" class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                {{ selectedToken.meaning }}
+            </p>
         </div>
     </div>
 

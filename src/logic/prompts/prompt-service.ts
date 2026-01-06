@@ -15,6 +15,8 @@ import { CARD_GEN_SYSTEM_PROMPT } from './card-gen'
 import { QA_SYSTEM_PROMPT } from './qa'
 import { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
 import { OCR_PROMPT } from './ocr'
+import { RAPID_TRANSLATION_PROMPT } from './rapid-translation'
+import { TOKEN_DETAIL_PROMPT } from './token-detail'
 
 /**
  * Prompt identifiers for storage and management
@@ -25,6 +27,8 @@ export const PROMPT_KEYS = {
     QA_SYSTEM: 'qa_system',
     SYNTAX_ANALYSIS_SYSTEM: 'syntax_analysis_system',
     OCR: 'ocr',
+    RAPID_TRANSLATION: 'rapid_translation',
+    TOKEN_DETAIL: 'token_detail',
 } as const
 
 export type PromptKey = typeof PROMPT_KEYS[keyof typeof PROMPT_KEYS]
@@ -36,7 +40,7 @@ export interface PromptMetadata {
     id: PromptKey
     name: string
     description: string
-    category: '分析' | '卡片' | 'QA' | '句法' | 'OCR'
+    category: '分析' | '卡片' | 'QA' | '句法' | 'OCR' | '快速服务'
     isJsonOutput: boolean  // Warning: modifying JSON prompts can break output
 }
 
@@ -79,6 +83,20 @@ export const PROMPT_METADATA: PromptMetadata[] = [
         category: 'OCR',
         isJsonOutput: false,
     },
+    {
+        id: PROMPT_KEYS.RAPID_TRANSLATION,
+        name: '快速翻译',
+        description: '日语到中文的快速翻译提示',
+        category: '快速服务',
+        isJsonOutput: false,
+    },
+    {
+        id: PROMPT_KEYS.TOKEN_DETAIL,
+        name: 'Token 详情',
+        description: '快速词典查询，返回词义、语法和发音',
+        category: '快速服务',
+        isJsonOutput: true,
+    },
 ]
 
 /**
@@ -95,6 +113,8 @@ const DEFAULT_PROMPTS: Record<PromptKey, string> = {
     [PROMPT_KEYS.QA_SYSTEM]: QA_SYSTEM_PROMPT,
     [PROMPT_KEYS.SYNTAX_ANALYSIS_SYSTEM]: SYNTAX_ANALYSIS_SYSTEM_PROMPT,
     [PROMPT_KEYS.OCR]: OCR_PROMPT,
+    [PROMPT_KEYS.RAPID_TRANSLATION]: RAPID_TRANSLATION_PROMPT,
+    [PROMPT_KEYS.TOKEN_DETAIL]: TOKEN_DETAIL_PROMPT,
 }
 
 /**

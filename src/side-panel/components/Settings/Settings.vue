@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Settings as SettingsIcon, FileText, AlertTriangle } from 'lucide-vue-next'
+import { Settings as SettingsIcon, FileText, AlertTriangle, Zap } from 'lucide-vue-next'
 import { usePromptService, type PromptKey } from '@/logic/prompts/prompt-service'
+import { useSettings } from '@/logic/storage'
 import PromptEditor from './PromptEditor.vue'
 import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
 
@@ -16,6 +17,9 @@ const prompts = ref<{
 }[]>([])
 const selectedPromptId = ref<PromptKey | null>(null)
 const isPromptsLoading = ref(false)
+
+// Rapid Services Configuration
+const { rapidTranslation, rapidTokenDetail } = useSettings()
 
 // Warning Modal
 const showWarning = ref(false)
@@ -124,6 +128,78 @@ onMounted(async () => {
     <main class="p-6 max-w-3xl mx-auto space-y-8">
       <!-- API Key Section -->
       <ApiKeyInput />
+
+      <!-- Rapid Services Configuration Section -->
+      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <Zap class="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-amber-600 dark:text-amber-400">
+            快速服务配置
+          </h2>
+        </div>
+        
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          启用快速服务可以在常见场景中获得即时的 AI 反馈，无需等待深度分析。
+        </p>
+
+        <div class="space-y-4">
+          <!-- Rapid Translation Toggle -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-medium text-sm">⚡ 快速翻译</h3>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                选择文本时自动触发快速翻译（日语→中文），延迟 < 2 秒
+              </p>
+            </div>
+            <div class="ml-4">
+              <button
+                @click="rapidTranslation = !rapidTranslation"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
+                  rapidTranslation ? 'bg-amber-600' : 'bg-gray-300 dark:bg-zinc-700'
+                ]"
+              >
+                <span
+                  :class="[
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out',
+                    rapidTranslation ? 'translate-x-6' : 'translate-x-1'
+                  ]"
+                />
+              </button>
+            </div>
+          </div>
+
+          <!-- Rapid Token Detail Toggle -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-medium text-sm">⚡ Token 点击快速查询</h3>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                点击 Token 时快速获取词义、语法和发音，延迟 < 1.5 秒
+              </p>
+            </div>
+            <div class="ml-4">
+              <button
+                @click="rapidTokenDetail = !rapidTokenDetail"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
+                  rapidTokenDetail ? 'bg-amber-600' : 'bg-gray-300 dark:bg-zinc-700'
+                ]"
+              >
+                <span
+                  :class="[
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out',
+                    rapidTokenDetail ? 'translate-x-6' : 'translate-x-1'
+                  ]"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Prompt Management Section -->
       <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">

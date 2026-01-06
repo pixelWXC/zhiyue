@@ -200,7 +200,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // AI Streaming Handler (Native Ports)
 // ====================
 
-import { createAnalysisStream, createQaStream, createSyntaxStream } from '../logic/ai/client'
+import { createAnalysisStream, createQaStream, createSyntaxStream, createRapidTranslationStream, createTokenDetailStream } from '../logic/ai/client'
 
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name !== 'ai-stream') return
@@ -269,6 +269,62 @@ chrome.runtime.onConnect.addListener((port) => {
                 port.postMessage({ done: true })
 
             } catch (error) {
+                port.postMessage({ error: (error as Error).message })
+            }
+        } else if (msg.action === 'rapid-translation') {
+            const { text } = msg
+
+            try {
+                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
+                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
+                const apiKey = storageResult[API_KEY_STORAGE_KEY]
+
+                if (!apiKey) {
+                    port.postMessage({ error: '请先配置 API 密钥' })
+                    return
+                }
+
+                console.log('⚡ Rapid Translation:', String(text).substring(0, 20) + '...')
+                const result = await createRapidTranslationStream(String(apiKey), String(text))
+
+                for await (const chunk of result) {
+                    const chunkText = chunk.text
+                    if (chunkText) {
+                        port.postMessage({ chunk: chunkText })
+                    }
+                }
+                port.postMessage({ done: true })
+
+            } catch (error) {
+                console.error('❌ Rapid Translation Error:', error)
+                port.postMessage({ error: (error as Error).message })
+            }
+        } else if (msg.action === 'token-detail') {
+            const { token } = msg
+
+            try {
+                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
+                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
+                const apiKey = storageResult[API_KEY_STORAGE_KEY]
+
+                if (!apiKey) {
+                    port.postMessage({ error: '请先配置 API 密钥' })
+                    return
+                }
+
+                console.log('⚡ Token Detail:', token)
+                const result = await createTokenDetailStream(String(apiKey), String(token))
+
+                for await (const chunk of result) {
+                    const chunkText = chunk.text
+                    if (chunkText) {
+                        port.postMessage({ chunk: chunkText })
+                    }
+                }
+                port.postMessage({ done: true })
+
+            } catch (error) {
+                console.error('❌ Token Detail Error:', error)
                 port.postMessage({ error: (error as Error).message })
             }
         }

@@ -202,3 +202,64 @@ export async function generateImage(apiKey: string, sceneDescription: string): P
     }
 }
 
+/**
+ * Create a rapid translation stream for fast Japanese to Chinese translation
+ * Uses Flash model for speed and cost efficiency
+ * @param apiKey User API key
+ * @param text Japanese text to translate
+ * @returns Streaming response with Chinese translation
+ */
+export async function createRapidTranslationStream(apiKey: string, text: string) {
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.FLASH // Force Flash model for speed
+
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.RAPID_TRANSLATION)
+
+    return await ai.models.generateContentStream({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { text: systemPrompt },
+                    { text: `请翻译以下日语文本：\n\n${text}` }
+                ]
+            }
+        ]
+    })
+}
+
+/**
+ * Create a token detail stream for fast dictionary lookup
+ * Returns JSON with definition, grammar, and pronunciation
+ * @param apiKey User API key
+ * @param token Japanese token/word to look up
+ * @returns Streaming response with structured token details
+ */
+export async function createTokenDetailStream(apiKey: string, token: string) {
+    const ai = getClient(apiKey)
+    const model = MODEL_NAMES.FLASH // Force Flash model for speed
+
+    // Load dynamic prompt
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.TOKEN_DETAIL)
+
+    const config: any = {
+        responseMimeType: 'application/json' // Enforce JSON output
+    }
+
+    return await ai.models.generateContentStream({
+        model,
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { text: systemPrompt },
+                    { text: `单词：${token}` }
+                ]
+            }
+        ],
+        config
+    })
+}
+

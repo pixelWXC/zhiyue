@@ -72,6 +72,15 @@ export const useAiStore = defineStore('ai', () => {
     const imageResult = ref<string | null>(null) // Base64 data URL
     const imageError = ref<string | null>(null)
 
+    // Rapid Services State
+    const rapidTranslationText = ref('')
+    const isRapidTranslating = ref(false)
+    const rapidTranslationError = ref<string | null>(null)
+
+    const tokenDetailData = ref<any>(null)
+    const isTokenDetailLoading = ref(false)
+    const tokenDetailError = ref<string | null>(null)
+
     // Getters
     const hasHistory = computed(() => history.value.length > 0)
     const lastResult = computed(() => history.value[0])
@@ -143,6 +152,14 @@ export const useAiStore = defineStore('ai', () => {
         streamingText.value = ''
         parsedData.value = { tokens: [] } // Initialize empty
         error.value = null
+
+        // Reset rapid translation state
+        rapidTranslationText.value = ''
+        rapidTranslationError.value = null
+        isRapidTranslating.value = false
+
+        // Trigger rapid translation in parallel (non-blocking)
+        triggerRapidTranslation(text)
 
         // Explicitly type the port to avoid null checks logic flow issues, though initialization is null
         let port: chrome.runtime.Port | null = null
@@ -244,6 +261,15 @@ export const useAiStore = defineStore('ai', () => {
         qaHistory.value = [] // Reset chat when changing token (or keep it?) -> Let's reset for context switch
         qaStreamText.value = ''
         isQaStreaming.value = false
+
+        // Reset token detail state
+        tokenDetailData.value = null
+        tokenDetailError.value = null
+
+        // Trigger rapid token detail query if token is selected
+        if (token?.word) {
+            triggerTokenDetail(token.word)
+        }
     }
 
     async function askQuestion(question: string) {
@@ -416,6 +442,106 @@ export const useAiStore = defineStore('ai', () => {
     }
 
     /**
+     * Rapid Translation Trigger (Parallel, Non-blocking)
+     * Automatically triggered when text analysis starts
+     */
+    async function triggerRapidTranslation(text: string) {
+        // Check if rapid translation is enabled
+        const { getSettings } = await import('../logic/storage')
+        const settings = await getSettings()
+
+        if (!settings.rapidTranslation) {
+            console.log('[Rapid Translation] Disabled by settings')
+            return
+        }
+
+        isRapidTranslating.value = true
+        rapidTranslationText.value = ''
+        rapidTranslationError.value = null
+
+        let port: chrome.runtime.Port | null = null
+
+        try {
+            port = chrome.runtime.connect({ name: 'ai-stream' })
+
+            port.onMessage.addListener((msg) => {
+                if (msg.error) {
+                    rapidTranslationError.value = msg.error
+                    isRapidTranslating.value = false
+                    port?.disconnect()
+                } else if (msg.chunk) {
+                    rapidTranslationText.value += msg.chunk
+                } else if (msg.done) {
+                    isRapidTranslating.value = false
+                    port?.disconnect()
+                }
+            })
+
+            port.postMessage({ action: 'rapid-translation', text })
+
+        } catch (error) {
+            console.error('[Rapid Translation] Failed', error)
+            rapidTranslationError.value = '快速翻译失败'
+            isRapidTranslating.value = false
+        }
+    }
+
+    /**
+     * Token Detail Rapid Query Trigger
+     * Automatically triggered when a token is selected
+     */
+    async function triggerTokenDetail(tokenWord: string) {
+        // Check if rapid token detail is enabled
+        const { getSettings } = await import('../logic/storage')
+        const settings = await getSettings()
+
+        if (!settings.rapidTokenDetail) {
+            console.log('[Token Detail] Disabled by settings')
+            return
+        }
+
+        isTokenDetailLoading.value = true
+        tokenDetailData.value = null
+        tokenDetailError.value = null
+
+        let port: chrome.runtime.Port | null = null
+        let fullResponse = ''
+
+        try {
+            port = chrome.runtime.connect({ name: 'ai-stream' })
+
+            port.onMessage.addListener((msg) => {
+                if (msg.error) {
+                    tokenDetailError.value = msg.error
+                    isTokenDetailLoading.value = false
+                    port?.disconnect()
+                } else if (msg.chunk) {
+                    fullResponse += msg.chunk
+                } else if (msg.done) {
+                    isTokenDetailLoading.value = false
+
+                    // Parse JSON response
+                    try {
+                        tokenDetailData.value = JSON.parse(fullResponse)
+                    } catch (e) {
+                        console.error('[Token Detail] Failed to parse JSON:', e)
+                        tokenDetailError.value = '解析失败'
+                    }
+
+                    port?.disconnect()
+                }
+            })
+
+            port.postMessage({ action: 'token-detail', token: tokenWord })
+
+        } catch (error) {
+            console.error('[Token Detail] Query failed', error)
+            tokenDetailError.value = '查询失败'
+            isTokenDetailLoading.value = false
+        }
+    }
+
+    /**
      * Copy flashcard to clipboard in Anki TSV format
      * @returns Promise<{ success: boolean, error?: string }>
      */
@@ -506,6 +632,16 @@ export const useAiStore = defineStore('ai', () => {
         imageError,
         generateCardImage,
         clearImageData,
+
+        // Rapid Services
+        rapidTranslationText,
+        isRapidTranslating,
+        rapidTranslationError,
+        tokenDetailData,
+        isTokenDetailLoading,
+        tokenDetailError,
+        triggerRapidTranslation,
+        triggerTokenDetail,
 
         // Anki Export
         copyCardToClipboard
