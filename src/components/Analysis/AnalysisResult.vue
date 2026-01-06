@@ -98,7 +98,7 @@ const getPosColor = (pos: string) => {
     </div>
 
     <!-- Magic Card Generation Button -->
-    <button
+    <!-- <button
       v-if="tokens.length > 0 && !isLoading && showMagicCard"
       @click="$emit('generate-card')"
       class="w-full mt-4 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group"
@@ -108,7 +108,7 @@ const getPosColor = (pos: string) => {
         <path d="M7 15h0M2 9.5h20"/>
       </svg>
       生成魔法卡片
-    </button>
+    </button> -->
 
     <!-- Sentence Magic Card Button -->
     <button
@@ -119,7 +119,7 @@ const getPosColor = (pos: string) => {
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
-      生成整句魔法卡片
+      生成记忆卡片
     </button>
   </div>
 </template>

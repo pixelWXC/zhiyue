@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Check, Settings as SettingsIcon, Home } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Settings as SettingsIcon, Home } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
@@ -11,6 +11,8 @@ import MagicCard from './components/MagicCard/MagicCard.vue'
 import SentenceCard from './components/MagicCard/SentenceCard.vue'
 import Settings from './components/Settings/Settings.vue'
 import { onMessage } from 'webext-bridge/popup'
+import { useToast } from '@/composables/useToast'
+import ToastProvider from '@/components/ui/Toast/ToastProvider.vue'
 
 // View Management
 const currentView = ref<'home' | 'settings'>('home')
@@ -100,24 +102,14 @@ function handleCloseSentenceCard() {
 }
 
 // Toast State
-const toast = ref<{ message: string, type: 'success' | 'error' | null }>({ message: '', type: null })
-let toastTimeout: any = null
-
-function showToast(message: string, type: 'success' | 'error' = 'success') {
-    if (toastTimeout) clearTimeout(toastTimeout)
-    toast.value = { message, type }
-    toastTimeout = setTimeout(() => {
-        toast.value.message = ''
-        toast.value.type = null
-    }, 3000)
-}
+const { toast: toastNotify } = useToast()
 
 async function handleExportCard() {
   const result = await aiStore.copyCardToClipboard()
   if (result.success) {
-    showToast('已复制到剪贴板，可直接导入 Anki', 'success')
+    toastNotify({ title: '已复制到剪贴板', description: '可直接导入 Anki', variant: 'success' })
   } else {
-    showToast(`导出失败: ${result.error}`, 'error')
+    toastNotify({ title: '导出失败', description: result.error, variant: 'error' })
   }
 }
 
@@ -183,6 +175,7 @@ onMessage('trigger-clipboard-read', async () => {
 
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300">
+    <ToastProvider />
     <!-- Header -->
     <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
@@ -425,17 +418,7 @@ onMessage('trigger-clipboard-read', async () => {
       </div>
     </Transition>
 
-    <!-- Toast Notification -->
-    <Transition name="toast">
-        <div v-if="toast.message" 
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg font-medium text-sm z-[100] flex items-center gap-2"
-             :class="toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'"
-        >
-            <Check v-if="toast.type === 'success'" class="w-4 h-4" />
-            <AlertCircle v-else class="w-4 h-4" />
-            {{ toast.message }}
-        </div>
-    </Transition>
+    <!-- Toast Notification Removed -->
   </div>
 </template>
 

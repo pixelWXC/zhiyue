@@ -31,7 +31,12 @@
    <!-- Image Result -->
     <div v-else-if="image" class="result-section">
       <div class="image-preview">
-        <img :src="image" alt="生成的整句卡片" class="card-image" />
+        <img 
+          :src="image" 
+          alt="生成的整句卡片" 
+          class="card-image cursor-pointer" 
+          @click="openFullscreen"
+        />
       </div>
       
       <div class="action-buttons">
@@ -45,21 +50,15 @@
           重新生成
         </button>
       </div>
-
-      <div class="action-buttons-secondary">
-          <button @click="openFullscreen" class="fullscreen-button">
-            <Maximize class="w-4 h-4" />
-            全屏查看
-          </button>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Sparkles, AlertCircle, RotateCw, Download, Maximize } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Download } from 'lucide-vue-next'
 import { useAiStore } from '@/stores/ai-store'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   sentence: string
@@ -67,6 +66,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const aiStore = useAiStore()
+const { toast } = useToast()
 
 // Computed state from store
 const isGenerating = computed(() => aiStore.isSentenceCardGenerating)
@@ -80,10 +80,7 @@ async function handleGenerate() {
   }
   
   await aiStore.generateSentenceCard(props.sentence)
-  
-  if (aiStore.sentenceCardImage) {
-    openFullscreen()
-  }
+  // Auto-fullscreen removed as per request
 }
 
 async function openFullscreen() {
@@ -99,7 +96,6 @@ async function openFullscreen() {
     }
   } catch (e) {
     console.error('Failed to open fullscreen', e)
-    // Fallback or notify user
   }
 }
 
@@ -116,6 +112,8 @@ function handleDownload() {
   link.href = image.value
   link.download = `sentence-card-${Date.now()}.png`
   link.click()
+
+  toast({ title: '开始下载', description: '图片已保存', variant: 'success' })
 }
 </script>
 
@@ -284,6 +282,7 @@ function handleDownload() {
   height: auto;
   border-radius: 8px;
   display: block;
+  cursor: pointer;
 }
 
 .action-buttons {

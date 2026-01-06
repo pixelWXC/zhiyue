@@ -34,6 +34,7 @@
             :src="image"
             alt="Card illustration"
             class="card-image"
+            @click="openFullscreen"
           />
         </Transition>
       </div>
@@ -108,13 +109,30 @@ interface Props {
   error?: string | null
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 defineEmits<{
   retry: []
   export: []
 }>()
 
+async function openFullscreen() {
+  if (!props.image) return
+  
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        action: 'show-sentence-card',
+        image: props.image
+      })
+    } else {
+        console.warn('No active tab found for fullscreen overlay')
+    }
+  } catch (e) {
+    console.error('Failed to open fullscreen', e)
+  }
+}
 </script>
 
 <style scoped>
@@ -189,12 +207,18 @@ defineEmits<{
   background: #f3f4f6;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
 }
 
 .card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card-image-container:hover .card-image {
+  transform: scale(1.05);
 }
 
 .card-image-placeholder {
@@ -302,11 +326,6 @@ defineEmits<{
 .export-button:hover {
   background: #d1d5db;
   color: #1f2937;
-}
-
-.export-button.active {
-  /* Active logic handled by hover above, just ensuring base is good */
-
 }
 
 /* Empty State */

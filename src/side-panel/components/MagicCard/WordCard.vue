@@ -59,7 +59,7 @@
         
         <button @click="handleCopyAnki" class="copy-button" title="第二步: 复制内容到 Anki">
           <Copy class="w-4 h-4" />
-          复制 Anki 内容 <span v-if="copied" class="ml-1 text-xs bg-white/20 px-1 rounded">已复制!</span>
+          复制 Anki 内容
         </button>
       </div>
 
@@ -79,6 +79,7 @@ import { Sparkles, AlertCircle, RotateCw, Download, Copy } from 'lucide-vue-next
 import { useAiStore } from '@/stores/ai-store'
 import type { WordContext } from '@/logic/prompts'
 import { useClipboard } from '@vueuse/core'
+import { useToast } from '@/composables/useToast'
 
 interface Props {
   context: WordContext
@@ -87,6 +88,7 @@ interface Props {
 const props = defineProps<Props>()
 const aiStore = useAiStore()
 const { copy, copied } = useClipboard()
+const { toast } = useToast()
 
 // State for filename consistency
 const currentTimestamp = ref<number>(Date.now())
@@ -144,6 +146,7 @@ function handleCopyAnki() {
       </div>
     `
     copy(html)
+    toast({ title: '已复制', description: 'Anki 内容已复制到剪贴板', variant: 'success' })
 }
 </script>
 

@@ -23,25 +23,13 @@
           alt="Magic Card" 
           class="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain bg-white" 
         />
-        
-        <!-- Action Bar -->
-        <div class="flex gap-3">
-            <button 
-              @click="handleDownload" 
-              class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-base font-semibold cursor-pointer transition-all shadow-lg hover:-translate-y-0.5 hover:shadow-xl bg-emerald-500 hover:bg-emerald-600 text-white"
-            >
-                <Download class="w-5 h-5" />
-                <span>保存图片</span>
-            </button>
-            <!-- Optional: Regenerate could trigger an event, but for now let's focus on viewing -->
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Download, X } from 'lucide-vue-next'
+import { X } from 'lucide-vue-next'
 
 const props = defineProps<{
   visible: boolean
@@ -51,14 +39,5 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
-
-function handleDownload() {
-  if (!props.image) return
-  
-  const link = document.createElement('a')
-  link.href = props.image
-  link.download = `magic-card-${Date.now()}.png`
-  link.click()
-}
 </script>
 
