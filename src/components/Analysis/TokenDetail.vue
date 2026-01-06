@@ -18,6 +18,7 @@ interface Props {
   tokenDetailData?: any
   isTokenDetailLoading?: boolean
   tokenDetailError?: string | null
+  showMagicCard?: boolean
 }
 
 const props = defineProps<Props>()
@@ -168,6 +169,7 @@ function speakJapanese(text: string): void {
                 </div>
                  <!-- Magic Card Button -->
                 <button 
+                    v-if="showMagicCard"
                     @click="showWordCard = true" 
                     title="生成单词魔法卡片"
                     class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 rounded border border-transparent shadow-sm transition-all"

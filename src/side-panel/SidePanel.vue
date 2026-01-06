@@ -332,6 +332,7 @@ onMessage('trigger-clipboard-read', async () => {
                             :token-detail-data="tokenDetailData"
                             :is-token-detail-loading="isTokenDetailLoading"
                             :token-detail-error="tokenDetailError"
+                            :show-magic-card="true"
                             @back="handleBack"
                         />
 

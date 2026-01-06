@@ -112,7 +112,7 @@ const getPosColor = (pos: string) => {
 
     <!-- Sentence Magic Card Button -->
     <button
-      v-if="tokens.length > 0 && !isLoading"
+      v-if="tokens.length > 0 && !isLoading && showMagicCard"
       @click="$emit('generate-sentence-card')"
       class="w-full mt-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group"
     >
