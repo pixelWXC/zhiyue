@@ -1,5 +1,60 @@
-# Vue 3 + TypeScript + Vite
+# 智阅 (ZhiYue) - 懂你的日语学习助手
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+智阅是一款基于 Chrome 浏览器的日语学习插件，利用先进的 Google Gemini 大模型技术，为你提供深度的日语分析、即时问答和智能制卡功能，让日语学习更高效、更懂你。
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## 🌟 核心功能
+
+*   **智能嗅探与快捷分析**：通过快捷键（默认 `Alt + U`）一键唤起，支持剪切板文本及图片内容的自动分析。
+*   **深度结构分析**：精准识别日语句子结构，提供词汇、词性、语法成分及语音标注的流式可视化展示。
+*   **词汇详解**：点击任意词汇即可查看详细释义、读音及用法说明。
+*   **一句话问答**：对分析结果有疑问？直接提问 AI，比如“为什么这里用 〜ている？”，即可获得解答。
+*   **句法树可视化**：自动拆解句子的主谓修饰关系，通过语法树形式直观呈现核心逻辑。
+*   **魔法记忆卡片**：
+    *   **单词卡片**：生成包含场景图、例句的精美单词记忆卡。
+    *   **整句卡片**：为整个句子生成意境图及学习卡片。
+    *   支持一键复制 Anki，轻松制卡。
+
+## 🛠️ 技术栈
+
+*   **前端框架**: Vue 3 + TypeScript + Vite
+*   **构建工具**: CRXJS (Manifest V3)
+*   **UI 组件**: TailwindCSS + Shadcn-vue / Radix-vue
+*   **AI 交互**: Google GenAI SDK (Gemini 3 Flash/Pro)
+*   **状态管理**: Pinia
+
+## 🚀 开发指南
+
+### 环境准备
+
+确保你的环境已安装 Node.js (推荐 v20+)。
+
+### 安装依赖
+
+```bash
+npm install
+# 或者
+pnpm install
+```
+
+### 启动开发服务器
+
+```bash
+npm run dev
+# 或者
+pnpm dev
+```
+
+该命令会启动 Vite 开发服务器，并自动编译 Chrome 插件资源。
+
+### 在 Chrome 中加载插件
+
+1.  打开 Chrome 浏览器，进入扩展程序管理页面 (`chrome://extensions/`)。
+2.  开启右上角的 **"开发者模式"**。
+3.  点击 **"加载已解压的扩展程序"**。
+4.  选择项目目录下的 `dist` 文件夹。
+
+### 配置
+
+1.  插件安装后，点击插件图标打开配置页面 (或侧边栏)。
+2.  在设置中填入你的 Google Gemini API Key。
+3.  根据需要自定义 Prompt 或快捷键。

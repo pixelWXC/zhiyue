@@ -81,7 +81,7 @@
         <button
           @click="$emit('export')"
           class="export-button active"
-          title="导出到 Anki (TSV 格式)"
+          title="导出到 Anki"
         >
           <Download class="w-4 h-4" />
           导出 Anki

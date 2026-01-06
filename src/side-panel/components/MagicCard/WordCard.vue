@@ -125,24 +125,15 @@ function handleDownload() {
 }
 
 function handleCopyAnki() {
-    const filename = getFilename()
-    // HTML format for Anki
-    // Intended for user to paste into a field, then drag the image in.
-    // The <img> tag with just filename allows Anki to resolve it if the file is in media folder
-    // or if the user drags it in, Anki often replaces implementation.
-    // But text copy is main goal here.
-    
-    // We provide a rich text block
     const html = `
       <div class="anki-card-import">
         <div><strong>${props.context.word}</strong> (${props.context.kana})</div>
         <div>${props.context.meaning}</div>
         <br>
-        <img src="${filename}" alt="${props.context.word}">
+        <small>(请将下载的图片拖入此处)</small>
         <br>
         <hr>
         <div>${props.context.sentence}</div>
-        <small>(请将下载的图片拖入此处)</small>
       </div>
     `
     copy(html)
