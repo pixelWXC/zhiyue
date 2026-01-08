@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
   "name": "zhiyue",
-  "version": "1.0.0",
-  "description": "日语学习者的即时分析伴侣",
+  "version": "1.0.1",
+  "description": "智阅是一款日语学习插件：一键解析句子结构、词汇与语法，支持 AI 问答和 Anki 制卡，让阅读变成高效学习。",
+  "icons": {
+    "16": "logo-16.png",
+    "48": "logo-48.png",
+    "128": "logo-128.png"
+  },
   "permissions": [
     "sidePanel",
     "storage",
@@ -23,7 +28,12 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Open zhiyue"
+    "default_title": "Open zhiyue",
+    "default_icon": {
+      "16": "logo-16.png",
+      "48": "logo-48.png",
+      "128": "logo-128.png"
+    }
   },
   "side_panel": {
     "default_path": "src/side-panel/index.html"

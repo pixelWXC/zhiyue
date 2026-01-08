@@ -87,7 +87,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const aiStore = useAiStore()
-const { copy, copied } = useClipboard()
+const { copy } = useClipboard()
 const { toast } = useToast()
 
 // State for filename consistency
