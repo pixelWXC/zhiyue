@@ -303,13 +303,28 @@ const onCloseModal = () => {
 
 const onOpenSidePanel = () => {
     // ✅ 立即发送消息，不能有任何 await，否则会丢失用户手势
-    // Background script 会负责存储文本
-    chrome.runtime.sendMessage({
+    // Background script 会负责存储文本和分析结果
+    
+    // 检查是否分析已完成（有结果且不在流式传输中）
+    const analysisComplete = !isStreaming.value && parsedData.value && parsedData.value.tokens.length > 0
+    
+    const messagePayload: any = {
         type: 'open-side-panel',
         text: selectedText.value
-    }).then(response => {
+    }
+    
+    // 如果分析已完成，附带结果数据
+    if (analysisComplete) {
+        messagePayload.analysisResult = {
+            data: parsedData.value,
+            rapidTranslation: rapidTranslationText.value || undefined
+        }
+        console.log('📤 Sending analysis result to sidebar:', messagePayload.analysisResult)
+    }
+    
+    chrome.runtime.sendMessage(messagePayload).then(response => {
         if (response?.success) {
-            console.log('✅ Side panel opened successfully')
+            console.log('✅ Side panel opened successfully', analysisComplete ? '(with cached result)' : '(new analysis)')
         } else {
             console.error('❌ Failed to open side panel:', response?.error || 'Unknown error')
         }

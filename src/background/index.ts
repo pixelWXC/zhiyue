@@ -161,7 +161,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 // This preserves the user gesture context better than webext-bridge
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'open-side-panel') {
-        const { text } = message
+        const { text, analysisResult } = message
 
         // ✅ 关键：立即调用 sidePanel.open()，不能有任何 await
         // 任何异步操作都会丢失用户手势上下文
@@ -170,15 +170,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 .then(() => {
                     console.log('✅ Side panel opened for tab:', sender.tab?.id)
 
-                    // 打开成功后再存储文本
-                    chrome.storage.local.set({ 'pending_analysis_text': text }).then(() => {
-                        // 发送触发消息到侧边栏
-                        setTimeout(() => {
-                            sendMessage('trigger-text-input', { text }, 'popup').catch(e => {
-                                console.warn('⚠️ Could not send trigger to side panel:', e)
-                            })
-                        }, 500)
-                    })
+                    // 打开成功后存储文本和分析结果（如果有的话）
+                    // 侧边栏通过 onMounted 检查这些数据来决定是直接显示还是重新分析
+                    const storageData: Record<string, any> = {
+                        'pending_analysis_text': text
+                    }
+
+                    // 如果有已完成的分析结果，一起存储
+                    if (analysisResult) {
+                        storageData['pending_analysis_result'] = analysisResult
+                        console.log('📦 Storing cached analysis result for sidebar')
+                    }
+
+                    chrome.storage.local.set(storageData)
 
                     sendResponse({ success: true })
                 })

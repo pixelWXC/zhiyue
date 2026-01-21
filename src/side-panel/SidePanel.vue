@@ -136,14 +136,32 @@ async function handleTabChange(tab: 'analysis' | 'syntax') {
 // Check for pending analysis on mount (from Open in Side Panel)
 onMounted(async () => {
     try {
-        const data = await chrome.storage.local.get('pending_analysis_text')
+        const data = await chrome.storage.local.get(['pending_analysis_text', 'pending_analysis_result'])
         const text = data['pending_analysis_text'] as string | undefined
+        const cachedResult = data['pending_analysis_result'] as { data: any, rapidTranslation?: string } | undefined
+        
         if (text && typeof text === 'string') {
             console.log('📬 Found pending analysis:', text)
-            // Clear it
-            await chrome.storage.local.remove('pending_analysis_text')
-            // Start analysis
-            handleAnalyze(text)
+            
+            // Clear stored data
+            await chrome.storage.local.remove(['pending_analysis_text', 'pending_analysis_result'])
+            
+            // Save the text for potential retry
+            lastAnalyzedText.value = text
+            
+            // Check if we have cached analysis result
+            if (cachedResult && cachedResult.data) {
+                console.log('✨ Loading cached analysis result (no re-analysis needed)')
+                
+                // Use store action to properly load cached result
+                aiStore.loadCachedResult(text, cachedResult.data, cachedResult.rapidTranslation)
+                
+                console.log('✅ Cached result loaded successfully')
+            } else {
+                // No cached result, start fresh analysis
+                console.log('🔄 No cached result, starting new analysis')
+                handleAnalyze(text)
+            }
         }
     } catch (e) {
         console.error('Failed to check pending analysis', e)
@@ -152,14 +170,7 @@ onMounted(async () => {
 
 // IPC Listeners
 
-// Handle explicit trigger from background
-onMessage('trigger-text-input', ({ data }) => {
-    const text = (data as any).text
-    if (text) {
-        handleAnalyze(text)
-    }
-})
-
+// Handle clipboard read trigger from keyboard shortcut
 onMessage('trigger-clipboard-read', async () => {
     console.log('📋 Shortcut Trigger: Reading clipboard...')
     try {

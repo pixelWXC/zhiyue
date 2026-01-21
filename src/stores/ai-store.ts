@@ -154,6 +154,43 @@ export const useAiStore = defineStore('ai', () => {
         imageError.value = null
     }
 
+    /**
+     * Load cached analysis result from quick analysis bubble
+     * This avoids re-analyzing when sidebar opens with already complete results
+     */
+    function loadCachedResult(
+        text: string,
+        data: AnalysisData,
+        rapidTranslation?: string
+    ) {
+        console.log('[AI Store] Loading cached analysis result')
+
+        // Set the parsed data
+        parsedData.value = data
+
+        // Create and set the result object
+        const result: AnalysisResult = {
+            id: Date.now().toString(),
+            text: text,
+            result: JSON.stringify(data),
+            data: data,
+            timestamp: Date.now(),
+            mode: 'flash' // Mark as from quick analysis
+        }
+        currentResult.value = result
+        history.value.unshift(result)
+
+        // Set rapid translation if provided
+        if (rapidTranslation) {
+            rapidTranslationText.value = rapidTranslation
+        }
+
+        // Reset any streaming/loading states
+        isStreaming.value = false
+        isLoading.value = false
+        error.value = null
+    }
+
     // Main Analysis Action with Port connection
     async function analyzeText(text: string) {
         if (!text.trim()) return
@@ -694,6 +731,7 @@ export const useAiStore = defineStore('ai', () => {
         clearHistory,
         removeFromHistory,
         clearResults,
+        loadCachedResult,
 
         // Syntax
         syntaxData,

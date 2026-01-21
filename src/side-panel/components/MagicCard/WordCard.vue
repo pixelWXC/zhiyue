@@ -41,7 +41,13 @@
 
         <!-- Middle: Image -->
         <div class="image-preview rounded-lg overflow-hidden border border-gray-100 shadow-sm">
-          <img :src="image" :alt="context.word" class="w-full h-auto object-cover" />
+          <img 
+            :src="image" 
+            :alt="context.word" 
+            class="w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+            @click="openFullscreen"
+            title="点击全屏预览"
+          />
         </div>
 
         <!-- Bottom: Context Sentence -->
@@ -107,6 +113,23 @@ async function handleGenerate() {
 function handleRegenerate() {
   aiStore.clearWordCard()
   handleGenerate()
+}
+
+// 全屏预览功能
+async function openFullscreen() {
+  if (!image.value) return
+  
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (tab?.id) {
+      await chrome.tabs.sendMessage(tab.id, {
+        action: 'show-sentence-card',
+        image: image.value
+      })
+    }
+  } catch (e) {
+    console.error('Failed to open fullscreen', e)
+  }
 }
 
 function getFilename() {

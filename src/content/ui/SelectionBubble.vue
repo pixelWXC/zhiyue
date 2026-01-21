@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Sparkles, MessageSquare, X } from 'lucide-vue-next'
+import { Sparkles } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   (e: 'analyze'): void
@@ -60,7 +60,7 @@ const isExpanded = ref(false)
             @click="$emit('analyze')"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
             >
-            <span>弹窗分析</span>
+            <span>快捷分析</span>
             </button>
 
             <!-- 解释按钮 -->
@@ -68,7 +68,7 @@ const isExpanded = ref(false)
             @click="$emit('explain')"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
             >
-            <span>侧栏打开</span>
+            <span>深度分析</span>
             </button>
         </template>
         
@@ -84,14 +84,6 @@ const isExpanded = ref(false)
                  </button>
             </div>
         </template>
-
-        <!-- 关闭按钮 -->
-        <button
-          @click="$emit('close')"
-          class="flex items-center justify-center w-7 h-7 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out"
-        >
-          <X class="w-3.5 h-3.5" />
-        </button>
       </div>
     </div>
   </div>
