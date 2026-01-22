@@ -3,9 +3,16 @@ import { ref, computed } from 'vue'
 import { ChevronRight, ChevronDown, Circle } from 'lucide-vue-next'
 import type { SyntaxNode } from '@/stores/ai-store'
 
+interface SyntaxTreeNodeData extends SyntaxNode {
+    id: string
+    children: SyntaxTreeNodeData[]
+}
+
 const props = defineProps<{
-    node: SyntaxNode
+    node: SyntaxTreeNodeData
     depth: number
+    activeNodeIds?: Set<string>
+    onHover?: (id: string | null) => void
 }>()
 
 const isOpen = ref(true)
@@ -31,6 +38,18 @@ const roleColor = computed(() => {
     if (role.includes('修饰')) return 'text-amber-500 bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/30'
     return 'text-gray-500 bg-gray-50 dark:bg-zinc-800 border-gray-100 dark:border-zinc-700'
 })
+
+const isHighlighted = computed(() => props.activeNodeIds?.has(props.node.id) ?? false)
+
+const highlightClass = computed(() => {
+    return isHighlighted.value
+        ? 'bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-200/80 dark:ring-indigo-700/40'
+        : ''
+})
+
+function handleHover(id: string | null) {
+    props.onHover?.(id)
+}
 </script>
 
 <template>
@@ -39,8 +58,11 @@ const roleColor = computed(() => {
         <!-- Node Content -->
         <div 
             class="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-100 dark:hover:bg-zinc-800/50 rounded-lg cursor-pointer transition-colors group"
+            :class="highlightClass"
             :style="indentStyle"
             @click="toggle"
+            @mouseenter="handleHover(node.id)"
+            @mouseleave="handleHover(null)"
         >
             <!-- Toggle Icon / Spacer -->
             <div class="w-4 h-4 flex items-center justify-center shrink-0">
@@ -90,6 +112,8 @@ const roleColor = computed(() => {
                 :key="index" 
                 :node="child"
                 :depth="depth + 1"
+                :active-node-ids="activeNodeIds"
+                :on-hover="onHover"
             />
         </div>
 

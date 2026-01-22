@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
@@ -42,6 +42,8 @@ const displayData = computed(() => {
  */
 async function handleAnalyze(text: string) {
     if (!text || !text.trim()) return
+    isSyntaxTabPending.value = false
+    pendingSyntaxText.value = ''
     lastAnalyzedText.value = text
     await aiStore.analyzeText(text)
 }
@@ -61,6 +63,8 @@ function handleRetry() {
 function handleClear() {
     aiStore.clearResults()
     lastAnalyzedText.value = ''
+    isSyntaxTabPending.value = false
+    pendingSyntaxText.value = ''
 }
 
 function handleSelectToken(token: any) {
@@ -123,13 +127,41 @@ function handleRetryCard() {
 
 // Tab Logic
 const currentTab = ref<'analysis' | 'syntax'>('analysis')
+const isSyntaxTabPending = ref(false)
+const pendingSyntaxText = ref('')
 
 async function handleTabChange(tab: 'analysis' | 'syntax') {
-    currentTab.value = tab
-    if (tab === 'syntax' && !syntaxData.value && lastAnalyzedText.value) {
-        await aiStore.analyzeSyntax(lastAnalyzedText.value)
+    if (tab === 'analysis') {
+        currentTab.value = 'analysis'
+        return
+    }
+
+    if (tab === 'syntax') {
+        if (syntaxData.value) {
+            currentTab.value = 'syntax'
+            return
+        }
+        if (!lastAnalyzedText.value) return
+
+        isSyntaxTabPending.value = true
+        pendingSyntaxText.value = lastAnalyzedText.value
+
+        if (!isSyntaxLoading.value) {
+            await aiStore.analyzeSyntax(lastAnalyzedText.value)
+        }
     }
 }
+
+watch([syntaxData, isSyntaxLoading], ([data, loading]) => {
+    if (!isSyntaxTabPending.value) return
+    if (loading) return
+
+    if (data && pendingSyntaxText.value === lastAnalyzedText.value) {
+        currentTab.value = 'syntax'
+    }
+    isSyntaxTabPending.value = false
+    pendingSyntaxText.value = ''
+})
 
 
 
@@ -243,11 +275,20 @@ onMessage('trigger-clipboard-read', async () => {
                 </button>
                 <button 
                      @click="handleTabChange('syntax')"
+                     :aria-busy="isSyntaxTabPending"
                      class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
-                     :class="currentTab === 'syntax' ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                     :class="currentTab === 'syntax'
+                        ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : isSyntaxTabPending
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                 >
                     <Network class="w-3 h-3" />
-                    句法
+                    <span>句法</span>
+                    <span v-if="isSyntaxTabPending" class="ml-1 flex items-center gap-1 text-[10px] text-indigo-600 dark:text-indigo-400">
+                        <span class="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+                        等待中
+                    </span>
                 </button>
             </div>
         </div>
@@ -357,6 +398,8 @@ onMessage('trigger-clipboard-read', async () => {
                              <SyntaxTree 
                                 v-else-if="syntaxData"
                                 :data="syntaxData"
+                                :sentence="lastAnalyzedText"
+                                :is-loading="isSyntaxLoading"
                              />
                              
                              <div v-else class="text-center py-8 text-gray-400 text-xs">
