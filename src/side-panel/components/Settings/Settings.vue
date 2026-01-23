@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Settings as SettingsIcon, FileText, AlertTriangle, Zap } from 'lucide-vue-next'
+import { Settings as SettingsIcon, FileText, AlertTriangle, Zap, MessageCircle, Keyboard, ExternalLink } from 'lucide-vue-next'
 import { usePromptService, type PromptKey } from '@/logic/prompts/prompt-service'
 import { useSettings } from '@/logic/storage'
 import PromptEditor from './PromptEditor.vue'
@@ -19,7 +19,12 @@ const selectedPromptId = ref<PromptKey | null>(null)
 const isPromptsLoading = ref(false)
 
 // Rapid Services Configuration
-const { rapidTranslation, rapidTokenDetail } = useSettings()
+const { rapidTranslation, rapidTokenDetail, showBubble } = useSettings()
+
+// Story 4-7: 打开 Chrome 快捷键设置页面
+function openShortcutSettings() {
+  chrome.tabs.create({ url: 'chrome://extensions/shortcuts' })
+}
 
 // Warning Modal
 const showWarning = ref(false)
@@ -150,7 +155,7 @@ onMounted(async () => {
                 <h3 class="font-medium text-sm">⚡ 快速翻译</h3>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                选择文本时自动触发快速翻译（日语→中文），延迟 < 2 秒
+                选择文本时自动触发快速翻译（日语→中文）
               </p>
             </div>
             <div class="ml-4">
@@ -178,7 +183,7 @@ onMounted(async () => {
                 <h3 class="font-medium text-sm">⚡ Token 点击快速查询</h3>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                点击 Token 时快速获取词义、语法和发音，延迟 < 1.5 秒
+                点击 Token 时快速获取词义、语法和发音
               </p>
             </div>
             <div class="ml-4">
@@ -198,6 +203,87 @@ onMounted(async () => {
               </button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Story 4-7: Interface Interaction Configuration Section -->
+      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <MessageCircle class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-blue-600 dark:text-blue-400">
+            界面交互
+          </h2>
+        </div>
+        
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          控制页面元素的显示方式，根据你的使用习惯调整交互体验。
+        </p>
+
+        <div class="space-y-4">
+          <!-- Show Bubble Toggle -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-medium text-sm">💬 页面气泡显示</h3>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                选择文本后显示浮动气泡，关闭后可通过快捷键唤起侧边栏
+              </p>
+            </div>
+            <div class="ml-4">
+              <button
+                @click="showBubble = !showBubble"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                  showBubble ? 'bg-blue-600' : 'bg-gray-300 dark:bg-zinc-700'
+                ]"
+              >
+                <span
+                  :class="[
+                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out',
+                    showBubble ? 'translate-x-6' : 'translate-x-1'
+                  ]"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Story 4-7: Shortcut Key Configuration Section -->
+      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <Keyboard class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
+            快捷键
+          </h2>
+        </div>
+        
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          快捷键可在 Chrome 扩展管理页面中修改。
+        </p>
+
+        <div class="space-y-4">
+          <!-- Current Shortcut Display -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-medium text-sm">⌨️ 打开/关闭侧边栏</h3>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                默认快捷键：<kbd class="px-2 py-0.5 bg-gray-200 dark:bg-zinc-600 rounded text-xs font-mono">Alt+U</kbd>
+              </p>
+            </div>
+          </div>
+          
+          <!-- Open Chrome Shortcuts Settings -->
+          <button
+            @click="openShortcutSettings"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors"
+          >
+            <ExternalLink class="w-4 h-4" />
+            <span class="text-sm font-medium">修改快捷键</span>
+          </button>
         </div>
       </section>
 

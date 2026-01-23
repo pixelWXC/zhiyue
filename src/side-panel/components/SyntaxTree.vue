@@ -4,7 +4,7 @@ import type { SyntaxNode } from '@/stores/ai-store'
 import SyntaxTreeNode from './SyntaxTreeNode.vue'
 // import { Network, Maximize, Minimize } from 'lucide-vue-next'
 
-type SyntaxNodeWithId = SyntaxNode & { id: string; children: SyntaxNodeWithId[] }
+type SyntaxNodeWithId = Omit<SyntaxNode, 'children'> & { id: string; children: SyntaxNodeWithId[] }
 
 interface TokenMatch {
     nodeId: string
@@ -78,7 +78,10 @@ function buildTokenMatches(sentence: string, nodes: SyntaxNodeWithId[]): TokenMa
         let bestToken = ''
 
         for (let i = 0; i < remaining.length; i += 1) {
-            const token = remaining[i].token
+            const entry = remaining[i]
+            if (!entry) continue
+            
+            const token = entry.token
             if (sentence.startsWith(token, cursor)) {
                 if (token.length > bestToken.length) {
                     bestToken = token
@@ -89,13 +92,17 @@ function buildTokenMatches(sentence: string, nodes: SyntaxNodeWithId[]): TokenMa
 
         if (bestIndex >= 0) {
             const match = remaining[bestIndex]
-            matches.push({
-                nodeId: match.node.id,
-                start: cursor,
-                end: cursor + bestToken.length
-            })
-            remaining.splice(bestIndex, 1)
-            cursor += bestToken.length
+            if (match) {
+                matches.push({
+                    nodeId: match.node.id,
+                    start: cursor,
+                    end: cursor + bestToken.length
+                })
+                remaining.splice(bestIndex, 1)
+                cursor += bestToken.length
+            } else {
+                cursor += 1 // Should not happen if logic is correct
+            }
         } else {
             cursor += 1
         }

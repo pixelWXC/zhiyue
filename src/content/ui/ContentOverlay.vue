@@ -28,6 +28,9 @@ const rapidTranslationError = ref('')
 const sentenceCardVisible = ref(false)
 const sentenceCardImage = ref('')
 
+// Story 4-7: 页面气泡显示开关状态
+const showBubbleEnabled = ref(true) // Default enabled
+
 // Watch for overlay visibility to toggle host pointer-events
 watch(sentenceCardVisible, (newValue) => {
     const host = document.getElementById('zhiyue-extension-host')
@@ -89,7 +92,8 @@ const handleSelection = () => {
             bubbleY.value = 10
         }
         
-        bubbleVisible.value = true
+        // Story 4-7: 只有启用气泡显示时才显示气泡
+        bubbleVisible.value = showBubbleEnabled.value
     }
 }
 
@@ -113,15 +117,33 @@ const checkApiKey = async () => {
     }
 }
 
+// Helper function to parse boolean value (handles both string and boolean)
+const parseBoolean = (value: any, defaultValue: boolean = true): boolean => {
+    if (value === undefined || value === null) return defaultValue
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'string') return value !== 'false' && value !== '0'
+    return Boolean(value)
+}
+
 // Load rapid services settings
 const loadRapidSettings = async () => {
     try {
         const result = await chrome.storage.local.get([
             STORAGE_KEYS.RAPID_TRANSLATION,
-            STORAGE_KEYS.RAPID_TOKEN_DETAIL
+            STORAGE_KEYS.RAPID_TOKEN_DETAIL,
+            STORAGE_KEYS.SHOW_BUBBLE // Story 4-7
         ])
-        rapidTranslationEnabled.value = result[STORAGE_KEYS.RAPID_TRANSLATION] !== false // Default true
-        rapidTokenDetailEnabled.value = result[STORAGE_KEYS.RAPID_TOKEN_DETAIL] !== false // Default true
+        // 修复 Bug: VueUse useStorageAsync 将 boolean 序列化为字符串存储
+        // 需要正确处理字符串 "false" 和 boolean false 两种情况
+        rapidTranslationEnabled.value = parseBoolean(result[STORAGE_KEYS.RAPID_TRANSLATION], true)
+        rapidTokenDetailEnabled.value = parseBoolean(result[STORAGE_KEYS.RAPID_TOKEN_DETAIL], true)
+        showBubbleEnabled.value = parseBoolean(result[STORAGE_KEYS.SHOW_BUBBLE], true)
+        
+        console.log('[Zhiyue] Rapid settings loaded:', {
+            rapidTranslation: rapidTranslationEnabled.value,
+            rapidTokenDetail: rapidTokenDetailEnabled.value,
+            showBubble: showBubbleEnabled.value
+        })
     } catch (e) {
         console.warn('Failed to load rapid settings', e)
     }
@@ -132,8 +154,22 @@ const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange 
     if (areaName === 'local' && changes[STORAGE_KEYS.API_KEY]) {
         hasApiKey.value = !!changes[STORAGE_KEYS.API_KEY]?.newValue
     }
+    // 修复 Bug: 使用 parseBoolean 正确处理字符串/boolean 类型
     if (areaName === 'local' && changes[STORAGE_KEYS.RAPID_TRANSLATION]) {
-        rapidTranslationEnabled.value = changes[STORAGE_KEYS.RAPID_TRANSLATION]?.newValue !== false
+        const newValue = parseBoolean(changes[STORAGE_KEYS.RAPID_TRANSLATION]?.newValue, true)
+        rapidTranslationEnabled.value = newValue
+        console.log('[Zhiyue] Rapid translation setting changed:', newValue)
+    }
+    if (areaName === 'local' && changes[STORAGE_KEYS.RAPID_TOKEN_DETAIL]) {
+        const newValue = parseBoolean(changes[STORAGE_KEYS.RAPID_TOKEN_DETAIL]?.newValue, true)
+        rapidTokenDetailEnabled.value = newValue
+        console.log('[Zhiyue] Rapid token detail setting changed:', newValue)
+    }
+    // Story 4-7: 监听 SHOW_BUBBLE 配置变化
+    if (areaName === 'local' && changes[STORAGE_KEYS.SHOW_BUBBLE]) {
+        const newValue = parseBoolean(changes[STORAGE_KEYS.SHOW_BUBBLE]?.newValue, true)
+        showBubbleEnabled.value = newValue
+        console.log('[Zhiyue] Show bubble setting changed:', newValue)
     }
 }
 

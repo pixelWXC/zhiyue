@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
@@ -10,7 +10,7 @@ import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import MagicCard from './components/MagicCard/MagicCard.vue'
 import SentenceCard from './components/MagicCard/SentenceCard.vue'
 import Settings from './components/Settings/Settings.vue'
-import { onMessage } from 'webext-bridge/popup'
+import { onMessage, sendMessage } from 'webext-bridge/popup'
 import { useToast } from '@/composables/useToast'
 import ToastProvider from '@/components/ui/Toast/ToastProvider.vue'
 
@@ -214,6 +214,31 @@ onMessage('trigger-clipboard-read', async () => {
         console.warn('Clipboard read failed', error)
     }
 })
+
+// Story 4-7: 在挂载时通知 Background Side Panel 已打开
+onMounted(() => {
+    sendMessage('sidepanel-opened', undefined, 'background')
+        .then(() => console.log('📌 Side Panel state: OPEN'))
+        .catch((e) => console.warn('Failed to notify sidepanel-opened:', e))
+})
+
+// Story 4-7: 在卸载时通知 Background Side Panel 已关闭
+onUnmounted(() => {
+    sendMessage('sidepanel-closed', undefined, 'background')
+        .then(() => console.log('📌 Side Panel state: CLOSED'))
+        .catch((e) => console.warn('Failed to notify sidepanel-closed:', e))
+})
+
+// Story 4-7: Handle Side Panel close trigger from keyboard shortcut toggle
+onMessage('close-sidepanel', () => {
+    console.log('🔄 Toggle Shortcut: Closing Side Panel...')
+    // 发送关闭消息给 Background，然后关闭窗口
+    sendMessage('sidepanel-closed', undefined, 'background')
+        .catch((e) => console.warn('Failed to notify sidepanel-closed:', e))
+        .finally(() => {
+            window.close()
+        })
+})
 </script>
 
 <template>
@@ -268,10 +293,11 @@ onMessage('trigger-clipboard-read', async () => {
             <div v-if="lastAnalyzedText" class="flex p-0.5 bg-gray-100 dark:bg-zinc-800 rounded-lg">
                 <button 
                     @click="handleTabChange('analysis')"
-                    class="px-3 py-1 text-xs font-medium rounded-md transition-all"
+                    class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
                     :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                 >
-                    分析
+                    <Sparkles class="w-3 h-3" />
+                    <span>分析</span>
                 </button>
                 <button 
                      @click="handleTabChange('syntax')"

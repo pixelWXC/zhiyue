@@ -25,6 +25,7 @@ export const STORAGE_KEYS = {
     CARDS: `${PREFIX}cards`,
     RAPID_TRANSLATION: `${PREFIX}rapidTranslation`,
     RAPID_TOKEN_DETAIL: `${PREFIX}rapidTokenDetail`,
+    SHOW_BUBBLE: `${PREFIX}showBubble`, // Story 4-7: 页面气泡显示开关
 } as const
 
 /**
@@ -94,6 +95,14 @@ export function useSettings() {
         { mergeDefaults: true }
     )
 
+    // Story 4-7: 页面气泡显示开关
+    const showBubble = useStorageAsync(
+        STORAGE_KEYS.SHOW_BUBBLE,
+        true, // Default: enabled (显示气泡)
+        chromeStorageAdapter,
+        { mergeDefaults: true }
+    )
+
     return {
         apiKey,
         theme,
@@ -101,7 +110,20 @@ export function useSettings() {
         preferredModel,
         rapidTranslation,
         rapidTokenDetail,
+        showBubble, // Story 4-7
     }
+}
+
+/**
+ * Helper function to parse boolean value from storage
+ * Handles both string ("true"/"false") and boolean values
+ * This is necessary because VueUse's useStorageAsync serializes booleans as strings
+ */
+function parseBoolean(value: any, defaultValue: boolean = true): boolean {
+    if (value === undefined || value === null) return defaultValue
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'string') return value !== 'false' && value !== '0'
+    return Boolean(value)
 }
 
 /**
@@ -112,10 +134,11 @@ export async function getSettings(): Promise<UserSettings> {
     return {
         apiKey: (result[STORAGE_KEYS.API_KEY] as string | undefined),
         theme: (result[STORAGE_KEYS.THEME] as 'light' | 'dark' | 'auto' | undefined) ?? 'auto',
-        autoCapture: (result[STORAGE_KEYS.AUTO_CAPTURE] as boolean | undefined) ?? true,
+        autoCapture: parseBoolean(result[STORAGE_KEYS.AUTO_CAPTURE], true),
         preferredModel: (result[STORAGE_KEYS.PREFERRED_MODEL] as 'flash' | 'pro' | undefined) ?? 'flash',
-        rapidTranslation: (result[STORAGE_KEYS.RAPID_TRANSLATION] as boolean | undefined) ?? true,
-        rapidTokenDetail: (result[STORAGE_KEYS.RAPID_TOKEN_DETAIL] as boolean | undefined) ?? true,
+        rapidTranslation: parseBoolean(result[STORAGE_KEYS.RAPID_TRANSLATION], true),
+        rapidTokenDetail: parseBoolean(result[STORAGE_KEYS.RAPID_TOKEN_DETAIL], true),
+        showBubble: parseBoolean(result[STORAGE_KEYS.SHOW_BUBBLE], true), // Story 4-7
     }
 }
 

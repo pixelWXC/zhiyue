@@ -28,43 +28,63 @@ chrome.windows.getLastFocused().then(w => {
     if (w.id) currentWindowId = w.id
 }).catch(console.error)
 
+// Story 4-7: 使用内存变量跟踪 Side Panel 是否打开
+// 注意：不能使用 chrome.storage 因为 await 会打破用户手势上下文
+let isSidePanelOpen = false
 
-chrome.commands.onCommand.addListener(async (command) => {
+chrome.commands.onCommand.addListener((command) => {
     if (command === 'toggle-sidepanel') {
-        try {
-            // Use cached ID or fallback to current query if strictly necessary (but query is also async usually)
-            // If we don't have an ID, we can't open it.
-            if (!currentWindowId) {
-                const w = await chrome.windows.getLastFocused()
-                currentWindowId = w.id
+        // 关键：不能在 sidePanel.open() 之前使用任何 await
+        // 否则会丢失用户手势上下文
+
+        if (isSidePanelOpen) {
+            // Side Panel 已打开，发送关闭消息
+            console.log('⌨️ Shortcut: Side Panel is open, sending close message...')
+            sendMessage('close-sidepanel', undefined, 'popup')
+                .then(() => {
+                    console.log('⌨️ Shortcut: Side Panel close message sent')
+                })
+                .catch((e) => {
+                    console.warn('⌨️ Shortcut: Failed to send close message:', e)
+                    // 消息发送失败，重置状态
+                    isSidePanelOpen = false
+                })
+        } else {
+            // Side Panel 未打开，打开它
+            console.log('⌨️ Shortcut: Side Panel not open, opening...')
+
+            // 使用缓存的 windowId，避免 await
+            const windowId = currentWindowId
+            if (windowId) {
+                chrome.sidePanel.open({ windowId })
+                    .then(() => {
+                        console.log('⌨️ Shortcut: Side Panel opened for window:', windowId)
+                        // Notify Side Panel to read clipboard
+                        setTimeout(() => {
+                            sendMessage('trigger-clipboard-read', undefined, 'popup')
+                                .then(() => console.log('📨 Sent trigger-clipboard-read'))
+                                .catch((err) => console.warn('⚠️ Could not send clipboard trigger:', err))
+                        }, 500)
+                    })
+                    .catch((error) => {
+                        console.error('❌ Failed to open Side Panel:', error)
+                    })
+            } else {
+                console.error('❌ No window ID available')
             }
-
-            if (currentWindowId) {
-                // Open Side Panel
-                // Must be called synchronously-ish (no await before this call if possible, though we just did one above if missing)
-
-                // Note: If we had to await above, this might fail. 
-                // But normally currentWindowId is correctly cached by onFocusChanged.
-                await chrome.sidePanel.open({ windowId: currentWindowId })
-                console.log('⌨️ Shortcut: Side Panel opened for window:', currentWindowId)
-
-                // Notify Side Panel to read clipboard
-                // We wait a brief moment to ensure Side Panel is mounted/listening
-                setTimeout(async () => {
-                    try {
-                        // Attempt to send message to 'popup' context (Side Panel)
-                        await sendMessage('trigger-clipboard-read', undefined, 'popup')
-                        console.log('📨 Sent trigger-clipboard-read')
-                    } catch (e) {
-                        // It's possible the side panel is not yet ready or bridge not established
-                        console.warn('⚠️ Could not send clipboard trigger (Side Panel might be loading):', e)
-                    }
-                }, 500)
-            }
-        } catch (error) {
-            console.error('❌ Failed to handle shortcut:', error)
         }
     }
+})
+
+// Story 4-7: 监听 Side Panel 状态变化消息
+onMessage('sidepanel-opened', () => {
+    isSidePanelOpen = true
+    console.log('📌 Side Panel state updated: OPEN')
+})
+
+onMessage('sidepanel-closed', () => {
+    isSidePanelOpen = false
+    console.log('📌 Side Panel state updated: CLOSED')
 })
 
 // ====================
