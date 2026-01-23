@@ -60,11 +60,7 @@ chrome.commands.onCommand.addListener((command) => {
                     .then(() => {
                         console.log('⌨️ Shortcut: Side Panel opened for window:', windowId)
                         // Notify Side Panel to read clipboard
-                        setTimeout(() => {
-                            sendMessage('trigger-clipboard-read', undefined, 'popup')
-                                .then(() => console.log('📨 Sent trigger-clipboard-read'))
-                                .catch((err) => console.warn('⚠️ Could not send clipboard trigger:', err))
-                        }, 500)
+                        // Clipboard automatic read removed by user request
                     })
                     .catch((error) => {
                         console.error('❌ Failed to open Side Panel:', error)

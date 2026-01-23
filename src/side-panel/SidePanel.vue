@@ -203,17 +203,7 @@ onMounted(async () => {
 // IPC Listeners
 
 // Handle clipboard read trigger from keyboard shortcut
-onMessage('trigger-clipboard-read', async () => {
-    console.log('📋 Shortcut Trigger: Reading clipboard...')
-    try {
-        const text = await navigator.clipboard.readText()
-        if (text && text.trim()) {
-            handleAnalyze(text)
-        }
-    } catch (error) {
-        console.warn('Clipboard read failed', error)
-    }
-})
+// Clipboard automatic read removed by user request
 
 // Story 4-7: 在挂载时通知 Background Side Panel 已打开
 onMounted(() => {

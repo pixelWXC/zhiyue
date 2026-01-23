@@ -8,19 +8,13 @@
     "48": "logo-48.png",
     "128": "logo-128.png"
   },
-  "permissions": [
-    "sidePanel",
-    "storage",
-    "activeTab",
-    "scripting",
-    "clipboardRead"
-  ],
+  "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
   "commands": {
     "toggle-sidepanel": {
       "suggested_key": {
         "default": "Alt+U"
       },
-      "description": "Toggle Side Panel and Capture Clipboard"
+      "description": "Toggle Side Panel"
     }
   },
   "background": {

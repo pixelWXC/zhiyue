@@ -2,7 +2,7 @@
 import { ref, watch, nextTick, computed } from 'vue'
 import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
-import { Send, BookOpen, ExternalLink, ArrowLeft, Bot, User, Sparkles, X } from 'lucide-vue-next'
+import { Send, ExternalLink, ArrowLeft, Bot, User, Sparkles, X, Volume2, Zap, MessageCircleQuestion } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import WordCard from '@/side-panel/components/MagicCard/WordCard.vue'
 import type { WordContext } from '@/logic/prompts'
@@ -51,6 +51,9 @@ const qaStreamText = computed(() => isContentScriptMode.value ? (props.externalQ
 const questionInput = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
 const showWordCard = ref(false)
+const isAiModalOpen = ref(false)
+
+const suggestedQuestions = ['用法是什么?', '其他意思?', '例句?']
 
 const wordCardContext = computed<WordContext | null>(() => {
     if (!selectedToken.value) return null
@@ -64,6 +67,84 @@ const wordCardContext = computed<WordContext | null>(() => {
         kana: selectedToken.value.reading || props.tokenDetailData?.pronunciation || '',
         meaning: meaning,
         sentence: aiStore.currentResult?.text || ''
+    }
+})
+
+const WIDTH_SMALL = 40
+const WIDTH_LARGE = 70
+const PITCH_HEIGHT_HIGH = 10
+const PITCH_HEIGHT_LOW = 30
+
+const formattedTones = computed(() => {
+    if (!props.tokenDetailData?.tones) return []
+    
+    const rawTones = props.tokenDetailData.tones
+    const mergedTones: { char: string, high: boolean }[] = []
+    
+    // Small kana that should be merged with previous character (forming a single mora)
+    // Excluding small tsu (っ/ッ) as it counts as a separate mora
+    const smallKana = ['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ゎ', 
+                       'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ヮ']
+    
+    for (const t of rawTones) {
+        if (mergedTones.length > 0 && smallKana.includes(t.char)) {
+            mergedTones[mergedTones.length - 1]!.char += t.char
+        } else {
+            mergedTones.push({ ...t })
+        }
+    }
+    return mergedTones
+})
+
+function getCharWidth(char: string) {
+    return char.length > 1 ? WIDTH_LARGE : WIDTH_SMALL
+}
+
+// Calculate SVG paths for pitch pattern
+const pitchSvg = computed(() => {
+    const tones = formattedTones.value
+    if (!tones.length) return { width: 0, height: 40, lines: [], circles: [] }
+
+    let currentX = 0
+    const points = tones.map(t => {
+        const width = getCharWidth(t.char)
+        const x = currentX + width / 2
+        currentX += width
+        const y = t.high ? PITCH_HEIGHT_HIGH : PITCH_HEIGHT_LOW
+        return { x, y, high: t.high }
+    })
+
+    const lines = []
+    const circles = []
+
+    for (let i = 0; i < points.length; i++) {
+        // Circle
+        circles.push({
+            cx: points[i]!.x,
+            cy: points[i]!.y,
+            fill: points[i]!.high ? '#fb923c' : '#cbd5e1', // orange-400 : slate-300
+            isHigh: points[i]!.high
+        })
+
+        // Line to next
+        if (i < points.length - 1) {
+            lines.push({
+                x1: points[i]!.x,
+                y1: points[i]!.y,
+                x2: points[i + 1]!.x,
+                y2: points[i + 1]!.y,
+                stroke: points[i]!.high && points[i+1]!.high ? '#fdba74' : '#cbd5e1', // orange-300 : slate-300
+                // Use gradient logic if needed, but solid color is cleaner for now. 
+                // If distinct High->Low, standard is usually just the line.
+            })
+        }
+    }
+
+    return {
+        width: currentX,
+        height: 40,
+        lines,
+        circles
     }
 })
 
@@ -90,6 +171,10 @@ async function handleAsk() {
     }
 }
 
+function handleQuickQuestion(question: string) {
+    questionInput.value = question
+}
+
 function openDictionary(type: 'jisho' | 'weblio') {
     if (!selectedToken.value) return
     let url = ''
@@ -112,11 +197,12 @@ function renderMarkdown(text: string): string {
 }
 
 // Speak Japanese text using Web Speech API
-function speakJapanese(text: string): void {
+function playPronunciation(): void {
+    if (!selectedToken.value) return
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel()
         
-        const utterance = new SpeechSynthesisUtterance(text)
+        const utterance = new SpeechSynthesisUtterance(selectedToken.value.word)
         utterance.lang = 'ja-JP'
         utterance.rate = 0.9
         utterance.pitch = 1
@@ -128,209 +214,396 @@ function speakJapanese(text: string): void {
 </script>
 
 <template>
-  <div v-if="selectedToken" class="h-full flex flex-col animate-in slide-in-from-right-4 duration-300">
+  <div v-if="selectedToken" class="token-detail-container min-h-full">
     
-    <!-- Header / Back Navigation -->
-    <div class="flex items-center gap-2 mb-4">
+    <!-- Main Content Area -->
+    <main class="max-w-2xl mx-auto bg-white dark:bg-zinc-900">
+      <!-- Back Navigation -->
+      <button 
+        @click="$emit('back')"
+        class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 mb-5 transition-colors group"
+      >
+        <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span class="text-sm font-medium">词汇详情</span>
+      </button>
+
+      <!-- Word Card -->
+      <div class="word-card relative bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 p-6 mb-4">
+        <!-- AI Question Button (Absolute Top Right) -->
         <button 
-            @click="$emit('back')"
-            class="p-1.5 -ml-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+          v-if="showMagicCard"
+          @click="isAiModalOpen = true"
+          class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 hover:text-orange-700 bg-white dark:bg-zinc-900 rounded-lg transition-colors z-10"
         >
-            <ArrowLeft class="w-5 h-5" />
+          <MessageCircleQuestion class="w-3.5 h-3.5" />
+          向AI提问
         </button>
-        <h2 class="text-sm font-bold text-zinc-500">词汇详情</h2>
-    </div>
 
-    <!-- Token Info Card -->
-    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm mb-4">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-xs text-zinc-500 font-medium mb-1 tracking-wide">{{ selectedToken.reading }}</p>
-                <h1 class="text-3xl font-black text-zinc-800 dark:text-zinc-100 mb-2">{{ selectedToken.word }}</h1>
-                <div class="flex gap-2">
-                     <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded uppercase tracking-wider">
-                        {{ selectedToken.pos }}
-                     </span>
-                     <span v-if="selectedToken.romaji" class="px-2 py-0.5 text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded">
-                        {{ selectedToken.romaji }}
-                     </span>
-                </div>
-            </div>
-            
-            <!-- Dict Links & Magic Card -->
-            <div class="flex flex-col gap-1.5 items-end">
-                <div class="flex gap-1.5">
-                    <button @click="openDictionary('jisho')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
-                        <BookOpen class="w-3.5 h-3.5" /> Jisho
-                    </button>
-                    <button @click="openDictionary('weblio')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700/50 transition-colors">
-                        <ExternalLink class="w-3.5 h-3.5" /> Weblio
-                    </button>
-                </div>
-                 <!-- Magic Card Button -->
-                <button 
-                    v-if="showMagicCard"
-                    @click="showWordCard = true" 
-                    title="生成单词魔法卡片"
-                    class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 rounded border border-transparent shadow-sm transition-all"
+        <!-- Word Header -->
+        <div class="mb-4 pr-24">
+          <p class="text-orange-500 dark:text-orange-400 text-sm font-medium mb-1">{{ selectedToken.reading }}</p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="text-4xl font-bold text-slate-900 dark:text-white break-all max-w-full">{{ selectedToken.word }}</h1>
+            <button
+              @click="playPronunciation"
+              class="p-2 rounded-full hover:bg-orange-50 dark:hover:bg-orange-900/30 text-orange-500 transition-colors shrink-0"
+              title="播放读音"
+            >
+              <Volume2 class="w-5 h-5" />
+            </button>
+          </div>
+          <div class="flex items-center gap-2 mt-3 flex-wrap">
+            <span class="px-2.5 py-1 text-xs font-semibold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 rounded-full">
+              {{ selectedToken.pos }}
+            </span>
+            <span v-if="selectedToken.romaji" class="text-slate-500 dark:text-slate-400 text-sm font-mono break-all">
+              {{ selectedToken.romaji }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 dark:border-zinc-800">
+          <button 
+            @click="openDictionary('jisho')" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg transition-colors"
+          >
+            <ExternalLink class="w-3.5 h-3.5" />
+            Jisho
+          </button>
+          <button 
+            @click="openDictionary('weblio')" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg transition-colors"
+          >
+            <ExternalLink class="w-3.5 h-3.5" />
+            Weblio
+          </button>
+          <button 
+            v-if="showMagicCard"
+            @click="showWordCard = true"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-lg shadow-md shadow-purple-200 dark:shadow-purple-900/30 transition-all"
+          >
+            <Sparkles class="w-3.5 h-3.5" />
+            魔法卡片
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Dictionary Card -->
+      <div class="dictionary-card bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <Zap class="w-4 h-4 text-amber-500" />
+          <h2 class="font-semibold text-slate-900 dark:text-white">快捷词典</h2>
+          <div v-if="isTokenDetailLoading && !tokenDetailData" class="ml-auto">
+            <div class="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-if="tokenDetailError" class="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl text-rose-600 dark:text-rose-400 text-sm">
+          <span>⚠️</span>
+          <span>{{ tokenDetailError }}</span>
+        </div>
+
+        <!-- Dictionary Content -->
+        <div v-else class="space-y-5">
+          <!-- Definition -->
+          <div v-if="tokenDetailData?.definition || selectedToken.meaning">
+            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">释义</h3>
+            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">{{ tokenDetailData?.definition || selectedToken.meaning }}</p>
+          </div>
+
+          <!-- Grammar -->
+          <div v-if="tokenDetailData?.grammar">
+            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">语法</h3>
+            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">{{ tokenDetailData.grammar }}</p>
+          </div>
+
+          <!-- Pitch Accent / Tones -->
+          <div v-if="formattedTones && formattedTones.length > 0">
+            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-3">音调</h3>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-end">
+                <!-- Pitch Characters -->
+                <div 
+                  v-for="(t, idx) in formattedTones" 
+                  :key="idx" 
+                  class="flex flex-col items-center justify-end"
+                  :style="{ width: getCharWidth(t.char) + 'px' }"
                 >
-                    <Sparkles class="w-3.5 h-3.5" /> 魔法卡片
+                  <div
+                    class="h-8 rounded-lg flex items-center justify-center text-lg font-medium transition-all"
+                    :class="t.high 
+                      ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 -translate-y-2' 
+                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400'"
+                    :style="{ width: t.char.length > 1 ? '62px' : '32px' }"
+                  >
+                    {{ t.char }}
+                  </div>
+                  <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{{ t.high ? '高' : '低' }}</span>
+                </div>
+              </div>
+              
+              <!-- Pitch Pattern Line (SVG) -->
+              <div class="relative h-10 overflow-visible">
+                 <svg 
+                   :width="pitchSvg.width" 
+                   :height="pitchSvg.height" 
+                   :viewBox="`0 0 ${pitchSvg.width} ${pitchSvg.height}`"
+                   class="overflow-visible"
+                 >
+                    <!-- Connecting Lines -->
+                    <line 
+                      v-for="(line, idx) in pitchSvg.lines" 
+                      :key="'line-'+idx"
+                      :x1="line.x1" 
+                      :y1="line.y1" 
+                      :x2="line.x2" 
+                      :y2="line.y2" 
+                      :stroke="line.stroke"
+                      stroke-width="2"
+                    />
+                    <!-- Nodes -->
+                    <circle 
+                      v-for="(circle, idx) in pitchSvg.circles" 
+                      :key="'circle-'+idx"
+                      :cx="circle.cx" 
+                      :cy="circle.cy" 
+                      r="4"
+                      :fill="circle.fill"
+                    />
+                 </svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Fallback Pronunciation -->
+          <div v-else-if="tokenDetailData?.pronunciation">
+            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">读音</h3>
+            <p class="text-slate-700 dark:text-slate-300">{{ tokenDetailData.pronunciation }}</p>
+          </div>
+
+          <!-- Loading Placeholder -->
+          <div v-if="isTokenDetailLoading && !tokenDetailData" class="space-y-4">
+            <div class="animate-pulse">
+              <div class="h-3 bg-slate-200 dark:bg-zinc-700 rounded w-16 mb-2"></div>
+              <div class="h-5 bg-slate-200 dark:bg-zinc-700 rounded w-full"></div>
+            </div>
+            <div class="animate-pulse">
+              <div class="h-3 bg-slate-200 dark:bg-zinc-700 rounded w-12 mb-2"></div>
+              <div class="h-5 bg-slate-200 dark:bg-zinc-700 rounded w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- AI Question Modal - Fixed Position Overlay -->
+    <Teleport to="body">
+      <div v-if="isAiModalOpen" class="ai-modal-wrapper">
+        <!-- Backdrop -->
+        <div
+          class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999]"
+          @click="isAiModalOpen = false"
+        />
+
+        <!-- Modal (Full Screen) -->
+        <div class="fixed inset-0 z-[10000] flex flex-col animate-fade-in p-4">
+          <div class="flex-1 flex flex-col max-w-2xl mx-auto w-full min-h-0">
+            <div class="flex-1 flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-zinc-700 overflow-hidden min-h-0">
+              <!-- Modal Header -->
+              <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-200 dark:shadow-orange-900/30 shrink-0">
+                    <MessageCircleQuestion class="w-5 h-5 text-white" />
+                  </div>
+                  <div class="min-w-0">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">AI 助手</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      关于「<span class="text-orange-600 dark:text-orange-400 font-medium">{{ selectedToken.word }}</span>」有什么不懂的吗？
+                    </p>
+                  </div>
+                </div>
+                <button
+                  @click="isAiModalOpen = false"
+                  class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors shrink-0"
+                >
+                  <X class="w-5 h-5" />
                 </button>
-            </div>
-        </div>
-        
-        <!-- Meaning Section: Show rapid detail if available, otherwise show original meaning -->
-        <div v-if="tokenDetailData || isTokenDetailLoading || tokenDetailError || selectedToken.meaning" class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-            <!-- Rapid Token Detail (Replaces original meaning) -->
-            <div v-if="tokenDetailData || isTokenDetailLoading || tokenDetailError">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-amber-600 dark:text-amber-400">⚡</span>
-                    <h3 class="text-xs font-semibold text-amber-700 dark:text-amber-300">快速词典</h3>
-                </div>
-                
-                <!-- Loading State -->
-                <div v-if="isTokenDetailLoading && !tokenDetailData" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-                    <div class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span>查询中...</span>
-                </div>
-                
-                <!-- Token Detail Result -->
-                <div v-else-if="tokenDetailData" class="space-y-3">
-                    <div v-if="tokenDetailData.definition">
-                        <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">释义</p>
-                        <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.definition }}</p>
-                    </div>
-                    
-                    <div v-if="tokenDetailData.grammar">
-                        <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">语法</p>
-                        <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.grammar }}</p>
-                    </div>
-                    
-                    <div v-if="tokenDetailData.pronunciation">
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <p class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">读音</p>
-                                <p class="text-sm text-zinc-700 dark:text-zinc-300">{{ tokenDetailData.pronunciation }}</p>
-                            </div>
-                            <button 
-                                @click="speakJapanese(selectedToken.word)"
-                                class="ml-3 p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
-                                title="朗读"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Error State -->
-                <p v-else-if="tokenDetailError" class="text-xs text-rose-600 dark:text-rose-400">
-                    ⚠️ {{ tokenDetailError }}
-                </p>
-            </div>
-            
-            <!-- Original Meaning (Fallback when no rapid detail) -->
-            <p v-else-if="selectedToken.meaning" class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                {{ selectedToken.meaning }}
-            </p>
-        </div>
-    </div>
+              </div>
 
-    <!-- Q&A Section -->
-    <div class="flex-1 flex flex-col min-h-0 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <!-- Chat History -->
-        <div ref="chatContainer" class="flex-1 max-h-[30vh] overflow-y-auto p-4 space-y-4">
-            
-            <!-- Empty State -->
-            <div v-if="qaHistory.length === 0 && !isQaStreaming" class="h-full flex flex-col items-center justify-center text-zinc-400 opacity-60">
-                <Bot class="w-8 h-8 mb-2" />
-                <p class="text-xs">关于“{{ selectedToken.word }}”有什么不懂的吗？</p>
-                <div class="flex gap-2 mt-4">
-                    <button @click="questionInput = '这个词在句子里是什么用法？'; handleAsk()" class="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-[10px] hover:border-indigo-400 transition-colors">
-                        用法是什么？
-                    </button>
-                    <button @click="questionInput = '这个词还有其他意思吗？'; handleAsk()" class="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-[10px] hover:border-indigo-400 transition-colors">
-                        其他意思？
-                    </button>
+              <!-- Chat History (Scrollable Area) -->
+              <div 
+                ref="chatContainer" 
+                class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-800/30 min-h-0"
+              >
+                <!-- Empty State -->
+                <div v-if="qaHistory.length === 0 && !isQaStreaming" class="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 py-12">
+                  <Bot class="w-12 h-12 mb-3 opacity-50" />
+                  <p class="text-sm">关于「{{ selectedToken.word }}」有什么不懂的吗？</p>
+                  <p class="text-xs mt-1 opacity-70">选择下方的快捷提问或输入你的问题</p>
                 </div>
-            </div>
-
-            <!-- Messages -->
-            <template v-for="(msg, idx) in qaHistory" :key="idx">
-                <!-- User -->
-                <div class="flex gap-3 flex-row-reverse">
-                    <div class="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
-                        <User class="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                
+                
+                <!-- Messages -->
+                <template v-for="(msg, idx) in qaHistory" :key="idx">
+                  <!-- User -->
+                  <div class="flex gap-3 flex-row-reverse">
+                    <div class="w-7 h-7 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
+                      <User class="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     </div>
-                    <div class="bg-indigo-600 text-white px-3 py-2 rounded-2xl rounded-tr-sm text-sm max-w-[85%] leading-relaxed shadow-sm">
-                        {{ msg.question }}
+                    <div class="bg-orange-500 text-white px-3 py-2 rounded-2xl rounded-tr-sm text-sm max-w-[85%] leading-relaxed shadow-sm">
+                      {{ msg.question }}
                     </div>
-                </div>
-                <!-- AI -->
-                <div class="flex gap-3">
-                    <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
-                        <div v-html="renderMarkdown(msg.answer)"></div>
+                  </div>
+                  <!-- AI -->
+                  <div class="flex gap-3">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+                      <Bot class="w-4 h-4 text-white" />
                     </div>
-                </div>
-            </template>
-            
-            <!-- Streaming Message -->
-            <div v-if="isQaStreaming" class="flex gap-3">
-                <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-zinc-700 dark:text-zinc-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
+                    <div class="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-slate-700 dark:text-slate-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
+                      <div v-html="renderMarkdown(msg.answer)"></div>
+                    </div>
+                  </div>
+                </template>
+                
+                <!-- Streaming Message -->
+                <div v-if="isQaStreaming" class="flex gap-3">
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+                    <Bot class="w-4 h-4 text-white" />
+                  </div>
+                  <div class="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-slate-700 dark:text-slate-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
                     <div v-if="qaStreamText" v-html="renderMarkdown(qaStreamText)"></div>
                     <div v-else class="flex gap-1 items-center h-5">
-                        <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>
-                        <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                        <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"></span>
+                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                     </div>
+                  </div>
                 </div>
-            </div>
-        </div>
+              </div>
 
-        <!-- Input Area -->
-        <div class="p-3 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
-            <div class="relative flex items-center">
-                <input 
-                    v-model="questionInput"
-                    @keydown.enter="handleAsk"
-                    :disabled="isQaStreaming"
-                    type="text" 
-                    placeholder="输入问题..." 
-                    class="w-full pl-4 pr-10 py-2.5 bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400"
+              <!-- Suggested Questions -->
+              <div class="px-5 py-3 bg-slate-50/50 dark:bg-zinc-800/30 border-t border-slate-100 dark:border-zinc-800">
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">快捷提问</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="(q, index) in suggestedQuestions"
+                    :key="index"
+                    @click="handleQuickQuestion(q)"
+                    class="px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-600 dark:text-slate-400 hover:border-orange-300 dark:hover:border-orange-600 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                  >
+                    {{ q }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Input Area -->
+              <div class="p-4 flex items-center gap-3 border-t border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                <input
+                  v-model="questionInput"
+                  placeholder="输入问题..."
+                  :disabled="isQaStreaming"
+                  class="flex-1 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 focus:border-orange-400 dark:focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl h-11 px-4 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-all"
+                  @keydown.enter="handleAsk"
+                />
+                <button
+                  @click="handleAsk"
+                  :disabled="!questionInput.trim() || isQaStreaming"
+                  class="h-11 w-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-200 dark:shadow-orange-900/30 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
-                <button 
-                    @click="handleAsk"
-                    :disabled="!questionInput.trim() || isQaStreaming"
-                    class="absolute right-1.5 p-1.5 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg disabled:opacity-30 transition-colors"
-                >
-                    <Send class="w-4 h-4" />
+                  <Send class="w-4 h-4" />
                 </button>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
+      </div>
+    </Teleport>
 
     <!-- Word Card Modal Overlay -->
-    <div v-if="showWordCard && wordCardContext" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <Teleport to="body">
+      <div v-if="showWordCard && wordCardContext" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
-            <button 
-                @click="showWordCard = false"
-                class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors z-10"
-            >
-                <X class="w-5 h-5" />
-            </button>
-            
-            <div class="p-6">
-                <h3 class="text-lg font-bold text-center mb-4 text-zinc-800 dark:text-zinc-100">单词魔法卡片</h3>
-                <WordCard :context="wordCardContext" />
-            </div>
+          <button 
+            @click="showWordCard = false"
+            class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors z-10"
+          >
+            <X class="w-5 h-5" />
+          </button>
+          
+          <div class="p-6">
+            <h3 class="text-lg font-bold text-center mb-4 text-slate-800 dark:text-slate-100">单词魔法卡片</h3>
+            <WordCard :context="wordCardContext" />
+          </div>
         </div>
-    </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
+.token-detail-container {
+  background: linear-gradient(to bottom right, 
+    rgb(248 250 252) 0%, 
+    rgb(255 255 255) 50%, 
+    rgb(255 247 237 / 0.3) 100%
+  );
+}
+
+.dark .token-detail-container {
+  background: linear-gradient(to bottom right, 
+    rgb(24 24 27) 0%, 
+    rgb(9 9 11) 50%, 
+    rgb(24 24 27) 100%
+  );
+}
+
+.word-card,
+.dictionary-card {
+  transition: all 0.3s ease;
+}
+
+.word-card:hover,
+.dictionary-card:hover {
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.dark .word-card:hover,
+.dark .dictionary-card:hover {
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Slide Up Animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
 /* Markdown prose styling for AI responses */
 .markdown-prose {
     overflow-wrap: break-word;
@@ -392,11 +665,11 @@ function speakJapanese(text: string): void {
 }
 
 .markdown-prose :deep(a) {
-    color: #6366f1;
+    color: #f97316;
     text-decoration: underline;
 }
 
 .markdown-prose :deep(a:hover) {
-    color: #4f46e5;
+    color: #ea580c;
 }
 </style>
