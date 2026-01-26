@@ -175,17 +175,17 @@ function handleQuickQuestion(question: string) {
     questionInput.value = question
 }
 
-function openDictionary(type: 'jisho' | 'weblio') {
+function openDictionary(type: 'youdao' | 'mazii') {
     if (!selectedToken.value) return
     let url = ''
     const word = selectedToken.value.word
     
     switch (type) {
-        case 'jisho':
-            url = `https://jisho.org/search/${encodeURIComponent(word)}`
+        case 'youdao':
+            url = `https://dict.youdao.com/w/jap/${encodeURIComponent(word)}`
             break
-        case 'weblio':
-            url = `https://www.weblio.jp/content/${encodeURIComponent(word)}`
+        case 'mazii':
+            url = `https://mazii.net/zh-CN/search/word/ja-CN/${encodeURIComponent(word)}`
             break
     }
     window.open(url, '_blank')
@@ -265,18 +265,18 @@ function playPronunciation(): void {
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-100 dark:border-zinc-800">
           <button 
-            @click="openDictionary('jisho')" 
+            @click="openDictionary('youdao')" 
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg transition-colors"
           >
             <ExternalLink class="w-3.5 h-3.5" />
-            Jisho
+            有道
           </button>
           <button 
-            @click="openDictionary('weblio')" 
+            @click="openDictionary('mazii')" 
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg transition-colors"
           >
             <ExternalLink class="w-3.5 h-3.5" />
-            Weblio
+            Mazii
           </button>
           <button 
             v-if="showMagicCard"
