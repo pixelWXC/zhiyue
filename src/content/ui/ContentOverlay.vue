@@ -328,6 +328,14 @@ const onExplain = () => {
     onOpenSidePanel()
 }
 
+const onConfigure = () => {
+    // Set pending view to settings
+    chrome.storage.local.set({ pending_view: 'settings' }).then(() => {
+        // Open side panel without text context to avoid auto-analysis
+        onOpenSidePanel({ skipText: true })
+    })
+}
+
 const onCloseModal = () => {
     modalVisible.value = false
     // Reset to main analysis view when closing modal
@@ -337,7 +345,7 @@ const onCloseModal = () => {
     isQaStreaming.value = false
 }
 
-const onOpenSidePanel = () => {
+const onOpenSidePanel = (options?: { skipText?: boolean }) => {
     // ✅ 立即发送消息，不能有任何 await，否则会丢失用户手势
     // Background script 会负责存储文本和分析结果
     
@@ -346,11 +354,11 @@ const onOpenSidePanel = () => {
     
     const messagePayload: any = {
         type: 'open-side-panel',
-        text: selectedText.value
+        text: options?.skipText ? '' : selectedText.value
     }
     
     // 如果分析已完成，附带结果数据
-    if (analysisComplete) {
+    if (analysisComplete && !options?.skipText) {
         messagePayload.analysisResult = {
             data: parsedData.value,
             rapidTranslation: rapidTranslationText.value || undefined
@@ -503,6 +511,7 @@ async function handleAskQuestion(question: string) {
         :has-api-key="hasApiKey"
         @analyze="onAnalyze"
         @explain="onExplain"
+        @configure="onConfigure"
         @close="bubbleVisible = false"
       />
       

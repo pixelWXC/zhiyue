@@ -6,6 +6,7 @@ const emit = defineEmits<{
   (e: 'analyze'): void
   (e: 'explain'): void
   (e: 'close'): void
+  (e: 'configure'): void
 }>()
 
 defineProps<{
@@ -76,12 +77,12 @@ const isExpanded = ref(false)
              <!-- 配置按钮 -->
             <div class="flex items-center gap-2">
                  <span class="text-xs text-white/90 whitespace-nowrap font-medium">未配置 API Key</span>
-                 <button
-                    @click="$emit('analyze')"
+                <button
+                    @click="$emit('configure')"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white hover:text-orange-600 text-white transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
                     >
                     <span>去配置</span>
-                 </button>
+                </button>
             </div>
         </template>
       </div>

@@ -168,7 +168,16 @@ watch([syntaxData, isSyntaxLoading], ([data, loading]) => {
 // Check for pending analysis on mount (from Open in Side Panel)
 onMounted(async () => {
     try {
-        const data = await chrome.storage.local.get(['pending_analysis_text', 'pending_analysis_result'])
+        const data = await chrome.storage.local.get(['pending_analysis_text', 'pending_analysis_result', 'pending_view'])
+        
+        // Handle pending view navigation (e.g. from "Configure" button)
+        if (data.pending_view === 'settings') {
+            console.log('⚙️ Opening Settings view from pending request')
+            currentView.value = 'settings'
+            await chrome.storage.local.remove('pending_view')
+            return
+        }
+
         const text = data['pending_analysis_text'] as string | undefined
         const cachedResult = data['pending_analysis_result'] as { data: any, rapidTranslation?: string } | undefined
         
