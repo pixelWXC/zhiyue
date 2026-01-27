@@ -75,4 +75,6 @@ export interface UserSettings {
     rapidTranslation?: boolean
     rapidTokenDetail?: boolean
     showBubble?: boolean // Story 4-7: 页面气泡显示开关
+    providerCredentials?: import('./model-config').ProviderCredentials
+    sceneConfig?: import('./model-config').SceneConfig
 }

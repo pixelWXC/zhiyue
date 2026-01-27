@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
     RAPID_TRANSLATION: `${PREFIX}rapidTranslation`,
     RAPID_TOKEN_DETAIL: `${PREFIX}rapidTokenDetail`,
     SHOW_BUBBLE: `${PREFIX}showBubble`, // Story 4-7: 页面气泡显示开关
+    PROVIDER_CREDENTIALS: `${PREFIX}providerCredentials`,
+    SCENE_CONFIG: `${PREFIX}sceneConfig`,
 } as const
 
 /**
@@ -115,6 +117,45 @@ export function useSettings() {
 }
 
 /**
+ * Default scene configuration
+ */
+function getDefaultSceneConfig(): import('@/types/model-config').SceneConfig {
+    return {
+        qualityFirst: {
+            text: { provider: "gemini", model: "gemini-2.5-pro-preview-05-06" },
+            image: {
+                provider: "gemini",
+                model: "gemini-2.0-flash-preview-image-generation",
+            },
+        },
+        speedFirst: {
+            text: { provider: "gemini", model: "gemini-2.5-flash-preview-05-20" },
+        },
+    }
+}
+
+/**
+ * Reactive model configuration
+ */
+export function useModelConfig() {
+    const providerCredentials = useStorageAsync<import('@/types/model-config').ProviderCredentials>(
+        STORAGE_KEYS.PROVIDER_CREDENTIALS,
+        {},
+        chromeStorageAdapter,
+        { mergeDefaults: true }
+    )
+
+    const sceneConfig = useStorageAsync<import('@/types/model-config').SceneConfig>(
+        STORAGE_KEYS.SCENE_CONFIG,
+        getDefaultSceneConfig(),
+        chromeStorageAdapter,
+        { mergeDefaults: true }
+    )
+
+    return { providerCredentials, sceneConfig }
+}
+
+/**
  * Helper function to parse boolean value from storage
  * Handles both string ("true"/"false") and boolean values
  * This is necessary because VueUse's useStorageAsync serializes booleans as strings
@@ -153,4 +194,41 @@ export async function updateSettings(settings: Partial<UserSettings>): Promise<v
     if (settings.preferredModel !== undefined) updates[STORAGE_KEYS.PREFERRED_MODEL] = settings.preferredModel
 
     await chrome.storage.local.set(updates)
+}
+
+/**
+ * Check if any API key is configured (either legacy or new multi-provider)
+ * Returns true if at least one provider has an API key configured
+ */
+export async function hasAnyApiKeyConfigured(): Promise<boolean> {
+    const result = await chrome.storage.local.get([
+        STORAGE_KEYS.API_KEY,
+        STORAGE_KEYS.PROVIDER_CREDENTIALS
+    ])
+
+    // Check legacy apiKey
+    if (result[STORAGE_KEYS.API_KEY]) {
+        return true
+    }
+
+    // Check new providerCredentials
+    let credentials: any = result[STORAGE_KEYS.PROVIDER_CREDENTIALS]
+    if (typeof credentials === 'string') {
+        try {
+            credentials = JSON.parse(credentials)
+        } catch {
+            return false
+        }
+    }
+
+    if (credentials && typeof credentials === 'object') {
+        return !!(
+            credentials.gemini?.apiKey ||
+            credentials.openai?.apiKey ||
+            credentials.doubao?.apiKey ||
+            credentials.deepseek?.apiKey
+        )
+    }
+
+    return false
 }

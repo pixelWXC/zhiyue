@@ -11,10 +11,8 @@ import type { FlashcardData } from '../../types/card'
 
 // Mock the AI client
 vi.mock('./client', () => ({
-    getClient: vi.fn(() => ({
-        models: {
-            generateContent: vi.fn()
-        }
+    getProviderForScene: vi.fn(() => ({
+        generate: vi.fn()
     })),
     MODEL_NAMES: {
         FLASH: 'gemini-3-flash-preview',
@@ -47,16 +45,14 @@ describe('generateCardContent', () => {
             sceneDescription: 'A minimalist hand-drawn sketch on white background: A cute cat eating a red apple with a happy expression. Simple doodle style with clean lines.'
         }
 
-        const { getClient } = await import('./client')
-        const mockClient = (getClient as any)()
-        mockClient.models.generateContent.mockResolvedValue({
-            text: JSON.stringify(mockFlashcardData)
-        })
+        const { getProviderForScene } = await import('./client')
+        const mockProvider = (getProviderForScene as any)()
+        mockProvider.generate.mockResolvedValue(JSON.stringify(mockFlashcardData))
 
         const result = await generateCardContent(mockApiKey, testSentence, testToken)
 
         expect(result).toEqual(mockFlashcardData)
-        expect(mockClient.models.generateContent).toHaveBeenCalledTimes(1)
+        expect(mockProvider.generate).toHaveBeenCalledTimes(1)
     })
 
     it('应该验证所有必需字段是否存在', async () => {
@@ -68,11 +64,9 @@ describe('generateCardContent', () => {
             // Missing: hint, sceneDescription
         }
 
-        const { getClient } = await import('./client')
-        const mockClient = (getClient as any)()
-        mockClient.models.generateContent.mockResolvedValue({
-            text: JSON.stringify(incompleteData)
-        })
+        const { getProviderForScene } = await import('./client')
+        const mockProvider = (getProviderForScene as any)()
+        mockProvider.generate.mockResolvedValue(JSON.stringify(incompleteData))
 
         await expect(
             generateCardContent(mockApiKey, testSentence, testToken)
@@ -89,11 +83,9 @@ describe('generateCardContent', () => {
       "sceneDescription": "A minimalist sketch..."
     }` // Missing comma intentionally
 
-        const { getClient } = await import('./client')
-        const mockClient = (getClient as any)()
-        mockClient.models.generateContent.mockResolvedValue({
-            text: malformedJSON
-        })
+        const { getProviderForScene } = await import('./client')
+        const mockProvider = (getProviderForScene as any)()
+        mockProvider.generate.mockResolvedValue(malformedJSON)
 
         // jsonrepair should fix this
         const result = await generateCardContent(mockApiKey, testSentence)
@@ -103,11 +95,9 @@ describe('generateCardContent', () => {
     })
 
     it('应该在空响应时抛出错误', async () => {
-        const { getClient } = await import('./client')
-        const mockClient = (getClient as any)()
-        mockClient.models.generateContent.mockResolvedValue({
-            text: ''
-        })
+        const { getProviderForScene } = await import('./client')
+        const mockProvider = (getProviderForScene as any)()
+        mockProvider.generate.mockResolvedValue('')
 
         await expect(
             generateCardContent(mockApiKey, testSentence)
@@ -115,9 +105,9 @@ describe('generateCardContent', () => {
     })
 
     it('应该在 API 错误时抛出错误', async () => {
-        const { getClient } = await import('./client')
-        const mockClient = (getClient as any)()
-        mockClient.models.generateContent.mockRejectedValue(
+        const { getProviderForScene } = await import('./client')
+        const mockProvider = (getProviderForScene as any)()
+        mockProvider.generate.mockRejectedValue(
             new Error('API rate limit exceeded')
         )
 
@@ -137,11 +127,9 @@ describe('generateCardContent', () => {
                 sceneDescription: 'A minimalist hand-drawn sketch on white background: cat eating apple, doodle style.'
             }
 
-            const { getClient } = await import('./client')
-            const mockClient = (getClient as any)()
-            mockClient.models.generateContent.mockResolvedValue({
-                text: JSON.stringify(validData)
-            })
+            const { getProviderForScene } = await import('./client')
+            const mockProvider = (getProviderForScene as any)()
+            mockProvider.generate.mockResolvedValue(JSON.stringify(validData))
 
             const result = await generateCardContent(mockApiKey, testSentence)
             const desc = result.sceneDescription.toLowerCase()
@@ -168,11 +156,9 @@ describe('generateCardContent', () => {
                 sceneDescription: 'Minimalist doodle on white background'
             }
 
-            const { getClient } = await import('./client')
-            const mockClient = (getClient as any)()
-            mockClient.models.generateContent.mockResolvedValue({
-                text: JSON.stringify(validData)
-            })
+            const { getProviderForScene } = await import('./client')
+            const mockProvider = (getProviderForScene as any)()
+            mockProvider.generate.mockResolvedValue(JSON.stringify(validData))
 
             const result = await generateCardContent(mockApiKey, testSentence)
 

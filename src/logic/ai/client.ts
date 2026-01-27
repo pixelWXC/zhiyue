@@ -1,265 +1,162 @@
-import { GoogleGenAI } from '@google/genai'
-import { QA_USER_PROMPT } from '../prompts/qa'
-import { promptService, PROMPT_KEYS } from '../prompts/prompt-service'
+import { getSceneService } from "./scene-service";
+import { promptService, PROMPT_KEYS } from "../prompts/prompt-service";
+import { QA_USER_PROMPT } from "../prompts/qa";
+import type { TextGenerationOptions } from "./providers/types";
 
-// Strict user-mandated model constants
+// 保留向后兼容的常量导出（逐步废弃）
 export const MODEL_NAMES = {
-    FLASH: 'gemini-3-flash-preview',
-    PRO_THINKING: 'gemini-3-pro-preview',
-    IMAGE: 'gemini-3-pro-image-preview'
-} as const
+    FLASH: "gemini-2.5-flash-preview-05-20",
+    PRO_THINKING: "gemini-2.5-pro-preview-05-06",
+    IMAGE: "gemini-2.0-flash-preview-image-generation",
+} as const;
 
 /**
- * Initialize the GenAI Client
+ * 内部辅助：获取 Provider
+ * 注意：不再接受 apiKey 参数，但为了 API 兼容性保留参数占位
  */
-export function getClient(apiKey: string) {
-    return new GoogleGenAI({ apiKey })
+export async function getProviderForScene(
+    _apiKey: string,
+    scene: "quality" | "speed",
+) {
+    const service = await getSceneService();
+    return scene === "quality"
+        ? service.getQualityTextProvider()
+        : service.getSpeedTextProvider();
 }
 
 /**
- * Generate a streaming analysis using strict user-defined models
- * @param apiKey User API key
- * @param text Text to analyze
- * @param mode 'flash' for speed (gemini-3-flash), 'thinking' for depth (gemini-3-pro-thinking)
+ * 创建分析流 - 使用质量优先场景
  */
-export async function createAnalysisStream(apiKey: string, text: string, mode: 'flash' | 'thinking' = 'thinking') {
-    const ai = getClient(apiKey)
+export async function createAnalysisStream(
+    _apiKey: string,
+    text: string,
+    mode: "flash" | "thinking" = "thinking",
+) {
+    // mode 'flash' 对应 speedFirst 场景，'thinking' 对应 qualityFirst 场景
+    const service = await getSceneService();
+    const provider =
+        mode === "flash"
+            ? service.getSpeedTextProvider()
+            : service.getQualityTextProvider();
 
-    // Select model strictly based on user rules
-    const model = mode === 'flash' ? MODEL_NAMES.FLASH : MODEL_NAMES.PRO_THINKING
+    const systemPrompt = await promptService.getPrompt(
+        PROMPT_KEYS.ANALYSIS_SYSTEM,
+    );
 
-    // Configure specific parameters for thinking models
-    const config: any = {}
-
-    if (mode === 'thinking') {
-        config.thinkingConfig = {
-            thinkingLevel: "low" // Start with low for standard analysis
-        }
-    }
-
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.ANALYSIS_SYSTEM)
-
-    return await ai.models.generateContentStream({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: systemPrompt },
-                    { text: `Please analyze this text: "${text}"` }
-                ]
-            }
-        ],
-        config
-    })
+    return provider.generateStream(`Please analyze this text: "${text}"`, {
+        systemPrompt,
+        thinkingLevel: mode === "thinking" ? "low" : undefined,
+    });
 }
 
 /**
- * Generate a Q&A answer stream
+ * 创建 Q&A 流 - 使用速度优先场景
  */
-export async function createQaStream(apiKey: string, sentence: string, token: string, question: string) {
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.FLASH // Use Flash for Q&A speed
+export async function createQaStream(
+    apiKey: string,
+    sentence: string,
+    token: string,
+    question: string,
+) {
+    const provider = await getProviderForScene(apiKey, "speed");
 
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.QA_SYSTEM)
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.QA_SYSTEM);
 
-    return await ai.models.generateContentStream({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: systemPrompt },
-                    { text: QA_USER_PROMPT(sentence, token, question) }
-                ]
-            }
-        ]
-    })
+    return provider.generateStream(QA_USER_PROMPT(sentence, token, question), {
+        systemPrompt,
+    });
 }
 
 /**
- * Recognize Japanese text from an image using Gemini Vision
- * @param apiKey User API key
- * @param base64Image Base64-encoded image data (without data:image/... prefix)
- * @param mimeType Image MIME type (e.g., 'image/jpeg', 'image/png')
- * @returns Extracted Japanese text
+ * 识别图像中的日语文本 - 使用速度优先场景（或质量优先，取决于实现）
+ * 注意：这是一个多模态任务
  */
-export async function recognizeTextFromImage(apiKey: string, base64Image: string, mimeType: string): Promise<string> {
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.FLASH // Use Flash for cost efficiency
+export async function recognizeTextFromImage(
+    apiKey: string,
+    base64Image: string,
+    mimeType: string,
+): Promise<string> {
+    // OCR 需要较快速度，通常归类为 Utility，暂定使用 SpeedFirst
+    // 但如果 SpeedFirst 是 DeepSeek (无 Vision)，则可能失败。
+    const provider = await getProviderForScene(apiKey, "speed");
 
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.OCR)
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.OCR);
 
-    const response = await ai.models.generateContent({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    {
-                        inlineData: {
-                            mimeType,
-                            data: base64Image
-                        }
-                    },
-                    { text: systemPrompt }
-                ]
-            }
-        ]
-    })
+    const options: TextGenerationOptions = {
+        systemPrompt,
+        images: [{ mimeType, data: base64Image }],
+    };
 
-    return response.text || ''
+    return provider.generate("", options);
 }
 
 /**
- * Generate a deep syntax analysis stream using Thinking Mode
- * @param apiKey User API key
- * @param text Text to analyze
+ * 创建深度语法分析流 - 使用质量优先场景（Thinking Mode）
  */
 export async function createSyntaxStream(apiKey: string, text: string) {
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.PRO_THINKING
+    const provider = await getProviderForScene(apiKey, "quality");
 
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.SYNTAX_ANALYSIS_SYSTEM)
+    const systemPrompt = await promptService.getPrompt(
+        PROMPT_KEYS.SYNTAX_ANALYSIS_SYSTEM,
+    );
 
-    // High thinking level for deep structural analysis
-    const config: any = {
-        thinkingConfig: {
-            thinkingLevel: "high",
-            includeThoughts: false // We only want the final JSON
-        },
-        responseMimeType: 'application/json' // Enforce JSON mode if supported or just helps hint
-    }
-
-    return await ai.models.generateContentStream({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: systemPrompt },
-                    { text: `Analyze this sentence: "${text}"` }
-                ]
-            }
-        ],
-        config
-    })
+    return provider.generateStream(`Analyze this sentence: "${text}"`, {
+        systemPrompt,
+        thinkingLevel: "high", // 语法分析需要深度思考
+        responseFormat: "json", // 强制 JSON
+    });
 }
 
 /**
- * Generate an illustration from a scene description
- * @param apiKey User API key (must not be empty)
- * @param sceneDescription Scene description to convert into an image (must not be empty)
- * @returns Base64 data URL for the generated image (format: data:image/[type];base64,...)
- * @throws {Error} 场景描述不能为空 - if sceneDescription is empty or whitespace
- * @throws {Error} API Key 不能为空 - if apiKey is empty or whitespace
- * @throws {Error} 图像生成失败：API 未返回图像数据 - if no image data in response
- * @throws {Error} API errors (quota exceeded, network errors, invalid prompts, etc.)
+ * 生成插图 - 使用 Quality 场景的 Image Capability
  */
-export async function generateImage(apiKey: string, sceneDescription: string): Promise<string> {
-    // Input validation (defensive programming)
-    if (!apiKey?.trim()) {
-        throw new Error('API Key 不能为空')
-    }
-    if (!sceneDescription?.trim()) {
-        throw new Error('场景描述不能为空')
-    }
+export async function generateImage(
+    _apiKey: string,
+    sceneDescription: string,
+): Promise<string> {
+    const service = await getSceneService();
+    const provider = service.getQualityImageProvider();
 
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.IMAGE // gemini-3-pro-image-preview
+    if (!sceneDescription?.trim()) {
+        throw new Error("场景描述不能为空");
+    }
 
     try {
-        const response = await ai.models.generateContent({
-            model,
-            contents: sceneDescription
-        })
-
-        // Extract inline image data from response
-        if (response.candidates && response.candidates[0]) {
-            const candidate = response.candidates[0]
-            const parts = candidate.content?.parts
-
-            if (parts) {
-                for (const part of parts) {
-                    if (part.inlineData) {
-                        // Return as data URL for direct use in <img> src
-                        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
-                    }
-                }
-            }
-        }
-
-        // No image data found in response
-        throw new Error('图像生成失败：API 未返回图像数据')
-
-    } catch (error) {
-        console.error('[AI Client] Image generation failed:', error)
-        throw error instanceof Error ? error : new Error('图像生成失败')
+        return await provider.generate(sceneDescription);
+    } catch (error: any) {
+        console.error("[AI Client] Image generation failed:", error);
+        throw new Error(error.message || "图像生成失败");
     }
 }
 
 /**
- * Create a rapid translation stream for fast Japanese to Chinese translation
- * Uses Flash model for speed and cost efficiency
- * @param apiKey User API key
- * @param text Japanese text to translate
- * @returns Streaming response with Chinese translation
+ * 快速翻译流 - 使用速度优先场景
  */
-export async function createRapidTranslationStream(apiKey: string, text: string) {
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.FLASH // Force Flash model for speed
+export async function createRapidTranslationStream(
+    apiKey: string,
+    text: string,
+) {
+    const provider = await getProviderForScene(apiKey, "speed");
 
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.RAPID_TRANSLATION)
+    const systemPrompt = await promptService.getPrompt(
+        PROMPT_KEYS.RAPID_TRANSLATION,
+    );
 
-    return await ai.models.generateContentStream({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: systemPrompt },
-                    { text: `请翻译以下日语文本：\n\n${text}` }
-                ]
-            }
-        ]
-    })
+    return provider.generateStream(`请翻译以下日语文本：\n\n${text}`, {
+        systemPrompt,
+    });
 }
 
 /**
- * Create a token detail stream for fast dictionary lookup
- * Returns JSON with definition, grammar, and pronunciation
- * @param apiKey User API key
- * @param token Japanese token/word to look up
- * @returns Streaming response with structured token details
+ * 单词详情查询流 - 使用速度优先场景
  */
 export async function createTokenDetailStream(apiKey: string, token: string) {
-    const ai = getClient(apiKey)
-    const model = MODEL_NAMES.FLASH // Force Flash model for speed
+    const provider = await getProviderForScene(apiKey, "speed");
 
-    // Load dynamic prompt
-    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.TOKEN_DETAIL)
+    const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.TOKEN_DETAIL);
 
-    const config: any = {
-        responseMimeType: 'application/json' // Enforce JSON output
-    }
-
-    return await ai.models.generateContentStream({
-        model,
-        contents: [
-            {
-                role: 'user',
-                parts: [
-                    { text: systemPrompt },
-                    { text: `单词：${token}` }
-                ]
-            }
-        ],
-        config
-    })
+    return provider.generateStream(`单词：${token}`, {
+        systemPrompt,
+        responseFormat: "json",
+    });
 }
-

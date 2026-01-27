@@ -406,18 +406,16 @@ export const useAiStore = defineStore('ai', () => {
         cardError.value = null
 
         try {
-            // Import storage utility to get API key
-            const { getSettings } = await import('../logic/storage')
-            const settings = await getSettings()
-
-            if (!settings.apiKey) {
+            // Check if any API key is configured
+            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
+            if (!await hasAnyApiKeyConfigured()) {
                 throw new Error('未配置 API Key，请先在设置中配置')
             }
 
             // Import and call card generator with options
             const { generateCardContent } = await import('../logic/ai/card-generator')
             const result = await generateCardContent(
-                settings.apiKey,
+                '', // apiKey 参数已废弃，由 getSceneService 内部处理
                 sentence,
                 targetToken,
                 options
@@ -458,17 +456,15 @@ export const useAiStore = defineStore('ai', () => {
         imageError.value = null
 
         try {
-            // Import storage utility to get API key
-            const { getSettings } = await import('../logic/storage')
-            const settings = await getSettings()
-
-            if (!settings.apiKey) {
+            // Check if any API key is configured
+            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
+            if (!await hasAnyApiKeyConfigured()) {
                 throw new Error('未配置 API Key，请先在设置中配置')
             }
 
             // Import and call image generation service
             const { generateImage } = await import('../logic/ai/client')
-            const dataUrl = await generateImage(settings.apiKey, sceneDescription)
+            const dataUrl = await generateImage('', sceneDescription) // apiKey 参数已废弃
 
             imageResult.value = dataUrl
 
@@ -643,17 +639,15 @@ export const useAiStore = defineStore('ai', () => {
         sentenceCardError.value = null
 
         try {
-            // Import storage utility to get API key
-            const { getSettings } = await import('../logic/storage')
-            const settings = await getSettings()
-
-            if (!settings.apiKey) {
-                throw new Error('未配置 API Key,请先在设置中配置')
+            // Check if any API key is configured
+            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
+            if (!await hasAnyApiKeyConfigured()) {
+                throw new Error('未配置 API Key，请先在设置中配置')
             }
 
             // Import and call sentence card image generator
             const { generateSentenceImage } = await import('../logic/ai/card-generator')
-            const imageDataUrl = await generateSentenceImage(settings.apiKey, sentence)
+            const imageDataUrl = await generateSentenceImage('', sentence) // apiKey 参数已废弃
 
             sentenceCardImage.value = imageDataUrl
 
@@ -683,12 +677,12 @@ export const useAiStore = defineStore('ai', () => {
         wordCardError.value = null
 
         try {
-            const { getSettings } = await import('../logic/storage')
-            const settings = await getSettings()
-            if (!settings.apiKey) throw new Error('未配置 API Key')
+            // Check if any API key is configured
+            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
+            if (!await hasAnyApiKeyConfigured()) throw new Error('未配置 API Key，请先在设置中配置')
 
             const { generateWordImage } = await import('../logic/ai/card-generator')
-            const imageDataUrl = await generateWordImage(settings.apiKey, context)
+            const imageDataUrl = await generateWordImage('', context) // apiKey 参数已废弃
 
             wordCardImage.value = imageDataUrl
         } catch (e) {

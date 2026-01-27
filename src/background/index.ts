@@ -11,9 +11,6 @@ console.log('Zhiyue Background Service Worker initialized')
 // Command Handler (Shortcuts)
 // ====================
 
-// Command Handler (Shortcuts)
-// ====================
-
 // Track current window to avoid async calls in onCommand (which loses user gesture)
 let currentWindowId: number | undefined;
 
@@ -232,27 +229,14 @@ chrome.runtime.onConnect.addListener((port) => {
             const { text } = msg
 
             try {
-                // 1. Get API Key
-                // IMPORTANT: Must use the exact same key as define in @/logic/storage
-                // The storage utility prefixes keys with 'zhiyue:', so we must use that here.
-                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-                const apiKey = storageResult[API_KEY_STORAGE_KEY]
-
-                if (!apiKey) {
-                    port.postMessage({ error: '请先配置 API 密钥' })
-                    return
-                }
-
-                // 2. Start Stream - Using new @google/genai SDK wrapper
-                console.log('🤖 Starting Gemini Stream for:', String(text).substring(0, 20) + '...')
-                const result = await createAnalysisStream(String(apiKey), String(text))
+                // 2. Start Stream - SceneService handles credentials
+                console.log('🤖 Starting AI Stream for:', String(text).substring(0, 20) + '...')
+                const result = await createAnalysisStream('', String(text))
 
                 // 3. Push Chunks - New SDK iterable response
                 for await (const chunk of result) {
-                    const chunkText = chunk.text
-                    if (chunkText) {
-                        port.postMessage({ chunk: chunkText })
+                    if (chunk) {
+                        port.postMessage({ chunk })
                     }
                 }
 
@@ -268,49 +252,32 @@ chrome.runtime.onConnect.addListener((port) => {
             const { sentence, token, question } = msg
 
             try {
-                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-                const apiKey = storageResult[API_KEY_STORAGE_KEY]
-
-                if (!apiKey) {
-                    port.postMessage({ error: '请先配置 API 密钥' })
-                    return
-                }
-
                 console.log('🤔 AI QA:', question)
-                const result = await createQaStream(String(apiKey), sentence, token, question)
+                const result = await createQaStream('', sentence, token, question)
+                console.log('🤔 AI QA: Stream created successfully')
 
                 for await (const chunk of result) {
-                    const chunkText = chunk.text
-                    if (chunkText) {
-                        port.postMessage({ chunk: chunkText })
+                    if (chunk) {
+                        port.postMessage({ chunk })
                     }
                 }
                 port.postMessage({ done: true })
+                console.log('✅ QA Stream completed')
 
             } catch (error) {
+                console.error('❌ AI QA Error:', error)
                 port.postMessage({ error: (error as Error).message })
             }
         } else if (msg.action === 'rapid-translation') {
             const { text } = msg
 
             try {
-                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-                const apiKey = storageResult[API_KEY_STORAGE_KEY]
-
-                if (!apiKey) {
-                    port.postMessage({ error: '请先配置 API 密钥' })
-                    return
-                }
-
                 console.log('⚡ Rapid Translation:', String(text).substring(0, 20) + '...')
-                const result = await createRapidTranslationStream(String(apiKey), String(text))
+                const result = await createRapidTranslationStream('', String(text))
 
                 for await (const chunk of result) {
-                    const chunkText = chunk.text
-                    if (chunkText) {
-                        port.postMessage({ chunk: chunkText })
+                    if (chunk) {
+                        port.postMessage({ chunk })
                     }
                 }
                 port.postMessage({ done: true })
@@ -323,22 +290,12 @@ chrome.runtime.onConnect.addListener((port) => {
             const { token } = msg
 
             try {
-                const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-                const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-                const apiKey = storageResult[API_KEY_STORAGE_KEY]
-
-                if (!apiKey) {
-                    port.postMessage({ error: '请先配置 API 密钥' })
-                    return
-                }
-
                 console.log('⚡ Token Detail:', token)
-                const result = await createTokenDetailStream(String(apiKey), String(token))
+                const result = await createTokenDetailStream('', String(token))
 
                 for await (const chunk of result) {
-                    const chunkText = chunk.text
-                    if (chunkText) {
-                        port.postMessage({ chunk: chunkText })
+                    if (chunk) {
+                        port.postMessage({ chunk })
                     }
                 }
                 port.postMessage({ done: true })
@@ -362,21 +319,16 @@ onMessage('analyze-text-content-script', async ({ data }) => {
     console.log('🔍 Content Script requested analysis for:', String(text).substring(0, 10))
 
     try {
-        const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-        const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-        const apiKey = storageResult[API_KEY_STORAGE_KEY]
+        // Use 'thinking' mode for best quality - SceneService handles credentials
+        // Assuming createAnalysisStream can handle missing apiKey gracefully (it should use SceneService)
+        // If createAnalysisStream throws due to missing config, catch block will handle it.
+        const stream = await createAnalysisStream('', String(text), 'thinking')
 
-        if (!apiKey) {
-            return { success: false, error: 'API Key missing' }
-        }
-
-        // Use 'thinking' mode for best quality
-        const stream = await createAnalysisStream(String(apiKey), String(text), 'thinking')
 
         // Accumulate full response
         let fullText = ''
         for await (const chunk of stream) {
-            if (chunk.text) fullText += chunk.text
+            if (chunk) fullText += chunk
         }
 
         console.log('🤖 Raw AI Response:', fullText.substring(0, 50) + '...')
@@ -412,21 +364,13 @@ onMessage('analyze-syntax', async ({ data }) => {
     console.log('🌳 Syntax Analysis requested for:', String(text).substring(0, 10))
 
     try {
-        const API_KEY_STORAGE_KEY = 'zhiyue:apiKey'
-        const storageResult = await chrome.storage.local.get(API_KEY_STORAGE_KEY)
-        const apiKey = storageResult[API_KEY_STORAGE_KEY]
-
-        if (!apiKey) {
-            return { success: false, error: 'API Key missing' }
-        }
-
-        // Use new createSyntaxStream
-        const stream = await createSyntaxStream(String(apiKey), String(text))
+        // Use new createSyntaxStream - SceneService handles credentials
+        const stream = await createSyntaxStream('', String(text))
 
         // Accumulate full response
         let fullText = ''
         for await (const chunk of stream) {
-            if (chunk.text) fullText += chunk.text
+            if (chunk) fullText += chunk
         }
 
         console.log('🧠 Raw Syntax Response:', fullText.substring(0, 20) + '...')

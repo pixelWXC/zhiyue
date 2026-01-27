@@ -108,9 +108,30 @@ const hasApiKey = ref(false)
 
 const checkApiKey = async () => {
     try {
-        // Use local storage as defined in logic/storage
-        const result = await chrome.storage.local.get(STORAGE_KEYS.API_KEY)
-        hasApiKey.value = !!result[STORAGE_KEYS.API_KEY]
+        // Check both legacy apiKey and new providerCredentials
+        const result = await chrome.storage.local.get([
+            STORAGE_KEYS.API_KEY,
+            STORAGE_KEYS.PROVIDER_CREDENTIALS
+        ])
+        
+        // Parse providerCredentials (may be JSON string from useStorageAsync)
+        let credentials: any = result[STORAGE_KEYS.PROVIDER_CREDENTIALS]
+        if (typeof credentials === 'string') {
+            try {
+                credentials = JSON.parse(credentials)
+            } catch { credentials = null }
+        }
+        
+        // Check if any provider has an API key configured
+        const hasNewConfig = credentials && (
+            credentials.gemini?.apiKey ||
+            credentials.openai?.apiKey ||
+            credentials.doubao?.apiKey ||
+            credentials.deepseek?.apiKey
+        )
+        
+        // Support both old and new configuration
+        hasApiKey.value = !!result[STORAGE_KEYS.API_KEY] || !!hasNewConfig
     } catch (e) {
         console.warn('Failed to check API key', e)
         hasApiKey.value = false
@@ -151,8 +172,9 @@ const loadRapidSettings = async () => {
 
 // Listen for storage changes
 const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
-    if (areaName === 'local' && changes[STORAGE_KEYS.API_KEY]) {
-        hasApiKey.value = !!changes[STORAGE_KEYS.API_KEY]?.newValue
+    if (areaName === 'local' && (changes[STORAGE_KEYS.API_KEY] || changes[STORAGE_KEYS.PROVIDER_CREDENTIALS])) {
+        // Re-check API key when any credential changes
+        checkApiKey()
     }
     // 修复 Bug: 使用 parseBoolean 正确处理字符串/boolean 类型
     if (areaName === 'local' && changes[STORAGE_KEYS.RAPID_TRANSLATION]) {

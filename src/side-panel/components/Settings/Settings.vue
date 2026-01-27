@@ -4,7 +4,7 @@ import { Settings as SettingsIcon, FileText, AlertTriangle, Zap, MessageCircle, 
 import { usePromptService, type PromptKey } from '@/logic/prompts/prompt-service'
 import { useSettings } from '@/logic/storage'
 import PromptEditor from './PromptEditor.vue'
-import ApiKeyInput from '@/components/Settings/ApiKeyInput.vue'
+import ModelConfig from './ModelConfig.vue'
 
 // Prompt Management
 const promptService = usePromptService()
@@ -131,8 +131,8 @@ onMounted(async () => {
     </header>
 
     <main class="p-6 max-w-3xl mx-auto space-y-8">
-      <!-- API Key Section -->
-      <ApiKeyInput />
+      <!-- Model Configuration Section -->
+      <ModelConfig />
 
       <!-- Rapid Services Configuration Section -->
       <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">

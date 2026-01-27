@@ -3,14 +3,12 @@ import { ref } from 'vue'
 import { Loader2, X, ImageIcon } from 'lucide-vue-next'
 import { blobToBase64, getMimeType } from '@/lib/utils'
 import { recognizeTextFromImage } from '@/logic/ai/client'
-import { useSettingsStore } from '@/stores/settings-store'
+import { hasAnyApiKeyConfigured } from '@/logic/storage'
 
 // Props/Emits
 const emit = defineEmits<{
   (e: 'analyze', text: string): void
 }>()
-
-const settingsStore = useSettingsStore()
 
 const inputText = ref('')
 
@@ -54,14 +52,14 @@ const handleImagePaste = async (blob: Blob) => {
         // Convert to Base64
         const base64 = await blobToBase64(blob)
 
-        // Get API key
-        const apiKey = settingsStore.apiKey
-        if (!apiKey) {
+        // Check if any API key is configured
+        const hasApiKey = await hasAnyApiKeyConfigured()
+        if (!hasApiKey) {
             throw new Error('请先配置 API 密钥')
         }
 
-        // Call OCR
-        const extractedText = await recognizeTextFromImage(apiKey, base64, imageMimeType.value)
+        // Call OCR (apiKey 参数已弃用，内部通过 SceneService 获取)
+        const extractedText = await recognizeTextFromImage('', base64, imageMimeType.value)
         
         // Fill input with extracted text
         inputText.value = extractedText.trim()

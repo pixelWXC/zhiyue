@@ -3,7 +3,7 @@
  * Generates flashcard content using Gemini AI
  */
 
-import { getClient, MODEL_NAMES } from './client'
+import { getProviderForScene, MODEL_NAMES } from './client'
 import { CARD_GEN_USER_PROMPT } from '../prompts/card-gen'
 import { promptService, PROMPT_KEYS } from '../prompts/prompt-service'
 import type { FlashcardData } from '../../types/card'
@@ -58,7 +58,12 @@ export async function generateCardContent(
     options: CardGenerationOptions = {}
 ): Promise<FlashcardData> {
     const { model: modelChoice = 'flash', enablePerfLog = false } = options
-    const ai = getClient(apiKey)
+
+    // Select model logic is now handled by provider/scene service preference, 
+    // but here we override via scene selection if needed.
+    // 'pro' maps to 'quality', 'flash' maps to 'speed'
+    const scene = modelChoice === 'pro' ? 'quality' : 'speed'
+    const provider = await getProviderForScene(apiKey, scene)
 
     // Select model based on options (Flash for speed, Pro for quality)
     const model = modelChoice === 'pro' ? MODEL_NAMES.PRO_THINKING : MODEL_NAMES.FLASH
@@ -70,23 +75,14 @@ export async function generateCardContent(
         // Load dynamic prompt
         const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.CARD_GEN_SYSTEM)
 
-        const response = await ai.models.generateContent({
-            model,
-            contents: [
-                {
-                    role: 'user',
-                    parts: [
-                        { text: systemPrompt },
-                        { text: CARD_GEN_USER_PROMPT(sentence, targetToken?.word) }
-                    ]
-                }
-            ],
-            config: {
-                responseMimeType: 'application/json' // Hint for JSON mode
+        const rawText = await provider.generate(
+            CARD_GEN_USER_PROMPT(sentence, targetToken?.word),
+            {
+                systemPrompt,
+                responseFormat: 'json',
+                thinkingLevel: modelChoice === 'pro' ? 'low' : undefined
             }
-        })
-
-        const rawText = response.text || ''
+        )
 
         if (!rawText.trim()) {
             throw new Error(ERROR_MESSAGES.EMPTY_RESPONSE)
