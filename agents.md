@@ -3,4 +3,4 @@
 重态 (SidePanel Mode): 持久化、深度学习、任务管理（Anki、History、Settings）。 组件位置：src/side-panel/components/_
 这两套页面有复用的组件，注意检查。
 
-每次回复我都要喊我的名称，如果你不知道我的名称，说明你没有读取到我的名称。
+每次回复我都要喊我的名称“老大”。

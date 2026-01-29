@@ -76,16 +76,9 @@
         </div>
       </div>
 
-      <!-- Footer Actions (for Story 3.4) -->
+      <!-- Footer Info -->
       <div class="card-footer">
-        <button
-          @click="$emit('export')"
-          class="export-button active"
-          title="导出到 Anki"
-        >
-          <Download class="w-4 h-4" />
-          导出 Anki
-        </button>
+        <p class="footer-hint">这是一个预览，请使用卡片收藏功能保存卡片</p>
       </div>
     </div>
 
@@ -98,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { AlertCircle, RotateCw, Download, ImageIcon, Sparkles } from 'lucide-vue-next'
+import { AlertCircle, RotateCw, ImageIcon, Sparkles } from 'lucide-vue-next'
 import type { FlashcardData } from '@/types/card'
 import MagicCardSkeleton from './MagicCardSkeleton.vue'
 
@@ -113,7 +106,6 @@ const props = defineProps<Props>()
 
 defineEmits<{
   retry: []
-  export: []
 }>()
 
 async function openFullscreen() {
@@ -301,31 +293,17 @@ async function openFullscreen() {
 
 /* Card Footer */
 .card-footer {
-  padding: 16px 24px;
+  padding: 12px 24px;
   background: #f9fafb;
   border-top: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
-.export-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: #e5e7eb;
-  color: #4b5563;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.export-button:hover {
-  background: #d1d5db;
-  color: #1f2937;
+.footer-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
 }
 
 /* Empty State */

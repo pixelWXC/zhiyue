@@ -4,8 +4,8 @@ import { useAiStore } from '@/stores/ai-store'
 import { storeToRefs } from 'pinia'
 import { Send, ExternalLink, ArrowLeft, Bot, User, Sparkles, X, Volume2, Zap, MessageCircleQuestion } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
-import WordCard from '@/side-panel/components/MagicCard/WordCard.vue'
-import type { WordContext } from '@/logic/prompts'
+import CardCreationConfirm from '@/side-panel/components/MagicCard/CardCreationConfirm.vue'
+import type { CreateCardContext, VocabCard } from '@/types/vocab-card'
 
 // Props for content script mode (optional)
 interface Props {
@@ -26,6 +26,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'back'): void
   (e: 'ask-question', question: string): void
+  (e: 'view-card-collection', cardId?: number): void
 }>()
 
 // Initialize markdown renderer
@@ -50,25 +51,35 @@ const qaStreamText = computed(() => isContentScriptMode.value ? (props.externalQ
 
 const questionInput = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
-const showWordCard = ref(false)
+const showCardCreationConfirm = ref(false)
 const isAiModalOpen = ref(false)
 
 const suggestedQuestions = ['用法是什么?', '其他意思?', '例句?']
 
-const wordCardContext = computed<WordContext | null>(() => {
+// 制卡上下文，用于触发 CardCreationConfirm
+const cardCreationContext = computed<CreateCardContext | null>(() => {
     if (!selectedToken.value) return null
-    // Use rapid detail meaning if available and original is missing/empty, or combine?
-    // Using selectedToken.meaning (original) is safer for context, but rapid detail might be better.
-    // Let's prefer original meaning from analysis if present, else rapid detail.
-    const meaning = selectedToken.value.meaning || props.tokenDetailData?.definition || ''
+    
+    // 优先使用快捷词典的释义，如果没有则使用原始分析的释义
+    const meaning = props.tokenDetailData?.definition || selectedToken.value.meaning || ''
     
     return {
         word: selectedToken.value.word,
-        kana: selectedToken.value.reading || props.tokenDetailData?.pronunciation || '',
+        reading: selectedToken.value.reading || props.tokenDetailData?.pronunciation || '',
         meaning: meaning,
-        sentence: aiStore.currentResult?.text || ''
+        pos: selectedToken.value.pos || '',
+        sentence: aiStore.currentResult?.text || '',
+        pitch: props.tokenDetailData?.pitch,
+        tones: props.tokenDetailData?.tones,
+        sourceUrl: undefined // 侧边栏模式下可能需要从其他地方获取
     }
 })
+
+// 处理制卡完成后查看卡片
+function handleViewCardFromCreation(card: VocabCard) {
+  showCardCreationConfirm.value = false
+  emit('view-card-collection', card.id)
+}
 
 const WIDTH_SMALL = 40
 const WIDTH_LARGE = 70
@@ -280,7 +291,7 @@ function playPronunciation(): void {
           </button>
           <button 
             v-if="showMagicCard"
-            @click="showWordCard = true"
+            @click="showCardCreationConfirm = true"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-lg shadow-md shadow-purple-200 dark:shadow-purple-900/30 transition-all"
           >
             <Sparkles class="w-3.5 h-3.5" />
@@ -521,24 +532,14 @@ function playPronunciation(): void {
       </div>
     </Teleport>
 
-    <!-- Word Card Modal Overlay -->
-    <Teleport to="body">
-      <div v-if="showWordCard && wordCardContext" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
-          <button 
-            @click="showWordCard = false"
-            class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-full transition-colors z-10"
-          >
-            <X class="w-5 h-5" />
-          </button>
-          
-          <div class="p-6">
-            <h3 class="text-lg font-bold text-center mb-4 text-slate-800 dark:text-slate-100">单词魔法卡片</h3>
-            <WordCard :context="wordCardContext" />
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <!-- Card Creation Confirm Modal -->
+    <CardCreationConfirm 
+      v-if="cardCreationContext"
+      :visible="showCardCreationConfirm" 
+      :context="cardCreationContext"
+      @close="showCardCreationConfirm = false"
+      @view-card="handleViewCardFromCreation"
+    />
   </div>
 </template>
 

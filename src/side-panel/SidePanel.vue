@@ -2,20 +2,30 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
+import { useCardCollectionStore } from '@/stores/card-collection-store'
 import { storeToRefs } from 'pinia'
-import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Settings as SettingsIcon, Home } from 'lucide-vue-next'
+import { Sparkles, AlertCircle, RotateCw, Trash2, Network, Settings as SettingsIcon, Home, Layers } from 'lucide-vue-next'
 import ManualInput from './components/ManualInput.vue'
 import SyntaxTree from './components/SyntaxTree.vue'
 import TokenDetail from '@/components/Analysis/TokenDetail.vue'
 import MagicCard from './components/MagicCard/MagicCard.vue'
 import SentenceCard from './components/MagicCard/SentenceCard.vue'
 import Settings from './components/Settings/Settings.vue'
-import { onMessage, sendMessage } from 'webext-bridge/popup'
-import { useToast } from '@/composables/useToast'
+import CardCollection from './components/CardCollection/CardCollection.vue'
+import NotificationBubble from '@/components/ui/NotificationBubble.vue'
 import ToastProvider from '@/components/ui/Toast/ToastProvider.vue'
+import { onMessage, sendMessage } from 'webext-bridge/popup'
+import type { VocabCard } from '@/types/vocab-card'
 
 // View Management
-const currentView = ref<'home' | 'settings'>('home')
+const currentView = ref<'home' | 'settings' | 'collection'>('home')
+
+// Card Collection Store
+const cardCollectionStore = useCardCollectionStore()
+const { cardCount } = storeToRefs(cardCollectionStore)
+
+// Target card for jumping from notification
+const targetCardId = ref<number | undefined>(undefined)
 
 // AI Store
 const aiStore = useAiStore()
@@ -105,16 +115,17 @@ function handleCloseSentenceCard() {
   showSentenceCardModal.value = false
 }
 
-// Toast State
-const { toast: toastNotify } = useToast()
+// 从 TokenDetail 跳转到卡片收藏并打开指定卡片
+function handleViewCardCollection(cardId?: number) {
+  targetCardId.value = cardId
+  currentView.value = 'collection'
+}
 
-async function handleExportCard() {
-  const result = await aiStore.copyCardToClipboard()
-  if (result.success) {
-    toastNotify({ title: '已复制到剪贴板', description: '可直接导入 Anki', variant: 'success' })
-  } else {
-    toastNotify({ title: '导出失败', description: result.error, variant: 'error' })
-  }
+// 制卡完成通知气泡点击处理
+function handleNotificationClick(card: VocabCard) {
+  cardCollectionStore.dismissNotification()
+  targetCardId.value = card.id
+  currentView.value = 'collection'
 }
 
 function handleCloseCard() {
@@ -219,6 +230,9 @@ onMounted(() => {
     sendMessage('sidepanel-opened', undefined, 'background')
         .then(() => console.log('📌 Side Panel state: OPEN'))
         .catch((e) => console.warn('Failed to notify sidepanel-opened:', e))
+    
+    // 加载卡片收藏数据
+    cardCollectionStore.loadCards()
 })
 
 // Story 4-7: 在卸载时通知 Background Side Panel 已关闭
@@ -262,6 +276,20 @@ onMessage('close-sidepanel', () => {
               <Home class="w-5 h-5" />
             </button>
             <button 
+              @click="currentView = 'collection'; targetCardId = undefined"
+              :class="currentView === 'collection' ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              class="p-2 rounded-lg transition-colors relative"
+              title="卡片收藏"
+            >
+              <Layers class="w-5 h-5" />
+              <span 
+                v-if="cardCount > 0" 
+                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-purple-600 text-white rounded-full flex items-center justify-center"
+              >
+                {{ cardCount > 99 ? '99+' : cardCount }}
+              </span>
+            </button>
+            <button 
               @click="currentView = 'settings'"
               :class="currentView === 'settings' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
               class="p-2 rounded-lg transition-colors"
@@ -275,6 +303,12 @@ onMessage('close-sidepanel', () => {
 
     <!-- Settings View -->
     <Settings v-if="currentView === 'settings'" />
+
+    <!-- Card Collection View -->
+    <CardCollection 
+      v-else-if="currentView === 'collection'" 
+      :target-card-id="targetCardId"
+    />
 
     <!-- Main Analysis View -->
     <main v-else class="p-6 max-w-2xl mx-auto space-y-8">
@@ -411,6 +445,7 @@ onMessage('close-sidepanel', () => {
                             :token-detail-error="tokenDetailError"
                             :show-magic-card="true"
                             @back="handleBack"
+                            @view-card-collection="handleViewCardCollection"
                         />
 
                         <!-- Syntax Tree View -->
@@ -466,7 +501,6 @@ onMessage('close-sidepanel', () => {
             :image="imageResult"
             :error="cardError || imageError"
             @retry="handleRetryCard"
-            @export="handleExportCard"
           />
         </div>
       </div>
@@ -498,7 +532,13 @@ onMessage('close-sidepanel', () => {
       </div>
     </Transition>
 
-    <!-- Toast Notification Removed -->
+    <!-- Card Creation Notification Bubble -->
+    <NotificationBubble
+      :visible="cardCollectionStore.showCompletionNotification"
+      :card="cardCollectionStore.lastCompletedCard"
+      @click="handleNotificationClick"
+      @close="cardCollectionStore.dismissNotification()"
+    />
   </div>
 </template>
 
