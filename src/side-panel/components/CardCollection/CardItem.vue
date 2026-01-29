@@ -64,36 +64,36 @@ function truncateMeaning(meaning: string): string {
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(31, 64, 55, 0.12);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .card-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
+  box-shadow: 0 8px 16px rgba(31, 64, 55, 0.12);
+  border-color: rgba(136, 192, 87, 0.4);
 }
 
 :root.dark .card-item {
-  background: #27272a;
-  border-color: #3f3f46;
+  background: #1a1f1d;
+  border-color: #2a3a32;
 }
 
 :root.dark .card-item:hover {
-  border-color: #52525b;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  border-color: #3a4a41;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
 }
 
 .card-thumbnail {
   position: relative;
   aspect-ratio: 4 / 3;
-  background: #f3f4f6;
+  background: #f1f5ee;
   overflow: hidden;
 }
 
 :root.dark .card-thumbnail {
-  background: #18181b;
+  background: #141a18;
 }
 
 .thumbnail-image {
@@ -108,11 +108,11 @@ function truncateMeaning(meaning: string): string {
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: #d1d5db;
+  color: #c8d5be;
 }
 
 :root.dark .thumbnail-placeholder {
-  color: #52525b;
+  color: #3a4a41;
 }
 
 .level-badge {
@@ -126,11 +126,11 @@ function truncateMeaning(meaning: string): string {
   color: white;
 }
 
-.level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
-.level-3 { background: linear-gradient(135deg, #eab308, #ca8a04); }
-.level-4 { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.level-5 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.level-1 { background: linear-gradient(135deg, #d8e8bf, #88c057); color: #1f4037; }
+.level-2 { background: linear-gradient(135deg, #c6df9f, #7ab14f); color: #1f4037; }
+.level-3 { background: linear-gradient(135deg, #88c057, #1f4037); color: #fdfbf7; }
+.level-4 { background: linear-gradient(135deg, #2d3748, #1f4037); color: #fdfbf7; }
+.level-5 { background: linear-gradient(135deg, #1f4037, #0e1f1a); color: #fdfbf7; }
 
 .delete-button {
   position: absolute;
@@ -161,7 +161,7 @@ function truncateMeaning(meaning: string): string {
 .card-word {
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 4px 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -174,14 +174,14 @@ function truncateMeaning(meaning: string): string {
 
 .card-reading {
   font-size: 12px;
-  color: #f97316;
+  color: #88c057;
   margin: 0 0 4px 0;
   font-family: 'Noto Sans JP', sans-serif;
 }
 
 .card-meaning {
   font-size: 12px;
-  color: #6b7280;
+  color: #6b7c6a;
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -191,6 +191,6 @@ function truncateMeaning(meaning: string): string {
 }
 
 :root.dark .card-meaning {
-  color: #a1a1aa;
+  color: #9aa896;
 }
 </style>

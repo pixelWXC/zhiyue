@@ -93,11 +93,11 @@ function formatDate(timestamp: number): string {
 <style scoped>
 .card-detail {
   min-height: 100%;
-  background: #f9fafb;
+  background: #fdfbf7;
 }
 
 :root.dark .card-detail {
-  background: #09090b;
+  background: #0f1412;
 }
 
 .detail-header {
@@ -105,13 +105,13 @@ function formatDate(timestamp: number): string {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  background: #fffefc;
+  border-bottom: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 :root.dark .detail-header {
-  background: #18181b;
-  border-bottom-color: #27272a;
+  background: #121816;
+  border-bottom-color: #1f2b26;
 }
 
 .back-button {
@@ -123,20 +123,20 @@ function formatDate(timestamp: number): string {
   border: none;
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: #6b7c6a;
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .back-button:hover {
-  color: #1f2937;
-  background: #f3f4f6;
+  color: #1f4037;
+  background: #edf3e6;
 }
 
 :root.dark .back-button:hover {
   color: #f3f4f6;
-  background: #27272a;
+  background: #27312c;
 }
 
 .header-actions {
@@ -181,7 +181,7 @@ function formatDate(timestamp: number): string {
   align-items: flex-start;
   gap: 8px;
   font-size: 13px;
-  color: #6b7280;
+  color: #6b7c6a;
 }
 
 .meta-item svg {
@@ -190,15 +190,15 @@ function formatDate(timestamp: number): string {
 }
 
 :root.dark .meta-item {
-  color: #a1a1aa;
+  color: #9aa896;
 }
 
 .meta-item.source {
   padding-top: 8px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 :root.dark .meta-item.source {
-  border-top-color: #27272a;
+  border-top-color: #1f2b26;
 }
 </style>

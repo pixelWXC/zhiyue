@@ -255,21 +255,21 @@ onMessage('close-sidepanel', () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300">
+  <div class="min-h-screen bg-rice-paper dark:bg-zinc-950 text-charcoal dark:text-gray-100 font-sans transition-colors duration-300">
     <ToastProvider />
     <!-- Header -->
     <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-4 sticky top-0 z-10">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 class="text-lg font-bold bg-matcha bg-clip-text text-transparent">
             智阅伴侣
           </h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">即时分析助手</p>
+          <p class="text-xs text-charcoal/60 dark:text-gray-400 font-medium">即时分析助手</p>
         </div>
         <div class="flex items-center gap-2">
             <button 
               @click="currentView = 'home'"
-              :class="currentView === 'home' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              :class="currentView === 'home' ? 'text-deep-tea dark:text-blue-400 bg-matcha/20 dark:bg-blue-900/30' : 'text-charcoal/40 hover:text-charcoal dark:hover:text-gray-300'"
               class="p-2 rounded-lg transition-colors"
               title="主页"
             >
@@ -277,21 +277,21 @@ onMessage('close-sidepanel', () => {
             </button>
             <button 
               @click="currentView = 'collection'; targetCardId = undefined"
-              :class="currentView === 'collection' ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              :class="currentView === 'collection' ? 'text-deep-tea dark:text-purple-400 bg-deep-tea/10 dark:bg-purple-900/30' : 'text-charcoal/40 hover:text-charcoal dark:hover:text-gray-300'"
               class="p-2 rounded-lg transition-colors relative"
               title="卡片收藏"
             >
               <Layers class="w-5 h-5" />
               <span 
                 v-if="cardCount > 0" 
-                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-purple-600 text-white rounded-full flex items-center justify-center"
+                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-deep-tea text-rice-paper rounded-full flex items-center justify-center"
               >
                 {{ cardCount > 99 ? '99+' : cardCount }}
               </span>
             </button>
             <button 
               @click="currentView = 'settings'"
-              :class="currentView === 'settings' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'"
+              :class="currentView === 'settings' ? 'text-charcoal dark:text-indigo-400 bg-charcoal/10 dark:bg-indigo-900/30' : 'text-charcoal/40 hover:text-charcoal dark:hover:text-gray-300'"
               class="p-2 rounded-lg transition-colors"
               title="设置"
             >
@@ -317,17 +317,17 @@ onMessage('close-sidepanel', () => {
       <section>
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-                <h2 class="text-sm font-semibold tracking-wide uppercase text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-blue-400 flex items-center gap-2">
                     <Sparkles class="w-4 h-4" /> 智能分析
                 </h2>
             </div>
             
             <!-- View Toggle -->
-            <div v-if="lastAnalyzedText" class="flex p-0.5 bg-gray-100 dark:bg-zinc-800 rounded-lg">
+            <div v-if="lastAnalyzedText" class="flex p-0.5 bg-matcha/10 dark:bg-zinc-800 rounded-lg">
                 <button 
                     @click="handleTabChange('analysis')"
                     class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
-                    :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                    :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-blue-400 shadow-sm' : 'text-charcoal/60 hover:text-charcoal dark:text-gray-400'"
                 >
                     <Sparkles class="w-3 h-3" />
                     <span>分析</span>
@@ -337,14 +337,14 @@ onMessage('close-sidepanel', () => {
                      :aria-busy="isSyntaxTabPending"
                      class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
                      :class="currentTab === 'syntax'
-                        ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-indigo-400 shadow-sm'
                         : isSyntaxTabPending
-                            ? 'text-indigo-600 dark:text-indigo-400'
-                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                            ? 'text-matcha dark:text-indigo-400'
+                            : 'text-charcoal/60 hover:text-charcoal dark:text-gray-400'"
                 >
                     <Network class="w-3 h-3" />
                     <span>句法</span>
-                    <span v-if="isSyntaxTabPending" class="ml-1 flex items-center gap-1 text-[10px] text-indigo-600 dark:text-indigo-400">
+                    <span v-if="isSyntaxTabPending" class="ml-1 flex items-center gap-1 text-[10px] text-matcha dark:text-indigo-400">
                         <span class="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                         等待中
                     </span>
@@ -370,7 +370,7 @@ onMessage('close-sidepanel', () => {
 
             <!-- Result Area -->
             <div v-if="displayData || isStreaming" class="relative group">
-                <div v-if="!isStreaming" class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl opacity-10 transition duration-500 blur"></div>
+                <div v-if="!isStreaming" class="absolute -inset-0.5 bg-gradient-to-r from-matcha to-deep-tea rounded-2xl opacity-10 transition duration-500 blur"></div>
                 <div class="relative bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm min-h-[100px]">
                     <div class="p-6">
                         <!-- Analysis View -->
@@ -378,16 +378,16 @@ onMessage('close-sidepanel', () => {
                             <!-- Rapid Translation Section (Only show when NOT viewing token detail) -->
                             <div 
                                 v-if="rapidTranslationText || isRapidTranslating || rapidTranslationError" 
-                                class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+                                class="mb-4 p-3 bg-matcha/5 dark:bg-amber-900/20 border border-matcha/20 dark:border-amber-800 rounded-lg"
                             >
                                 <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-amber-600 dark:text-amber-400">⚡</span>
-                                    <h4 class="text-xs font-semibold text-amber-700 dark:text-amber-300">快速翻译</h4>
+                                    <span class="text-deep-tea dark:text-amber-400">⚡</span>
+                                    <h4 class="text-xs font-semibold text-deep-tea dark:text-amber-300">快速翻译</h4>
                                 </div>
                                 
                                 <!-- Loading State -->
-                                <div v-if="isRapidTranslating && !rapidTranslationText" class="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-                                    <div class="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+                                <div v-if="isRapidTranslating && !rapidTranslationText" class="flex items-center gap-2 text-xs text-matcha dark:text-amber-400">
+                                    <div class="w-3 h-3 border-2 border-matcha border-t-transparent rounded-full animate-spin"></div>
                                     <span>翻译中...</span>
                                 </div>
                                 
@@ -422,7 +422,7 @@ onMessage('close-sidepanel', () => {
                                 <button 
                                     @click="handleRetry"
                                     :disabled="!lastAnalyzedText"
-                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-charcoal/80 dark:text-zinc-400 hover:text-deep-tea dark:hover:text-indigo-400 hover:bg-matcha/10 dark:hover:bg-indigo-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                     title="重新分析"
                                 >
                                     <RotateCw class="w-4 h-4" />

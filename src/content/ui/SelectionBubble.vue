@@ -39,7 +39,9 @@ const isExpanded = ref(false)
         width: isExpanded ? 'auto' : '40px',
         height: '40px',
         borderRadius: isExpanded ? '9999px' : '50%',
-        background: hasApiKey ? 'linear-gradient(135deg, rgb(59, 130, 246), rgb(79, 70, 229))' : 'linear-gradient(135deg, rgb(245, 158, 11), rgb(234, 88, 12))',
+        background: hasApiKey
+          ? 'linear-gradient(135deg, rgb(136, 192, 87), rgb(31, 64, 55))'
+          : 'linear-gradient(135deg, rgb(45, 55, 72), rgb(31, 64, 55))',
       }"
     >
       <!-- Logo 图标 -->
@@ -59,7 +61,7 @@ const isExpanded = ref(false)
             <!-- 分析按钮 -->
             <button
             @click="$emit('analyze')"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-[#1F4037] hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
             >
             <span>快捷分析</span>
             </button>
@@ -67,7 +69,7 @@ const isExpanded = ref(false)
             <!-- 解释按钮 -->
             <button
             @click="$emit('explain')"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-indigo-600 hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white hover:bg-white hover:text-[#1F4037] hover:shadow-md transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
             >
             <span>深度分析</span>
             </button>
@@ -79,7 +81,7 @@ const isExpanded = ref(false)
                  <span class="text-xs text-white/90 whitespace-nowrap font-medium">未配置 API Key</span>
                 <button
                     @click="$emit('configure')"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white hover:text-orange-600 text-white transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/10 hover:bg-white hover:text-[#1F4037] text-white transition-all duration-300 ease-out whitespace-nowrap text-sm font-medium"
                     >
                     <span>去配置</span>
                 </button>

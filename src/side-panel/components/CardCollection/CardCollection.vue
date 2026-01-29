@@ -165,20 +165,25 @@ watch(() => props.targetCardId, async (newId) => {
 .card-collection {
   min-height: 100%;
   padding: 0;
+  background: #fdfbf7;
+}
+
+:root.dark .card-collection {
+  background: #0f1412;
 }
 
 .collection-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: white;
+  background: linear-gradient(180deg, #fdfbf7 0%, #ffffff 100%);
   padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 :root.dark .collection-header {
-  background: #18181b;
-  border-bottom-color: #27272a;
+  background: #121816;
+  border-bottom-color: #1f2b26;
 }
 
 .collection-title {
@@ -187,19 +192,19 @@ watch(() => props.targetCardId, async (newId) => {
   gap: 8px;
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 12px 0;
 }
 
 :root.dark .collection-title {
-  color: #f3f4f6;
+  color: #e6f0da;
 }
 
 .card-count {
   font-size: 12px;
   font-weight: 500;
   padding: 2px 8px;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, #88c057, #1f4037);
   color: white;
   border-radius: 10px;
 }
@@ -213,35 +218,35 @@ watch(() => props.targetCardId, async (newId) => {
 .search-icon {
   position: absolute;
   left: 12px;
-  color: #9ca3af;
+  color: #6b7c6a;
 }
 
 .search-input {
   width: 100%;
   padding: 10px 36px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(31, 64, 55, 0.2);
   border-radius: 10px;
   font-size: 14px;
-  background: #f9fafb;
+  background: #fbfdf9;
   transition: all 0.2s;
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #8b5cf6;
+  border-color: #1f4037;
   background: white;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(136, 192, 87, 0.18);
 }
 
 :root.dark .search-input {
-  background: #27272a;
-  border-color: #3f3f46;
+  background: #1a211e;
+  border-color: #2a3a32;
   color: #f3f4f6;
 }
 
 :root.dark .search-input:focus {
-  border-color: #8b5cf6;
-  background: #18181b;
+  border-color: #88c057;
+  background: #141a18;
 }
 
 .clear-button {
@@ -257,13 +262,13 @@ watch(() => props.targetCardId, async (newId) => {
 }
 
 .clear-button:hover {
-  color: #6b7280;
-  background: #f3f4f6;
+  color: #1f4037;
+  background: #edf3e6;
 }
 
 :root.dark .clear-button:hover {
-  background: #3f3f46;
-  color: #d1d5db;
+  background: #27312c;
+  color: #d8e7cc;
 }
 
 /* Loading State */
@@ -273,14 +278,14 @@ watch(() => props.targetCardId, async (newId) => {
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  color: #6b7280;
+  color: #6b7c6a;
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #e5e7eb;
-  border-top-color: #8b5cf6;
+  border: 3px solid #e3e8dc;
+  border-top-color: #88c057;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 12px;
@@ -301,31 +306,35 @@ watch(() => props.targetCardId, async (newId) => {
 }
 
 .empty-icon {
-  color: #d1d5db;
+  color: #c8d5be;
   margin-bottom: 16px;
 }
 
 :root.dark .empty-icon {
-  color: #52525b;
+  color: #3a4a41;
 }
 
 .empty-state h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #4b5563;
+  color: #1f4037;
   margin: 0 0 8px 0;
 }
 
 :root.dark .empty-state h3 {
-  color: #a1a1aa;
+  color: #cfe6be;
 }
 
 .empty-state p {
   font-size: 14px;
-  color: #9ca3af;
+  color: #7a8a75;
   margin: 0;
   max-width: 280px;
   line-height: 1.5;
+}
+
+:root.dark .empty-state p {
+  color: #9aa896;
 }
 
 /* Card Grid */

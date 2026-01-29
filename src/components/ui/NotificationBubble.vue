@@ -3,7 +3,7 @@
     <Transition name="notification">
       <div 
         v-if="visible" 
-        class="notification-bubble"
+        class="notification-bubble bg-rice-paper dark:bg-zinc-800"
         @click="handleClick"
       >
         <!-- Thumbnail -->
@@ -21,15 +21,15 @@
         <!-- Content -->
         <div class="notification-content">
           <p class="notification-title">
-            <CheckCircle class="w-4 h-4 text-green-500" />
+            <CheckCircle class="w-4 h-4 text-matcha" />
             制卡完成
           </p>
-          <p class="notification-word">「{{ card?.word }}」</p>
-          <p class="notification-hint">点击查看卡片详情</p>
+          <p class="notification-word text-deep-tea">「{{ card?.word }}」</p>
+          <p class="notification-hint text-charcoal/60">点击查看卡片详情</p>
         </div>
         
         <!-- Close Button -->
-        <button @click.stop="handleClose" class="notification-close">
+        <button @click.stop="handleClose" class="notification-close hover:bg-matcha/10 hover:text-deep-tea">
           <X class="w-4 h-4" />
         </button>
       </div>
@@ -113,7 +113,7 @@ onMounted(() => {
   gap: 12px;
   
   padding: 12px 16px;
-  background: white;
+  /* background set by utility classes */
   border-radius: 16px;
   box-shadow: 
     0 4px 20px rgba(0, 0, 0, 0.1),
@@ -158,7 +158,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #88C057 0%, #1F4037 100%);
   color: white;
 }
 
@@ -173,7 +173,7 @@ onMounted(() => {
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
+  /* color handled by utility */
   margin: 0 0 2px 0;
 }
 
@@ -184,7 +184,7 @@ onMounted(() => {
 .notification-word {
   font-size: 16px;
   font-weight: 700;
-  color: #8b5cf6;
+  /* color handled by utility */
   margin: 0 0 2px 0;
   white-space: nowrap;
   overflow: hidden;
@@ -193,7 +193,7 @@ onMounted(() => {
 
 .notification-hint {
   font-size: 11px;
-  color: #9ca3af;
+  /* color handled by utility */
   margin: 0;
 }
 
@@ -208,10 +208,7 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.notification-close:hover {
-  color: #6b7280;
-  background: #f3f4f6;
-}
+
 
 :root.dark .notification-close:hover {
   color: #d1d5db;

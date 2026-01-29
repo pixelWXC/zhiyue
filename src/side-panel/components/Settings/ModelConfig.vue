@@ -190,13 +190,13 @@ watch(
 
 <template>
   <section
-    class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6"
+    class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6"
   >
     <!-- Header -->
     <div class="flex items-center gap-2 mb-4">
-      <Cpu class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+      <Cpu class="w-4 h-4 text-deep-tea dark:text-matcha" />
       <h2
-        class="text-sm font-semibold tracking-wide uppercase text-purple-600 dark:text-purple-400"
+        class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha"
       >
         AI 模型配置
       </h2>
@@ -214,12 +214,12 @@ watch(
       </h3>
 
       <!-- Gemini -->
-      <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+      <div class="p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
         <div class="flex items-center justify-between">
           <span class="font-medium">Google Gemini</span>
           <span
             v-if="enabledProviders.includes('gemini')"
-            class="text-xs text-green-600 flex items-center gap-1"
+            class="text-xs text-matcha flex items-center gap-1"
           >
             <Check class="w-3 h-3" /> 已配置
           </span>
@@ -228,18 +228,18 @@ watch(
           v-model="apiKeyInputs.gemini"
           type="password"
           placeholder="输入 API Key"
-          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700"
+          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           @blur="saveProviderCredential('gemini')"
         />
       </div>
 
       <!-- OpenAI -->
-      <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+      <div class="p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
         <div class="flex items-center justify-between">
           <span class="font-medium">OpenAI</span>
           <span
             v-if="enabledProviders.includes('openai')"
-            class="text-xs text-green-600 flex items-center gap-1"
+            class="text-xs text-matcha flex items-center gap-1"
           >
             <Check class="w-3 h-3" /> 已配置
           </span>
@@ -248,25 +248,25 @@ watch(
           v-model="apiKeyInputs.openai"
           type="password"
           placeholder="输入 API Key"
-          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700"
+          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           @blur="saveProviderCredential('openai')"
         />
         <input
           v-model="openaiBaseUrl"
           type="text"
           placeholder="Base URL (可选，用于代理或 Azure)"
-          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 text-sm border-gray-300 dark:border-zinc-700"
+          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] text-sm border-matcha/20 dark:border-[#2a3a32] focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           @blur="saveProviderCredential('openai')"
         />
       </div>
 
       <!-- Doubao -->
-      <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+      <div class="p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
         <div class="flex items-center justify-between">
           <span class="font-medium">豆包 (字节跳动)</span>
           <span
             v-if="enabledProviders.includes('doubao')"
-            class="text-xs text-green-600 flex items-center gap-1"
+            class="text-xs text-matcha flex items-center gap-1"
           >
             <Check class="w-3 h-3" /> 已配置
           </span>
@@ -275,18 +275,18 @@ watch(
           v-model="apiKeyInputs.doubao"
           type="password"
           placeholder="输入 API Key"
-          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700"
+          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           @blur="saveProviderCredential('doubao')"
         />
       </div>
 
       <!-- DeepSeek -->
-      <div class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+      <div class="p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
         <div class="flex items-center justify-between">
           <span class="font-medium">DeepSeek</span>
           <span
             v-if="enabledProviders.includes('deepseek')"
-            class="text-xs text-green-600 flex items-center gap-1"
+            class="text-xs text-matcha flex items-center gap-1"
           >
             <Check class="w-3 h-3" /> 已配置
           </span>
@@ -295,7 +295,7 @@ watch(
           v-model="apiKeyInputs.deepseek"
           type="password"
           placeholder="输入 API Key"
-          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700"
+          class="mt-2 w-full px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           @blur="saveProviderCredential('deepseek')"
         />
       </div>
@@ -310,11 +310,11 @@ watch(
 
       <!-- Quality First Scene -->
       <div
-        class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800"
+        class="p-4 bg-deep-tea/5 dark:bg-deep-tea/20 rounded-lg border border-deep-tea/20 dark:border-deep-tea/40"
       >
         <div class="flex items-center gap-2 mb-3">
-          <Sparkles class="w-4 h-4 text-purple-600" />
-          <span class="font-medium text-purple-700 dark:text-purple-300"
+          <Sparkles class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <span class="font-medium text-deep-tea dark:text-matcha"
             >深度分析场景</span
           >
         </div>
@@ -328,7 +328,7 @@ watch(
           <select
             :value="getSelectionValue('qualityFirst', 'text')"
             @change="(e) => updateSceneConfig('qualityFirst', 'text', (e.target as HTMLSelectElement).value)"
-            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700 text-sm"
+            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] text-sm focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           >
             <optgroup
               v-for="provider in enabledProviders"
@@ -352,7 +352,7 @@ watch(
           <select
              :value="getSelectionValue('qualityFirst', 'image')"
              @change="(e) => updateSceneConfig('qualityFirst', 'image', (e.target as HTMLSelectElement).value)"
-            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700 text-sm"
+            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] text-sm focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           >
             <optgroup
               v-for="provider in enabledProviders"
@@ -373,11 +373,11 @@ watch(
 
       <!-- Speed First Scene -->
       <div
-        class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800"
+        class="p-4 bg-matcha/10 dark:bg-matcha/15 rounded-lg border border-matcha/30 dark:border-matcha/40"
       >
         <div class="flex items-center gap-2 mb-3">
-          <Zap class="w-4 h-4 text-amber-600" />
-          <span class="font-medium text-amber-700 dark:text-amber-300"
+          <Zap class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <span class="font-medium text-deep-tea dark:text-matcha"
             >快速响应场景</span
           >
         </div>
@@ -390,7 +390,7 @@ watch(
           <select
             :value="getSelectionValue('speedFirst', 'text')"
             @change="(e) => updateSceneConfig('speedFirst', 'text', (e.target as HTMLSelectElement).value)"
-            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white dark:bg-zinc-900 border-gray-300 dark:border-zinc-700 text-sm"
+            class="w-full mt-1 px-3 py-2 rounded-lg border bg-white/80 dark:bg-[#101715] border-matcha/20 dark:border-[#2a3a32] text-sm focus:outline-none focus:border-deep-tea focus:ring-2 focus:ring-matcha/20"
           >
             <optgroup
               v-for="provider in enabledProviders"

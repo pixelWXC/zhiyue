@@ -122,33 +122,33 @@ function handleDownload() {
   width: 100%;
   max-width: 560px;
   margin: 2rem auto;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(253, 251, 247, 0.9);
   backdrop-filter: blur(12px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(31, 64, 55, 0.12);
 }
 
 /* Header */
 .card-header {
   text-align: center;
   margin-bottom: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f7faf5 0%, #dbe9c8 100%);
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(31, 64, 55, 0.1);
 }
 
 .card-title {
   font-size: 20px;
   font-weight: 700;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 6px 0;
 }
 
 .card-subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: #6b7c6a;
   margin: 0;
 }
 
@@ -156,10 +156,10 @@ function handleDownload() {
 .generate-section {
   text-align: center;
   padding: 48px 24px;
-  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  background: linear-gradient(135deg, #f3f8ee 0%, #d7e7c4 100%);
   border: none;
   border-radius: 16px;
-  box-shadow: inset 0 0 0 2px rgba(99, 102, 241, 0.3);
+  box-shadow: inset 0 0 0 2px rgba(136, 192, 87, 0.35);
 }
 
 .generate-button {
@@ -167,7 +167,7 @@ function handleDownload() {
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #88c057 0%, #1f4037 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -175,12 +175,12 @@ function handleDownload() {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 64, 55, 0.25);
 }
 
 .generate-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(31, 64, 55, 0.35);
 }
 
 .generate-button:active {
@@ -191,16 +191,16 @@ function handleDownload() {
 .loading-state {
   text-align: center;
   padding: 48px 24px;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: #fdfbf7;
+  border: 1px solid rgba(31, 64, 55, 0.16);
   border-radius: 12px;
 }
 
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #8b5cf6;
+  border: 4px solid #e3e8dc;
+  border-top-color: #88c057;
   border-radius: 50%;
   margin: 0 auto 16px;
   animation: spin 1s linear infinite;
@@ -215,7 +215,7 @@ function handleDownload() {
 .loading-text {
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 6px 0;
 }
 
@@ -229,7 +229,7 @@ function handleDownload() {
 .error-state {
   text-align: center;
   padding: 48px 24px;
-  background: white;
+  background: #fdfbf7;
   border: 1px solid #fca5a5;
   border-radius: 12px;
 }
@@ -261,16 +261,16 @@ function handleDownload() {
 
 /* Result Section */
 .result-section {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #c7d2fe;
+  background: rgba(253, 251, 247, 0.9);
+  border: 1px solid rgba(136, 192, 87, 0.35);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(31, 64, 55, 0.12);
 }
 
 .image-preview {
   width: 100%;
-  background: #f3f4f6;
+  background: #f1f5ee;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,8 +289,8 @@ function handleDownload() {
   padding: 16px;
   display: flex;
   gap: 12px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background: #fdfbf7;
+  border-top: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 .download-button,
@@ -310,70 +310,70 @@ function handleDownload() {
 }
 
 .download-button {
-  background: #10b981;
+  background: #1f4037;
   color: white;
 }
 
 .download-button:hover {
-  background: #059669;
+  background: #17342d;
   transform: translateY(-1px);
 }
 
 .regenerate-button {
-  background: #e5e7eb;
-  color: #374151;
+  background: #edf3e6;
+  color: #1f4037;
 }
 
 .regenerate-button:hover {
-  background: #d1d5db;
+  background: #e1ebd6;
 }
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .card-title {
-    color: #f9fafb;
+    color: #e6f0da;
   }
 
   .card-subtitle,
   .loading-subtext {
-    color: #a1a1aa;
+    color: #9aa896;
   }
 
   .generate-section,
   .loading-state,
   .error-state,
   .result-section {
-    background: #18181b;
-    border-color: #3f3f46;
+    background: #111815;
+    border-color: #2a3a32;
   }
 
   .loading-text {
-    color: #f9fafb;
+    color: #e6f0da;
   }
 
   .loading-spinner {
-    border-color: #3f3f46;
-    border-top-color: #8b5cf6;
+    border-color: #2a3a32;
+    border-top-color: #88c057;
   }
 
   .action-buttons {
-    background: #27272a;
-    border-top-color: #3f3f46;
+    background: #18211d;
+    border-top-color: #2a3a32;
   }
 
   .regenerate-button {
-    background: #3f3f46;
-    color: #e4e4e7;
+    background: #243128;
+    color: #e6f0da;
   }
 
   .regenerate-button:hover {
-    background: #52525b;
+    background: #2a3a32;
   }
 }
 
 .action-buttons-secondary {
   padding: 0 16px 16px; 
-  background: #f9fafb;
+  background: #fdfbf7;
 }
 
 .fullscreen-button {
@@ -383,7 +383,7 @@ function handleDownload() {
   justify-content: center;
   gap: 6px;
   padding: 10px 16px;
-  background: #8b5cf6;
+  background: #1f4037;
   color: white;
   border: none;
   border-radius: 8px;
@@ -394,12 +394,12 @@ function handleDownload() {
 }
 
 .fullscreen-button:hover {
-  background: #7c3aed;
+  background: #17342d;
 }
 
 @media (prefers-color-scheme: dark) {
   .action-buttons-secondary {
-      background: #27272a;
+      background: #18211d;
   }
 }
 </style>

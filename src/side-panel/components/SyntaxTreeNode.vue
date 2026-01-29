@@ -32,18 +32,18 @@ const indentStyle = computed(() => ({
 // Color coding for roles
 const roleColor = computed(() => {
     const role = props.node.role
-    if (role.includes('主语')) return 'text-rose-500 bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-900/30'
-    if (role.includes('谓语')) return 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30'
-    if (role.includes('宾语')) return 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30'
-    if (role.includes('修饰')) return 'text-amber-500 bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-900/30'
-    return 'text-gray-500 bg-gray-50 dark:bg-zinc-800 border-gray-100 dark:border-zinc-700'
+    if (role.includes('主语')) return 'text-deep-tea bg-matcha/20 dark:bg-deep-tea/40 border-matcha/30 dark:border-deep-tea/60'
+    if (role.includes('谓语')) return 'text-deep-tea bg-deep-tea/10 dark:bg-deep-tea/30 border-deep-tea/20 dark:border-deep-tea/60'
+    if (role.includes('宾语')) return 'text-deep-tea bg-rice-paper dark:bg-[#17201c] border-matcha/20 dark:border-deep-tea/50'
+    if (role.includes('修饰')) return 'text-deep-tea bg-matcha/10 dark:bg-deep-tea/20 border-matcha/20 dark:border-deep-tea/50'
+    return 'text-charcoal/70 bg-rice-paper/70 dark:bg-[#17201c] border-matcha/10 dark:border-deep-tea/40'
 })
 
 const isHighlighted = computed(() => props.activeNodeIds?.has(props.node.id) ?? false)
 
 const highlightClass = computed(() => {
     return isHighlighted.value
-        ? 'bg-indigo-50 dark:bg-indigo-900/30 ring-1 ring-indigo-200/80 dark:ring-indigo-700/40'
+        ? 'bg-matcha/10 dark:bg-deep-tea/30 ring-1 ring-matcha/30 dark:ring-matcha/30'
         : ''
 })
 
@@ -57,7 +57,7 @@ function handleHover(id: string | null) {
         
         <!-- Node Content -->
         <div 
-            class="flex items-center gap-2 py-1.5 px-2 hover:bg-gray-100 dark:hover:bg-zinc-800/50 rounded-lg cursor-pointer transition-colors group"
+            class="flex items-center gap-2 py-1.5 px-2 hover:bg-matcha/10 dark:hover:bg-deep-tea/40 rounded-lg cursor-pointer transition-colors group"
             :class="highlightClass"
             :style="indentStyle"
             @click="toggle"
@@ -69,18 +69,18 @@ function handleHover(id: string | null) {
                 <component 
                     v-if="hasChildren" 
                     :is="isOpen ? ChevronDown : ChevronRight" 
-                    class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                    class="w-3.5 h-3.5 text-charcoal/40 group-hover:text-deep-tea dark:text-matcha/50 dark:group-hover:text-matcha"
                 />
                 <Circle 
                     v-else 
-                    class="w-1.5 h-1.5 text-gray-300 dark:text-gray-600 fill-current" 
+                    class="w-1.5 h-1.5 text-matcha/30 dark:text-matcha/40 fill-current" 
                 />
             </div>
 
             <!-- Token & Meta -->
             <div class="flex items-baseline gap-2 min-w-0 flex-1">
                  <!-- Main Token -->
-                <span class="font-medium text-gray-900 dark:text-gray-100 truncate">
+                <span class="font-medium text-deep-tea dark:text-rice-paper truncate">
                     {{ node.token }}
                 </span>
                 
@@ -93,7 +93,7 @@ function handleHover(id: string | null) {
                 </span>
 
                 <!-- POS (faded) -->
-                <span class="text-[10px] text-gray-400 dark:text-gray-500 truncate shrink-0">
+                <span class="text-[10px] text-charcoal/50 dark:text-matcha/60 truncate shrink-0">
                     {{ node.partOfSpeech }}
                 </span>
             </div>
@@ -103,7 +103,7 @@ function handleHover(id: string | null) {
         <div v-if="hasChildren && isOpen" class="relative">
              <!-- Guide Line -->
             <div 
-                class="absolute left-0 top-0 bottom-0 border-l border-gray-100 dark:border-zinc-800"
+                class="absolute left-0 top-0 bottom-0 border-l border-matcha/20 dark:border-deep-tea/50"
                 :style="{ left: `${(depth + 1) * 12 - 4}px` }"
             ></div>
 

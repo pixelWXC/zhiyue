@@ -136,17 +136,17 @@ async function openFullscreen() {
 
 /* Loading Skeleton */
 .card-skeleton {
-  background: white;
+  background: #fdfbf7;
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(31, 64, 55, 0.12);
   overflow: hidden;
 }
 
 /* Error State */
 .card-error {
-  background: white;
+  background: #fdfbf7;
   border-radius: 16px;
-  border: 1px solid #fbbf24;
+  border: 1px solid rgba(31, 64, 55, 0.2);
   padding: 32px 24px;
   text-align: center;
 }
@@ -161,7 +161,7 @@ async function openFullscreen() {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #fbbf24;
+  background: #1f4037;
   color: white;
   border: none;
   border-radius: 8px;
@@ -172,23 +172,23 @@ async function openFullscreen() {
 }
 
 .retry-button:hover {
-  background: #f59e0b;
+  background: #17342d;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 64, 55, 0.25);
 }
 
 /* Magic Card */
 .magic-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  background: linear-gradient(135deg, #fdfbf7 0%, #ffffff 100%);
   border-radius: 16px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid rgba(31, 64, 55, 0.16);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(31, 64, 55, 0.08);
   transition: all 0.3s;
 }
 
 .magic-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(31, 64, 55, 0.14);
   transform: translateY(-2px);
 }
 
@@ -196,7 +196,7 @@ async function openFullscreen() {
 .card-image-container {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: #f3f4f6;
+  background: #f1f5ee;
   overflow: hidden;
   position: relative;
   cursor: pointer;
@@ -216,7 +216,7 @@ async function openFullscreen() {
 .card-image-placeholder {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  background: linear-gradient(135deg, #f7faf5 0%, #eef3e7 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -243,21 +243,21 @@ async function openFullscreen() {
 .card-target {
   text-align: center;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid rgba(31, 64, 55, 0.12);
   margin-bottom: 20px;
 }
 
 .target-word {
   font-size: 32px;
   font-weight: 700;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 }
 
 .reading {
   font-size: 16px;
-  color: #6b7280;
+  color: #88c057;
   font-weight: 500;
 }
 
@@ -268,48 +268,48 @@ async function openFullscreen() {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #9ca3af;
+  color: #6b7c6a;
   margin-bottom: 6px;
 }
 
 .field-value {
   font-size: 14px;
   line-height: 1.6;
-  color: #374151;
+  color: #2d3a34;
   margin: 0;
 }
 
 .field-value.sentence {
   font-size: 15px;
   font-weight: 500;
-  color: #1f2937;
+  color: #1f4037;
 }
 
 .field-value.hint {
   font-size: 13px;
-  color: #6b7280;
+  color: #6b7c6a;
   font-style: italic;
 }
 
 /* Card Footer */
 .card-footer {
   padding: 12px 24px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background: #fdfbf7;
+  border-top: 1px solid rgba(31, 64, 55, 0.12);
   display: flex;
   justify-content: center;
 }
 
 .footer-hint {
   font-size: 12px;
-  color: #9ca3af;
+  color: #8b9a86;
   margin: 0;
 }
 
 /* Empty State */
 .card-empty {
-  background: white;
-  border: 2px dashed #e5e7eb;
+  background: #fdfbf7;
+  border: 2px dashed rgba(31, 64, 55, 0.2);
   border-radius: 16px;
   padding: 48px 24px;
   text-align: center;
@@ -329,63 +329,63 @@ async function openFullscreen() {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .magic-card {
-    background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
-    border-color: #3f3f46;
+    background: linear-gradient(135deg, #111815 0%, #18211d 100%);
+    border-color: #2a3a32;
   }
 
   .card-error {
-    background: #18181b;
-    border-color: #f59e0b;
+    background: #111815;
+    border-color: #2a3a32;
   }
 
   .card-target {
-    border-bottom-color: #3f3f46;
+    border-bottom-color: #2a3a32;
   }
 
   .target-word {
-    color: #f9fafb;
+    color: #e6f0da;
   }
 
   .reading {
-    color: #a1a1aa;
+    color: #9bc96a;
   }
 
   .field-label {
-    color: #71717a;
+    color: #8b9a86;
   }
 
   .field-value {
-    color: #d4d4d8;
+    color: #d1dacb;
   }
 
   .field-value.sentence {
-    color: #e4e4e7;
+    color: #e6f0da;
   }
 
   .field-value.hint {
-    color: #a1a1aa;
+    color: #9aa896;
   }
 
   .card-footer {
-    background: #27272a;
-    border-top-color: #3f3f46;
+    background: #18211d;
+    border-top-color: #2a3a32;
   }
 
   .card-image-placeholder {
-    background: linear-gradient(135deg, #27272a 0%, #3f3f46 100%);
+    background: linear-gradient(135deg, #18211d 0%, #223029 100%);
   }
 
   .card-empty {
-    background: #18181b;
-    border-color: #3f3f46;
+    background: #111815;
+    border-color: #2a3a32;
   }
 
   .humble-robot h3 {
-    color: #f9fafb;
+    color: #e6f0da;
   }
 
   .humble-robot p {
-    color: #a1a1aa;
+    color: #9aa896;
   }
 }
 </style>

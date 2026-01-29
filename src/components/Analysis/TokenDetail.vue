@@ -133,7 +133,7 @@ const pitchSvg = computed(() => {
         circles.push({
             cx: points[i]!.x,
             cy: points[i]!.y,
-            fill: points[i]!.high ? '#fb923c' : '#cbd5e1', // orange-400 : slate-300
+            fill: points[i]!.high ? '#88C057' : '#cbd5e1', // matcha : slate-300
             isHigh: points[i]!.high
         })
 
@@ -144,7 +144,7 @@ const pitchSvg = computed(() => {
                 y1: points[i]!.y,
                 x2: points[i + 1]!.x,
                 y2: points[i + 1]!.y,
-                stroke: points[i]!.high && points[i+1]!.high ? '#fdba74' : '#cbd5e1', // orange-300 : slate-300
+                stroke: points[i]!.high && points[i+1]!.high ? '#6FA141' : '#cbd5e1', // matcha-dark : slate-300
                 // Use gradient logic if needed, but solid color is cleaner for now. 
                 // If distinct High->Low, standard is usually just the line.
             })
@@ -186,7 +186,7 @@ function handleQuickQuestion(question: string) {
     questionInput.value = question
 }
 
-function openDictionary(type: 'youdao' | 'mazii') {
+function openDictionary(type: 'youdao' | 'mazii' | 'weblio') {
     if (!selectedToken.value) return
     let url = ''
     const word = selectedToken.value.word
@@ -197,6 +197,9 @@ function openDictionary(type: 'youdao' | 'mazii') {
             break
         case 'mazii':
             url = `https://mazii.net/zh-CN/search/word/ja-CN/${encodeURIComponent(word)}`
+            break
+        case 'weblio':
+            url = `https://www.weblio.jp/content/${encodeURIComponent(word)}`
             break
     }
     window.open(url, '_blank')
@@ -244,7 +247,7 @@ function playPronunciation(): void {
         <button 
           v-if="showMagicCard"
           @click="isAiModalOpen = true"
-          class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 hover:text-orange-700 bg-white dark:bg-zinc-900 rounded-lg transition-colors z-10"
+          class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-matcha/40 dark:border-matcha/40 text-deep-tea dark:text-matcha hover:bg-matcha/20 dark:hover:bg-deep-tea/30 hover:text-deep-tea/90 bg-white/80 dark:bg-zinc-900 rounded-lg transition-colors z-10"
         >
           <MessageCircleQuestion class="w-3.5 h-3.5" />
           向AI提问
@@ -252,19 +255,19 @@ function playPronunciation(): void {
 
         <!-- Word Header -->
         <div class="mb-4 pr-24">
-          <p class="text-orange-500 dark:text-orange-400 text-sm font-medium mb-1">{{ selectedToken.reading }}</p>
+          <p class="text-deep-tea dark:text-matcha text-sm font-medium mb-1">{{ selectedToken.reading }}</p>
           <div class="flex items-center gap-3 flex-wrap">
             <h1 class="text-4xl font-bold text-slate-900 dark:text-white break-all max-w-full">{{ selectedToken.word }}</h1>
             <button
               @click="playPronunciation"
-              class="p-2 rounded-full hover:bg-orange-50 dark:hover:bg-orange-900/30 text-orange-500 transition-colors shrink-0"
+              class="p-2 rounded-full hover:bg-matcha/15 dark:hover:bg-deep-tea/30 text-deep-tea dark:text-matcha transition-colors shrink-0"
               title="播放读音"
             >
               <Volume2 class="w-5 h-5" />
             </button>
           </div>
           <div class="flex items-center gap-2 mt-3 flex-wrap">
-            <span class="px-2.5 py-1 text-xs font-semibold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 rounded-full">
+            <span class="px-2.5 py-1 text-xs font-semibold bg-matcha/20 dark:bg-deep-tea/40 text-deep-tea dark:text-matcha rounded-full">
               {{ selectedToken.pos }}
             </span>
             <span v-if="selectedToken.romaji" class="text-slate-500 dark:text-slate-400 text-sm font-mono break-all">
@@ -290,9 +293,16 @@ function playPronunciation(): void {
             Mazii
           </button>
           <button 
+            @click="openDictionary('weblio')" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800 bg-transparent border border-slate-200 dark:border-zinc-700 rounded-lg transition-colors"
+          >
+            <ExternalLink class="w-3.5 h-3.5" />
+            Weblio
+          </button>
+          <button 
             v-if="showMagicCard"
             @click="showCardCreationConfirm = true"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-lg shadow-md shadow-purple-200 dark:shadow-purple-900/30 transition-all"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-matcha to-deep-tea hover:from-matcha/90 hover:to-deep-tea/90 rounded-lg shadow-md shadow-matcha/30 dark:shadow-deep-tea/40 transition-all"
           >
             <Sparkles class="w-3.5 h-3.5" />
             魔法卡片
@@ -303,10 +313,10 @@ function playPronunciation(): void {
       <!-- Quick Dictionary Card -->
       <div class="dictionary-card bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 p-6">
         <div class="flex items-center gap-2 mb-5">
-          <Zap class="w-4 h-4 text-amber-500" />
+          <Zap class="w-4 h-4 text-matcha" />
           <h2 class="font-semibold text-slate-900 dark:text-white">快捷词典</h2>
           <div v-if="isTokenDetailLoading && !tokenDetailData" class="ml-auto">
-            <div class="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-4 h-4 border-2 border-matcha border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
 
@@ -320,19 +330,19 @@ function playPronunciation(): void {
         <div v-else class="space-y-5">
           <!-- Definition -->
           <div v-if="tokenDetailData?.definition || selectedToken.meaning">
-            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">释义</h3>
+            <h3 class="text-xs font-medium text-deep-tea/70 dark:text-matcha/70 uppercase tracking-wider mb-2">释义</h3>
             <p class="text-slate-700 dark:text-slate-300 leading-relaxed">{{ tokenDetailData?.definition || selectedToken.meaning }}</p>
           </div>
 
           <!-- Grammar -->
           <div v-if="tokenDetailData?.grammar">
-            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">语法</h3>
+            <h3 class="text-xs font-medium text-deep-tea/70 dark:text-matcha/70 uppercase tracking-wider mb-2">语法</h3>
             <p class="text-slate-700 dark:text-slate-300 leading-relaxed">{{ tokenDetailData.grammar }}</p>
           </div>
 
           <!-- Pitch Accent / Tones -->
           <div v-if="formattedTones && formattedTones.length > 0">
-            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-3">音调</h3>
+            <h3 class="text-xs font-medium text-deep-tea/70 dark:text-matcha/70 uppercase tracking-wider mb-3">音调</h3>
             <div class="flex flex-col gap-2">
               <div class="flex items-end">
                 <!-- Pitch Characters -->
@@ -345,8 +355,8 @@ function playPronunciation(): void {
                   <div
                     class="h-8 rounded-lg flex items-center justify-center text-lg font-medium transition-all"
                     :class="t.high 
-                      ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 -translate-y-2' 
-                      : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400'"
+                      ? 'bg-matcha/20 dark:bg-deep-tea/40 text-deep-tea dark:text-matcha -translate-y-2' 
+                      : 'bg-rice-paper dark:bg-zinc-800 text-slate-600 dark:text-slate-400'"
                     :style="{ width: t.char.length > 1 ? '62px' : '32px' }"
                   >
                     {{ t.char }}
@@ -390,7 +400,7 @@ function playPronunciation(): void {
           
           <!-- Fallback Pronunciation -->
           <div v-else-if="tokenDetailData?.pronunciation">
-            <h3 class="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-2">读音</h3>
+            <h3 class="text-xs font-medium text-deep-tea/70 dark:text-matcha/70 uppercase tracking-wider mb-2">读音</h3>
             <p class="text-slate-700 dark:text-slate-300">{{ tokenDetailData.pronunciation }}</p>
           </div>
 
@@ -425,13 +435,13 @@ function playPronunciation(): void {
               <!-- Modal Header -->
               <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-zinc-800 shrink-0">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-200 dark:shadow-orange-900/30 shrink-0">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-matcha to-deep-tea flex items-center justify-center shadow-lg shadow-matcha/30 dark:shadow-deep-tea/40 shrink-0">
                     <MessageCircleQuestion class="w-5 h-5 text-white" />
                   </div>
                   <div class="min-w-0">
                     <h3 class="font-semibold text-slate-900 dark:text-white">AI 助手</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                      关于「<span class="text-orange-600 dark:text-orange-400 font-medium">{{ selectedToken.word }}</span>」有什么不懂的吗？
+                      关于「<span class="text-deep-tea dark:text-matcha font-medium">{{ selectedToken.word }}</span>」有什么不懂的吗？
                     </p>
                   </div>
                 </div>
@@ -446,7 +456,7 @@ function playPronunciation(): void {
               <!-- Chat History (Scrollable Area) -->
               <div 
                 ref="chatContainer" 
-                class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-800/30 min-h-0"
+                class="flex-1 overflow-y-auto p-4 space-y-4 bg-rice-paper/70 dark:bg-zinc-800/30 min-h-0"
               >
                 <!-- Empty State -->
                 <div v-if="qaHistory.length === 0 && !isQaStreaming" class="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 py-12">
@@ -463,13 +473,13 @@ function playPronunciation(): void {
                     <div class="w-7 h-7 rounded-full bg-slate-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
                       <User class="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     </div>
-                    <div class="bg-orange-500 text-white px-3 py-2 rounded-2xl rounded-tr-sm text-sm max-w-[85%] leading-relaxed shadow-sm">
+                    <div class="bg-deep-tea text-rice-paper px-3 py-2 rounded-2xl rounded-tr-sm text-sm max-w-[85%] leading-relaxed shadow-sm">
                       {{ msg.question }}
                     </div>
                   </div>
                   <!-- AI -->
                   <div class="flex gap-3">
-                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-matcha to-deep-tea flex items-center justify-center shrink-0 shadow-sm">
                       <Bot class="w-4 h-4 text-white" />
                     </div>
                     <div class="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-slate-700 dark:text-slate-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
@@ -480,29 +490,29 @@ function playPronunciation(): void {
                 
                 <!-- Streaming Message -->
                 <div v-if="isQaStreaming" class="flex gap-3">
-                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-matcha to-deep-tea flex items-center justify-center shrink-0 shadow-sm">
                     <Bot class="w-4 h-4 text-white" />
                   </div>
                   <div class="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700/50 px-3 py-2 rounded-2xl rounded-tl-sm text-sm text-slate-700 dark:text-slate-200 max-w-[100%] leading-relaxed shadow-sm markdown-prose">
                     <div v-if="qaStreamText" v-html="renderMarkdown(qaStreamText)"></div>
                     <div v-else class="flex gap-1 items-center h-5">
-                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce"></span>
-                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                      <span class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      <span class="w-1.5 h-1.5 bg-matcha rounded-full animate-bounce"></span>
+                      <span class="w-1.5 h-1.5 bg-matcha rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                      <span class="w-1.5 h-1.5 bg-matcha rounded-full animate-bounce [animation-delay:0.4s]"></span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- Suggested Questions -->
-              <div class="px-5 py-3 bg-slate-50/50 dark:bg-zinc-800/30 border-t border-slate-100 dark:border-zinc-800">
+              <div class="px-5 py-3 bg-rice-paper/60 dark:bg-zinc-800/30 border-t border-slate-100 dark:border-zinc-800">
                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">快捷提问</p>
                 <div class="flex flex-wrap gap-2">
                   <button
                     v-for="(q, index) in suggestedQuestions"
                     :key="index"
                     @click="handleQuickQuestion(q)"
-                    class="px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-600 dark:text-slate-400 hover:border-orange-300 dark:hover:border-orange-600 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                    class="px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm text-slate-600 dark:text-slate-400 hover:border-matcha/60 dark:hover:border-matcha/60 hover:text-deep-tea dark:hover:text-matcha hover:bg-matcha/10 dark:hover:bg-deep-tea/30 transition-colors"
                   >
                     {{ q }}
                   </button>
@@ -515,13 +525,13 @@ function playPronunciation(): void {
                   v-model="questionInput"
                   placeholder="输入问题..."
                   :disabled="isQaStreaming"
-                  class="flex-1 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 focus:border-orange-400 dark:focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 rounded-xl h-11 px-4 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-all"
+                  class="flex-1 bg-rice-paper dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700 focus:border-deep-tea dark:focus:border-matcha focus:ring-2 focus:ring-matcha/20 rounded-xl h-11 px-4 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-all"
                   @keydown.enter="handleAsk"
                 />
                 <button
                   @click="handleAsk"
                   :disabled="!questionInput.trim() || isQaStreaming"
-                  class="h-11 w-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-200 dark:shadow-orange-900/30 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  class="h-11 w-11 rounded-xl bg-gradient-to-r from-matcha to-deep-tea hover:from-matcha/90 hover:to-deep-tea/90 shadow-lg shadow-matcha/30 dark:shadow-deep-tea/40 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
                   <Send class="w-4 h-4" />
                 </button>
@@ -546,17 +556,16 @@ function playPronunciation(): void {
 <style scoped>
 .token-detail-container {
   background: linear-gradient(to bottom right, 
-    rgb(248 250 252) 0%, 
-    rgb(255 255 255) 50%, 
-    rgb(255 247 237 / 0.3) 100%
+    rgb(253 251 247) 0%, 
+    rgb(255 255 255) 100%
   );
 }
 
 .dark .token-detail-container {
   background: linear-gradient(to bottom right, 
-    rgb(24 24 27) 0%, 
-    rgb(9 9 11) 50%, 
-    rgb(24 24 27) 100%
+    rgb(15 26 23) 0%, 
+    rgb(10 15 14) 60%, 
+    rgb(18 24 20) 100%
   );
 }
 
@@ -666,11 +675,11 @@ function playPronunciation(): void {
 }
 
 .markdown-prose :deep(a) {
-    color: #f97316;
+    color: #1F4037;
     text-decoration: underline;
 }
 
 .markdown-prose :deep(a:hover) {
-    color: #ea580c;
+    color: #88C057;
 }
 </style>

@@ -186,22 +186,22 @@ const sentenceSegments = computed<SentenceSegment[]>(() => {
         </div>
         -->
 
-        <div v-if="isBusy" class="flex items-center gap-2 px-3 py-2 text-[10px] text-indigo-600 dark:text-indigo-400">
+        <div v-if="isBusy" class="flex items-center gap-2 px-3 py-2 text-[10px] text-deep-tea dark:text-matcha">
             <span class="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
             正在生成语法树...
         </div>
 
         <div class="p-2 space-y-3" :class="isBusy ? 'opacity-60 pointer-events-none' : ''">
-            <div v-if="sentenceText" class="rounded-lg border border-gray-100 dark:border-zinc-800 bg-gray-50/80 dark:bg-zinc-900/40 px-3 py-2.5">
-                <div class="text-[10px] uppercase tracking-widest text-gray-400 dark:text-gray-500">原句</div>
-                <div class="mt-2 text-sm leading-relaxed text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+            <div v-if="sentenceText" class="rounded-lg border border-matcha/20 dark:border-deep-tea/50 bg-rice-paper/80 dark:bg-deep-tea/30 px-3 py-2.5">
+                <div class="text-[10px] uppercase tracking-widest text-charcoal/50 dark:text-matcha/60">原句</div>
+                <div class="mt-2 text-sm leading-relaxed text-deep-tea dark:text-rice-paper whitespace-pre-wrap">
                     <template v-for="(segment, index) in sentenceSegments" :key="index">
                         <span
                             v-if="segment.nodeId"
                             class="inline-block rounded px-0.5 transition-colors cursor-pointer"
                             :class="activeNodeIds.has(segment.nodeId)
-                                ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200'
-                                : 'text-gray-800 dark:text-gray-100 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'"
+                                ? 'bg-matcha/30 text-deep-tea dark:bg-deep-tea/50 dark:text-matcha'
+                                : 'text-deep-tea/90 dark:text-rice-paper hover:bg-matcha/10 dark:hover:bg-deep-tea/40'"
                             @mouseenter="handleSentenceHover(segment.nodeId)"
                             @mouseleave="handleSentenceHover(null)"
                         >
@@ -210,7 +210,7 @@ const sentenceSegments = computed<SentenceSegment[]>(() => {
                         <span v-else>{{ segment.text }}</span>
                     </template>
                 </div>
-                <div class="mt-2 text-[10px] text-gray-400 dark:text-gray-500">悬停词语或节点，可联动高亮</div>
+                <div class="mt-2 text-[10px] text-charcoal/50 dark:text-matcha/60">悬停词语或节点，可联动高亮</div>
             </div>
 
             <SyntaxTreeNode 

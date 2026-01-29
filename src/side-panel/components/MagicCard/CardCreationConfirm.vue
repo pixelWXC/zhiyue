@@ -186,17 +186,17 @@ watch(() => props.visible, (visible) => {
 }
 
 .modal-content {
-  background: white;
+  background: #fdfbf7;
   border-radius: 16px;
   width: 100%;
   max-width: 400px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 40px rgba(31, 64, 55, 0.18);
 }
 
 :root.dark .modal-content {
-  background: #18181b;
+  background: #111815;
 }
 
 .modal-header {
@@ -204,11 +204,11 @@ watch(() => props.visible, (visible) => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 :root.dark .modal-header {
-  border-bottom-color: #27272a;
+  border-bottom-color: #2a3a32;
 }
 
 .modal-title {
@@ -217,16 +217,16 @@ watch(() => props.visible, (visible) => {
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0;
 }
 
 :root.dark .modal-title {
-  color: #f3f4f6;
+  color: #e6f0da;
 }
 
 .modal-title svg {
-  color: #8b5cf6;
+  color: #88c057;
 }
 
 .close-button {
@@ -240,8 +240,8 @@ watch(() => props.visible, (visible) => {
 }
 
 .close-button:hover:not(:disabled) {
-  color: #6b7280;
-  background: #f3f4f6;
+  color: #1f4037;
+  background: #edf3e6;
 }
 
 .close-button:disabled {
@@ -250,8 +250,8 @@ watch(() => props.visible, (visible) => {
 }
 
 :root.dark .close-button:hover:not(:disabled) {
-  background: #27272a;
-  color: #d1d5db;
+  background: #27312c;
+  color: #e0ead6;
 }
 
 /* Preview Section */
@@ -262,40 +262,40 @@ watch(() => props.visible, (visible) => {
 .word-preview {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: linear-gradient(135deg, #fdfbf7 0%, #e9f2df 100%);
   border-radius: 12px;
   position: relative;
 }
 
 :root.dark .word-preview {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(31, 64, 55, 0.25) 0%, rgba(136, 192, 87, 0.12) 100%);
 }
 
 .preview-word {
   font-size: 32px;
   font-weight: 700;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0;
 }
 
 :root.dark .preview-word {
-  color: #f3f4f6;
+  color: #e6f0da;
 }
 
 .preview-reading {
   font-size: 14px;
-  color: #f97316;
+  color: #88c057;
   margin: 4px 0 8px 0;
 }
 
 .preview-meaning {
   font-size: 16px;
-  color: #4b5563;
+  color: #4b5b52;
   margin: 0;
 }
 
 :root.dark .preview-meaning {
-  color: #a1a1aa;
+  color: #9aa896;
 }
 
 .preview-pos {
@@ -303,32 +303,32 @@ watch(() => props.visible, (visible) => {
   margin-top: 8px;
   padding: 2px 8px;
   font-size: 12px;
-  background: rgba(139, 92, 246, 0.1);
-  color: #7c3aed;
+  background: rgba(136, 192, 87, 0.2);
+  color: #1f4037;
   border-radius: 4px;
 }
 
 :root.dark .preview-pos {
-  background: rgba(139, 92, 246, 0.2);
-  color: #a78bfa;
+  background: rgba(31, 64, 55, 0.35);
+  color: #cfe6be;
 }
 
 .sentence-preview {
   margin-top: 16px;
   padding: 12px;
-  background: #f9fafb;
+  background: #f7faf5;
   border-radius: 8px;
 }
 
 :root.dark .sentence-preview {
-  background: #27272a;
+  background: #18211d;
 }
 
 .sentence-label {
   display: block;
   font-size: 11px;
   font-weight: 500;
-  color: #9ca3af;
+  color: #8b9a86;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -336,13 +336,13 @@ watch(() => props.visible, (visible) => {
 
 .sentence-text {
   font-size: 14px;
-  color: #4b5563;
+  color: #4b5b52;
   margin: 0;
   line-height: 1.5;
 }
 
 :root.dark .sentence-text {
-  color: #a1a1aa;
+  color: #9aa896;
 }
 
 /* Progress Section */
@@ -354,8 +354,8 @@ watch(() => props.visible, (visible) => {
 .progress-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #8b5cf6;
+  border: 4px solid #e3e8dc;
+  border-top-color: #88c057;
   border-radius: 50%;
   margin: 0 auto 16px;
   animation: spin 1s linear infinite;
@@ -368,17 +368,17 @@ watch(() => props.visible, (visible) => {
 .progress-text {
   font-size: 16px;
   font-weight: 500;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 8px 0;
 }
 
 :root.dark .progress-text {
-  color: #f3f4f6;
+  color: #e6f0da;
 }
 
 .progress-hint {
   font-size: 13px;
-  color: #9ca3af;
+  color: #8b9a86;
   margin: 0;
 }
 
@@ -389,19 +389,19 @@ watch(() => props.visible, (visible) => {
 }
 
 .completed-icon {
-  color: #22c55e;
+  color: #88c057;
   margin-bottom: 12px;
 }
 
 .completed-text {
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1f4037;
   margin: 0 0 16px 0;
 }
 
 :root.dark .completed-text {
-  color: #f3f4f6;
+  color: #e6f0da;
 }
 
 .thumbnail-preview {
@@ -479,18 +479,18 @@ watch(() => props.visible, (visible) => {
   display: flex;
   gap: 12px;
   padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(31, 64, 55, 0.12);
 }
 
 :root.dark .modal-actions {
-  border-top-color: #27272a;
+  border-top-color: #2a3a32;
 }
 
 .cancel-button {
   flex: 1;
   padding: 12px;
-  background: #f3f4f6;
-  color: #4b5563;
+  background: #edf3e6;
+  color: #1f4037;
   border: none;
   border-radius: 10px;
   font-size: 14px;
@@ -500,16 +500,16 @@ watch(() => props.visible, (visible) => {
 }
 
 .cancel-button:hover {
-  background: #e5e7eb;
+  background: #e1ebd6;
 }
 
 :root.dark .cancel-button {
-  background: #27272a;
-  color: #a1a1aa;
+  background: #1f2b26;
+  color: #9aa896;
 }
 
 :root.dark .cancel-button:hover {
-  background: #3f3f46;
+  background: #27312c;
 }
 
 .confirm-button {
@@ -519,7 +519,7 @@ watch(() => props.visible, (visible) => {
   justify-content: center;
   gap: 6px;
   padding: 12px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #88c057 0%, #1f4037 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -527,12 +527,12 @@ watch(() => props.visible, (visible) => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 64, 55, 0.25);
 }
 
 .confirm-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(31, 64, 55, 0.35);
 }
 
 .view-button {
@@ -542,8 +542,8 @@ watch(() => props.visible, (visible) => {
   justify-content: center;
   gap: 6px;
   padding: 12px;
-  background: #eff6ff;
-  color: #2563eb;
+  background: rgba(136, 192, 87, 0.15);
+  color: #1f4037;
   border: none;
   border-radius: 10px;
   font-size: 14px;
@@ -553,18 +553,18 @@ watch(() => props.visible, (visible) => {
 }
 
 .view-button:hover {
-  background: #dbeafe;
+  background: rgba(136, 192, 87, 0.25);
 }
 
 :root.dark .view-button {
-  background: rgba(59, 130, 246, 0.1);
-  color: #60a5fa;
+  background: rgba(31, 64, 55, 0.35);
+  color: #cfe6be;
 }
 
 .done-button {
   flex: 1;
   padding: 12px;
-  background: #22c55e;
+  background: #1f4037;
   color: white;
   border: none;
   border-radius: 10px;
@@ -575,6 +575,6 @@ watch(() => props.visible, (visible) => {
 }
 
 .done-button:hover {
-  background: #16a34a;
+  background: #17342d;
 }
 </style>

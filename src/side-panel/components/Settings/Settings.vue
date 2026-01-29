@@ -118,11 +118,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-gray-100">
+  <div class="min-h-screen bg-gradient-to-b from-rice-paper to-white dark:from-[#0f1a17] dark:to-[#0b1110] text-gray-900 dark:text-gray-100">
     <!-- Header -->
-    <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-4 sticky top-0 z-10">
+    <header class="bg-white/80 dark:bg-[#121a18]/90 border-b border-matcha/20 dark:border-[#1f2b26] px-6 py-4 sticky top-0 z-10 backdrop-blur">
       <div class="flex items-center gap-3">
-        <SettingsIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <SettingsIcon class="w-5 h-5 text-deep-tea dark:text-matcha" />
         <div>
           <h1 class="text-lg font-bold">系统设置</h1>
           <p class="text-xs text-gray-500 dark:text-gray-400">配置 API 密钥和自定义提示词</p>
@@ -135,10 +135,10 @@ onMounted(async () => {
       <ModelConfig />
 
       <!-- Rapid Services Configuration Section -->
-      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+      <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
         <div class="flex items-center gap-2 mb-4">
-          <Zap class="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          <h2 class="text-sm font-semibold tracking-wide uppercase text-amber-600 dark:text-amber-400">
+          <Zap class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha">
             快速服务配置
           </h2>
         </div>
@@ -149,7 +149,7 @@ onMounted(async () => {
 
         <div class="space-y-4">
           <!-- Rapid Translation Toggle -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+          <div class="flex items-center justify-between p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <h3 class="font-medium text-sm">⚡ 快速翻译</h3>
@@ -162,8 +162,8 @@ onMounted(async () => {
               <button
                 @click="rapidTranslation = !rapidTranslation"
                 :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
-                  rapidTranslation ? 'bg-amber-600' : 'bg-gray-300 dark:bg-zinc-700'
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-matcha/40 focus:ring-offset-2',
+                  rapidTranslation ? 'bg-deep-tea' : 'bg-gray-300 dark:bg-zinc-700'
                 ]"
               >
                 <span
@@ -177,7 +177,7 @@ onMounted(async () => {
           </div>
 
           <!-- Rapid Token Detail Toggle -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+          <div class="flex items-center justify-between p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <h3 class="font-medium text-sm">⚡ Token 点击快速查询</h3>
@@ -190,8 +190,8 @@ onMounted(async () => {
               <button
                 @click="rapidTokenDetail = !rapidTokenDetail"
                 :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2',
-                  rapidTokenDetail ? 'bg-amber-600' : 'bg-gray-300 dark:bg-zinc-700'
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-matcha/40 focus:ring-offset-2',
+                  rapidTokenDetail ? 'bg-deep-tea' : 'bg-gray-300 dark:bg-zinc-700'
                 ]"
               >
                 <span
@@ -207,10 +207,10 @@ onMounted(async () => {
       </section>
 
       <!-- Story 4-7: Interface Interaction Configuration Section -->
-      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+      <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
         <div class="flex items-center gap-2 mb-4">
-          <MessageCircle class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <h2 class="text-sm font-semibold tracking-wide uppercase text-blue-600 dark:text-blue-400">
+          <MessageCircle class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha">
             界面交互
           </h2>
         </div>
@@ -221,7 +221,7 @@ onMounted(async () => {
 
         <div class="space-y-4">
           <!-- Show Bubble Toggle -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+          <div class="flex items-center justify-between p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <h3 class="font-medium text-sm">💬 页面气泡显示</h3>
@@ -234,8 +234,8 @@ onMounted(async () => {
               <button
                 @click="showBubble = !showBubble"
                 :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                  showBubble ? 'bg-blue-600' : 'bg-gray-300 dark:bg-zinc-700'
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-matcha/40 focus:ring-offset-2',
+                  showBubble ? 'bg-deep-tea' : 'bg-gray-300 dark:bg-zinc-700'
                 ]"
               >
                 <span
@@ -251,10 +251,10 @@ onMounted(async () => {
       </section>
 
       <!-- Story 4-7: Shortcut Key Configuration Section -->
-      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+      <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
         <div class="flex items-center gap-2 mb-4">
-          <Keyboard class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <h2 class="text-sm font-semibold tracking-wide uppercase text-emerald-600 dark:text-emerald-400">
+          <Keyboard class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha">
             快捷键
           </h2>
         </div>
@@ -265,7 +265,7 @@ onMounted(async () => {
 
         <div class="space-y-4">
           <!-- Current Shortcut Display -->
-          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+          <div class="flex items-center justify-between p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <h3 class="font-medium text-sm">⌨️ 打开/关闭侧边栏</h3>
@@ -279,7 +279,7 @@ onMounted(async () => {
           <!-- Open Chrome Shortcuts Settings -->
           <button
             @click="openShortcutSettings"
-            class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg border border-emerald-200 dark:border-emerald-800 transition-colors"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-matcha/10 dark:bg-deep-tea/20 text-deep-tea dark:text-matcha hover:bg-matcha/20 dark:hover:bg-deep-tea/30 rounded-lg border border-matcha/30 dark:border-deep-tea/50 transition-colors"
           >
             <ExternalLink class="w-4 h-4" />
             <span class="text-sm font-medium">修改快捷键</span>
@@ -288,16 +288,16 @@ onMounted(async () => {
       </section>
 
       <!-- Prompt Management Section -->
-      <section class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6">
+      <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
         <div class="flex items-center gap-2 mb-4">
-          <FileText class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-          <h2 class="text-sm font-semibold tracking-wide uppercase text-indigo-600 dark:text-indigo-400">
+          <FileText class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha">
             提示词实验室
           </h2>
         </div>
 
         <div v-if="isPromptsLoading" class="text-center py-8 text-gray-400">
-          <div class="animate-spin w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+          <div class="animate-spin w-6 h-6 border-2 border-matcha border-t-transparent rounded-full mx-auto"></div>
           <p class="text-xs mt-2">加载中...</p>
         </div>
 
@@ -305,7 +305,7 @@ onMounted(async () => {
           <div
             v-for="prompt in prompts"
             :key="prompt.id"
-            class="p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+            class="p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32] hover:border-matcha/50 dark:hover:border-matcha/60 transition-colors"
           >
             <div class="flex items-start justify-between">
               <div class="flex-1">
@@ -313,7 +313,7 @@ onMounted(async () => {
                   <h3 class="font-medium text-sm">{{ prompt.metadata.name }}</h3>
                   <span
                     v-if="prompt.isCustomized"
-                    class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-xs rounded-full"
+                    class="px-2 py-0.5 bg-matcha/20 dark:bg-deep-tea/40 text-deep-tea dark:text-matcha text-xs rounded-full"
                   >
                     已自定义
                   </span>
@@ -338,7 +338,7 @@ onMounted(async () => {
                 </button>
                 <button
                   @click="handleEditPrompt(prompt.id)"
-                  class="px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-md transition-colors"
+                  class="px-3 py-1 text-xs font-medium text-deep-tea dark:text-matcha hover:bg-matcha/10 dark:hover:bg-deep-tea/30 rounded-md transition-colors"
                 >
                   编辑
                 </button>

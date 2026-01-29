@@ -88,10 +88,10 @@ const removeImage = () => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 transition-colors hover:border-indigo-300 dark:hover:border-indigo-700 group">
+  <div class="flex flex-col gap-4 p-4 border-2 border-dashed border-matcha/20 dark:border-zinc-800 rounded-xl bg-matcha/5 dark:bg-zinc-900/50 transition-colors hover:border-matcha/50 dark:hover:border-indigo-700 group">
       
       <!-- Image Preview Area -->
-      <div v-if="imagePreview" class="relative rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+      <div v-if="imagePreview" class="relative rounded-lg border border-matcha/20 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
           <img :src="imagePreview" alt="Preview" class="w-full h-auto max-h-[200px] object-contain" />
           <button 
             @click="removeImage"
@@ -100,7 +100,7 @@ const removeImage = () => {
           >
             <X class="w-4 h-4" />
           </button>
-          <div v-if="isProcessingOcr" class="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div v-if="isProcessingOcr" class="absolute inset-0 bg-deep-tea/50 flex items-center justify-center">
               <div class="flex flex-col items-center gap-2 text-white">
                   <Loader2 class="w-8 h-8 animate-spin" />
                   <p class="text-sm font-medium">正在提取文本...</p>
@@ -109,7 +109,7 @@ const removeImage = () => {
       </div>
       
       <!-- Placeholder / Empty State Visual -->
-      <div v-if="!inputText && !imagePreview" class="flex flex-col items-center justify-center py-6 text-zinc-400 gap-2 pointer-events-none">
+      <div v-if="!inputText && !imagePreview" class="flex flex-col items-center justify-center py-6 text-charcoal/40 dark:text-zinc-400 gap-2 pointer-events-none">
           <ImageIcon class="w-8 h-8 opacity-50 mb-1" />
           <p class="text-xs font-medium">粘贴文本或图片 (Ctrl+V)</p>
       </div>
@@ -118,13 +118,13 @@ const removeImage = () => {
         v-model="inputText"
         @paste="onPaste"
         placeholder="在此输入或粘贴文本/图片..."
-        class="w-full bg-transparent border-none resize-none focus:ring-0 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 min-h-[100px]"
+        class="w-full bg-transparent border-none resize-none focus:ring-0 text-sm text-charcoal dark:text-zinc-200 placeholder-charcoal/40 min-h-[100px]"
       ></textarea>
       
       <div class="flex justify-end" v-if="inputText">
           <button 
             @click="$emit('analyze', inputText)"
-            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm"
+            class="px-3 py-1.5 bg-deep-tea hover:bg-deep-tea/90 text-rice-paper rounded-lg text-xs font-bold transition-colors shadow-sm"
           >
             开始分析
           </button>

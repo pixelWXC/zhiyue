@@ -91,9 +91,9 @@ function handleKeydown(event: KeyboardEvent) {
     @click.self="handleClose"
     @keydown="handleKeydown"
   >
-    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-zinc-800">
+      <div class="flex items-center justify-between p-6 border-b border-matcha/20 dark:border-[#243128]">
         <div>
           <h2 class="text-lg font-bold">编辑提示词</h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -115,12 +115,12 @@ function handleKeydown(event: KeyboardEvent) {
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             提示词内容
-            <span v-if="isDirty" class="text-indigo-600 dark:text-indigo-400 ml-2">*</span>
+            <span v-if="isDirty" class="text-deep-tea dark:text-matcha ml-2">*</span>
           </label>
           <textarea
             v-model="editedContent"
             rows="12"
-            class="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 font-mono text-sm resize-none transition-all"
+            class="w-full px-4 py-3 bg-rice-paper/70 dark:bg-[#17201c] border border-matcha/20 dark:border-[#2a3a32] rounded-lg focus:outline-none focus:ring-2 focus:ring-matcha/30 font-mono text-sm resize-none transition-all"
             placeholder="输入提示词内容..."
           />
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -129,29 +129,29 @@ function handleKeydown(event: KeyboardEvent) {
         </div>
 
         <!-- Default Content Reference -->
-        <div class="pt-4 border-t border-gray-200 dark:border-zinc-800">
+        <div class="pt-4 border-t border-matcha/20 dark:border-[#243128]">
           <div class="flex items-center justify-between mb-2">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
               默认内容 (参考)
             </label>
             <button
               @click="handleResetToDefault"
-              class="flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-md transition-colors"
+              class="flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-deep-tea dark:hover:text-matcha hover:bg-matcha/10 dark:hover:bg-deep-tea/30 rounded-md transition-colors"
             >
               <RotateCcw class="w-3 h-3" />
               恢复默认
             </button>
           </div>
-          <div class="px-4 py-3 bg-gray-100 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700 rounded-lg font-mono text-sm text-gray-600 dark:text-gray-400 max-h-48 overflow-y-auto whitespace-pre-wrap">
+          <div class="px-4 py-3 bg-gray-100 dark:bg-[#1a241f] border border-matcha/20 dark:border-[#2a3a32] rounded-lg font-mono text-sm text-gray-600 dark:text-gray-400 max-h-48 overflow-y-auto whitespace-pre-wrap">
             {{ currentPrompt.default }}
           </div>
         </div>
       </div>
 
       <!-- Footer Actions -->
-      <div class="flex items-center justify-between p-6 border-t border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50">
+      <div class="flex items-center justify-between p-6 border-t border-matcha/20 dark:border-[#243128] bg-rice-paper/70 dark:bg-[#111815]/70">
         <div class="text-xs text-gray-500 dark:text-gray-400">
-          <span v-if="currentPrompt.isCustomized" class="text-indigo-600 dark:text-indigo-400">
+          <span v-if="currentPrompt.isCustomized" class="text-deep-tea dark:text-matcha">
             ● 当前使用自定义版本
           </span>
           <span v-else>
@@ -162,14 +162,14 @@ function handleKeydown(event: KeyboardEvent) {
         <div class="flex items-center gap-3">
           <button
             @click="handleClose"
-            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-matcha/10 dark:hover:bg-deep-tea/30 rounded-lg transition-colors"
           >
             取消
           </button>
           <button
             @click="handleSave"
             :disabled="!isDirty"
-            class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 px-4 py-2 bg-deep-tea hover:bg-deep-tea/90 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save class="w-4 h-4" />
             保存更改
