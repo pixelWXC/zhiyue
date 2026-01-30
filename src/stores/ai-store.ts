@@ -8,6 +8,7 @@ import { ref, computed } from 'vue'
 import { jsonrepair } from 'jsonrepair'
 import type { FlashcardData } from '../types/card'
 import type { WordContext } from '../logic/prompts'
+import { hasAnyApiKeyConfigured, getSettings } from '../logic/storage'
 
 export interface Token {
     word: string
@@ -406,7 +407,6 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
             if (!await hasAnyApiKeyConfigured()) {
                 throw new Error('未配置 API Key，请先在设置中配置')
             }
@@ -456,7 +456,6 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
             if (!await hasAnyApiKeyConfigured()) {
                 throw new Error('未配置 API Key，请先在设置中配置')
             }
@@ -490,7 +489,6 @@ export const useAiStore = defineStore('ai', () => {
      */
     async function triggerRapidTranslation(text: string) {
         // Check if rapid translation is enabled
-        const { getSettings } = await import('../logic/storage')
         const settings = await getSettings()
 
         if (!settings.rapidTranslation) {
@@ -535,7 +533,6 @@ export const useAiStore = defineStore('ai', () => {
      */
     async function triggerTokenDetail(tokenWord: string) {
         // Check if rapid token detail is enabled
-        const { getSettings } = await import('../logic/storage')
         const settings = await getSettings()
 
         if (!settings.rapidTokenDetail) {
@@ -602,7 +599,6 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
             if (!await hasAnyApiKeyConfigured()) {
                 throw new Error('未配置 API Key，请先在设置中配置')
             }
@@ -640,7 +636,6 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            const { hasAnyApiKeyConfigured } = await import('../logic/storage')
             if (!await hasAnyApiKeyConfigured()) throw new Error('未配置 API Key，请先在设置中配置')
 
             const { generateWordImage } = await import('../logic/ai/card-generator')

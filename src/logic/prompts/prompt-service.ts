@@ -11,7 +11,6 @@
  */
 
 import { ANALYSIS_SYSTEM_PROMPT } from './analysis'
-import { CARD_GEN_SYSTEM_PROMPT } from './card-gen'
 import { QA_SYSTEM_PROMPT } from './qa'
 import { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
 import { OCR_PROMPT } from './ocr'
@@ -19,13 +18,13 @@ import { RAPID_TRANSLATION_PROMPT } from './rapid-translation'
 import { TOKEN_DETAIL_PROMPT } from './token-detail'
 import { SENTENCE_CARD_IMAGE_PROMPT } from './sentence-card'
 import { WORD_CARD_IMAGE_PROMPT } from './word-card'
+import { VOCAB_CARD_CONTENT_PROMPT } from './vocab-card-content'
 
 /**
  * Prompt identifiers for storage and management
  */
 export const PROMPT_KEYS = {
     ANALYSIS_SYSTEM: 'analysis_system',
-    CARD_GEN_SYSTEM: 'card_gen_system',
     QA_SYSTEM: 'qa_system',
     SYNTAX_ANALYSIS_SYSTEM: 'syntax_analysis_system',
     OCR: 'ocr',
@@ -33,6 +32,7 @@ export const PROMPT_KEYS = {
     TOKEN_DETAIL: 'token_detail',
     SENTENCE_CARD_IMAGE: 'sentence_card_image',
     WORD_CARD_IMAGE: 'word_card_image',
+    VOCAB_CARD_CONTENT: 'vocab_card_content',
 } as const
 
 export type PromptKey = typeof PROMPT_KEYS[keyof typeof PROMPT_KEYS]
@@ -59,13 +59,7 @@ export const PROMPT_METADATA: PromptMetadata[] = [
         category: '分析',
         isJsonOutput: true,
     },
-    {
-        id: PROMPT_KEYS.CARD_GEN_SYSTEM,
-        name: '魔法卡片生成',
-        description: '生成学习卡片内容和场景描述的系统提示',
-        category: '卡片',
-        isJsonOutput: true,
-    },
+
     {
         id: PROMPT_KEYS.QA_SYSTEM,
         name: '互动问答',
@@ -96,7 +90,7 @@ export const PROMPT_METADATA: PromptMetadata[] = [
     },
     {
         id: PROMPT_KEYS.TOKEN_DETAIL,
-        name: 'Token 详情',
+        name: '快速词典',
         description: '快速词典查询，返回词义、语法和发音',
         category: '快速服务',
         isJsonOutput: true,
@@ -115,6 +109,13 @@ export const PROMPT_METADATA: PromptMetadata[] = [
         category: '卡片',
         isJsonOutput: false,
     },
+    {
+        id: PROMPT_KEYS.VOCAB_CARD_CONTENT,
+        name: '词汇卡片内容',
+        description: '生成卡片例句、搭配和等级信息的系统提示',
+        category: '卡片',
+        isJsonOutput: true,
+    },
 ]
 
 /**
@@ -127,7 +128,6 @@ const STORAGE_PREFIX = 'zhiyue:prompt:'
  */
 const DEFAULT_PROMPTS: Record<PromptKey, string> = {
     [PROMPT_KEYS.ANALYSIS_SYSTEM]: ANALYSIS_SYSTEM_PROMPT,
-    [PROMPT_KEYS.CARD_GEN_SYSTEM]: CARD_GEN_SYSTEM_PROMPT,
     [PROMPT_KEYS.QA_SYSTEM]: QA_SYSTEM_PROMPT,
     [PROMPT_KEYS.SYNTAX_ANALYSIS_SYSTEM]: SYNTAX_ANALYSIS_SYSTEM_PROMPT,
     [PROMPT_KEYS.OCR]: OCR_PROMPT,
@@ -135,6 +135,7 @@ const DEFAULT_PROMPTS: Record<PromptKey, string> = {
     [PROMPT_KEYS.TOKEN_DETAIL]: TOKEN_DETAIL_PROMPT,
     [PROMPT_KEYS.SENTENCE_CARD_IMAGE]: SENTENCE_CARD_IMAGE_PROMPT,
     [PROMPT_KEYS.WORD_CARD_IMAGE]: WORD_CARD_IMAGE_PROMPT,
+    [PROMPT_KEYS.VOCAB_CARD_CONTENT]: VOCAB_CARD_CONTENT_PROMPT,
 }
 
 /**

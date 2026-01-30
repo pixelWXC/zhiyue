@@ -1,12 +1,12 @@
 <template>
   <div class="card-collection">
     <!-- Header -->
-    <div class="collection-header">
-      <h2 class="collection-title">
-        <Layers class="w-5 h-5" />
-        卡片收藏
+    <header class="bg-white/80 dark:bg-[#121a18]/90 border-b border-matcha/20 dark:border-[#1f2b26] px-6 py-4 sticky top-0 z-10 backdrop-blur">
+      <div class="flex items-center gap-3 mb-3">
+        <Layers class="w-5 h-5 text-deep-tea dark:text-matcha" />
+        <h1 class="text-lg font-bold text-charcoal dark:text-gray-100">卡片收藏</h1>
         <span v-if="cardCount > 0" class="card-count">{{ cardCount }}</span>
-      </h2>
+      </div>
       
       <!-- Search Bar -->
       <div class="search-bar">
@@ -26,7 +26,7 @@
           <X class="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </header>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
@@ -170,20 +170,6 @@ watch(() => props.targetCardId, async (newId) => {
 
 :root.dark .card-collection {
   background: #0f1412;
-}
-
-.collection-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: linear-gradient(180deg, #fdfbf7 0%, #ffffff 100%);
-  padding: 16px;
-  border-bottom: 1px solid rgba(31, 64, 55, 0.12);
-}
-
-:root.dark .collection-header {
-  background: #121816;
-  border-bottom-color: #1f2b26;
 }
 
 .collection-title {

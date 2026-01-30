@@ -126,11 +126,11 @@ function truncateMeaning(meaning: string): string {
   color: white;
 }
 
-.level-1 { background: linear-gradient(135deg, #d8e8bf, #88c057); color: #1f4037; }
-.level-2 { background: linear-gradient(135deg, #c6df9f, #7ab14f); color: #1f4037; }
-.level-3 { background: linear-gradient(135deg, #88c057, #1f4037); color: #fdfbf7; }
-.level-4 { background: linear-gradient(135deg, #2d3748, #1f4037); color: #fdfbf7; }
-.level-5 { background: linear-gradient(135deg, #1f4037, #0e1f1a); color: #fdfbf7; }
+.level-1 { background: linear-gradient(135deg, #1f4037, #0e1f1a); color: #fdfbf7; } /* N1 - 最深 */
+.level-2 { background: linear-gradient(135deg, #2d3748, #1f4037); color: #fdfbf7; } /* N2 */
+.level-3 { background: linear-gradient(135deg, #88c057, #1f4037); color: #fdfbf7; } /* N3 */
+.level-4 { background: linear-gradient(135deg, #c6df9f, #7ab14f); color: #1f4037; } /* N4 */
+.level-5 { background: linear-gradient(135deg, #d8e8bf, #88c057); color: #1f4037; } /* N5 - 最浅 */
 
 .delete-button {
   position: absolute;

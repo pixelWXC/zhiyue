@@ -16,8 +16,11 @@ export { CARD_GEN_SYSTEM_PROMPT, CARD_GEN_USER_PROMPT } from './card-gen'
 export { QA_SYSTEM_PROMPT, QA_USER_PROMPT } from './qa'
 export { SYNTAX_ANALYSIS_SYSTEM_PROMPT } from './syntax-analysis'
 export { OCR_PROMPT } from './ocr'
+export { RAPID_TRANSLATION_PROMPT } from './rapid-translation'
+export { TOKEN_DETAIL_PROMPT } from './token-detail'
 export { SENTENCE_CARD_IMAGE_PROMPT, buildSentenceCardPrompt } from './sentence-card'
 export { WORD_CARD_IMAGE_PROMPT, buildWordCardPrompt, type WordContext } from './word-card'
+export { VOCAB_CARD_CONTENT_PROMPT, buildVocabCardContentPrompt, buildVocabCardContentPromptAsync, type VocabCardContentContext } from './vocab-card-content'
 
 // Re-export PromptService and utilities
 export {

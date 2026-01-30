@@ -245,24 +245,21 @@ function handleCardClick() {
 
 // Level Helpers
 function getLevelLabel(level: number) {
-  const labels = ["", "N5", "N4", "N3", "N2", "N1"]
-  return labels[level] || `N${level}`
+  // level 1-5 对应 N1-N5
+  return `N${level}`
 }
 
 function getLevelClass(level: number) {
-  // Reference colors:
-  // N5 (1): matcha/20 deep-tea matcha/40
-  // N4 (2): matcha/30 deep-tea matcha/50
-  // N3 (3): deep-tea rice-paper
-  // N2 (4): charcoal/80 rice-paper
-  // N1 (5): charcoal rice-paper
+  // level 1-5 对应 N1-N5
+  // N1 (1): 最高难度，使用最深颜色
+  // N5 (5): 最低难度，使用最浅颜色
   const classes = [
     "",
-    "bg-matcha/20 text-deep-tea border-matcha/40",
-    "bg-matcha/30 text-deep-tea border-matcha/50",
-    "bg-deep-tea text-rice-paper border-transparent",
-    "bg-charcoal/80 text-rice-paper border-transparent",
-    "bg-charcoal text-rice-paper border-transparent"
+    "bg-charcoal text-rice-paper border-transparent",        // N1 - 最深
+    "bg-charcoal/80 text-rice-paper border-transparent",     // N2
+    "bg-deep-tea text-rice-paper border-transparent",        // N3
+    "bg-matcha/30 text-deep-tea border-matcha/50",           // N4
+    "bg-matcha/20 text-deep-tea border-matcha/40"            // N5 - 最浅
   ]
   return classes[level] || "bg-gray-100 text-gray-800"
 }

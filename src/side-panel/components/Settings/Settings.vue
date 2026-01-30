@@ -123,10 +123,7 @@ onMounted(async () => {
     <header class="bg-white/80 dark:bg-[#121a18]/90 border-b border-matcha/20 dark:border-[#1f2b26] px-6 py-4 sticky top-0 z-10 backdrop-blur">
       <div class="flex items-center gap-3">
         <SettingsIcon class="w-5 h-5 text-deep-tea dark:text-matcha" />
-        <div>
-          <h1 class="text-lg font-bold">系统设置</h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400">配置 API 密钥和自定义提示词</p>
-        </div>
+        <h1 class="text-lg font-bold text-charcoal dark:text-gray-100">系统设置</h1>
       </div>
     </header>
 

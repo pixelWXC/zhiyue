@@ -103,7 +103,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { 
-  Sparkles, X, Wand2, CheckCircle, Eye, Layers, 
+  Sparkles, X, Wand2, Eye, Layers, 
   AlertCircle, RotateCw 
 } from 'lucide-vue-next'
 import { useCardCollectionStore } from '@/stores/card-collection-store'

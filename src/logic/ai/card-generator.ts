@@ -4,7 +4,7 @@
  */
 
 import { getProviderForScene, MODEL_NAMES } from './client'
-import { CARD_GEN_USER_PROMPT } from '../prompts/card-gen'
+import { CARD_GEN_USER_PROMPT, CARD_GEN_SYSTEM_PROMPT } from '../prompts/card-gen'
 import { promptService, PROMPT_KEYS } from '../prompts/prompt-service'
 import type { FlashcardData } from '../../types/card'
 import { jsonrepair } from 'jsonrepair'
@@ -72,8 +72,8 @@ export async function generateCardContent(
     const perfStart = enablePerfLog ? performance.now() : 0
 
     try {
-        // Load dynamic prompt
-        const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.CARD_GEN_SYSTEM)
+        // Use hardcoded prompt (this feature is deprecated, no longer registered in PromptService)
+        const systemPrompt = CARD_GEN_SYSTEM_PROMPT
 
         const rawText = await provider.generate(
             CARD_GEN_USER_PROMPT(sentence, targetToken?.word),

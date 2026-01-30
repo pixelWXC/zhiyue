@@ -21,9 +21,8 @@ import type {
     CreateCardContext,
     AIGeneratedCardContent
 } from '@/types/vocab-card'
-import { generateWordImage } from '@/logic/ai/card-generator'
 import { getProviderForScene } from '@/logic/ai/client'
-import { buildVocabCardContentPrompt } from '@/logic/prompts/vocab-card-content'
+import { buildVocabCardContentPromptAsync } from '@/logic/prompts/vocab-card-content'
 import { jsonrepair } from 'jsonrepair'
 
 export const useCardCollectionStore = defineStore('cardCollection', () => {
@@ -148,7 +147,7 @@ export const useCardCollectionStore = defineStore('cardCollection', () => {
      * 使用 speed 场景的 Provider 生成例句、搭配和等级信息
      */
     async function generateCardContent(context: CreateCardContext): Promise<AIGeneratedCardContent> {
-        const prompt = buildVocabCardContentPrompt({
+        const prompt = await buildVocabCardContentPromptAsync({
             word: context.word,
             reading: context.reading,
             meaning: context.meaning,
@@ -197,6 +196,7 @@ export const useCardCollectionStore = defineStore('cardCollection', () => {
      */
     async function generateCardImage(context: CreateCardContext): Promise<string> {
         // 直接调用已有的图片生成函数
+        const { generateWordImage } = await import('@/logic/ai/card-generator')
         return await generateWordImage('', {
             word: context.word,
             kana: context.reading,

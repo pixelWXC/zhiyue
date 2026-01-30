@@ -245,7 +245,7 @@ function playPronunciation(): void {
       <div class="word-card relative bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 p-6 mb-4">
         <!-- AI Question Button (Absolute Top Right) -->
         <button 
-          v-if="showMagicCard"
+          v-if="showMagicCard && tokenDetailData && !tokenDetailError"
           @click="isAiModalOpen = true"
           class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-matcha/40 dark:border-matcha/40 text-deep-tea dark:text-matcha hover:bg-matcha/20 dark:hover:bg-deep-tea/30 hover:text-deep-tea/90 bg-white/80 dark:bg-zinc-900 rounded-lg transition-colors z-10"
         >
@@ -300,7 +300,7 @@ function playPronunciation(): void {
             Weblio
           </button>
           <button 
-            v-if="showMagicCard"
+            v-if="showMagicCard && tokenDetailData && !tokenDetailError"
             @click="showCardCreationConfirm = true"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-matcha to-deep-tea hover:from-matcha/90 hover:to-deep-tea/90 rounded-lg shadow-md shadow-matcha/30 dark:shadow-deep-tea/40 transition-all"
           >

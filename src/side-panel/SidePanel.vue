@@ -283,23 +283,21 @@ onMounted(() => {
       />
 
       <!-- Main Analysis View -->
-      <main v-else class="p-6 max-w-2xl mx-auto space-y-8">
-      
-      <!-- AI Analysis Section -->
-      <section>
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-                <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-blue-400 flex items-center gap-2">
-                    <Sparkles class="w-4 h-4" /> 智能分析
-                </h2>
+      <template v-else>
+        <!-- Sticky Header -->
+        <header class="bg-white/80 dark:bg-[#121a18]/90 border-b border-matcha/20 dark:border-[#1f2b26] px-6 py-4 sticky top-0 z-10 backdrop-blur">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <Sparkles class="w-5 h-5 text-deep-tea dark:text-matcha" />
+              <h1 class="text-lg font-bold text-charcoal dark:text-gray-100">智能分析</h1>
             </div>
             
             <!-- View Toggle -->
             <div v-if="lastAnalyzedText" class="flex p-0.5 bg-matcha/10 dark:bg-zinc-800 rounded-lg">
                 <button 
                     @click="handleTabChange('analysis')"
-                    class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
-                    :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-blue-400 shadow-sm' : 'text-charcoal/60 hover:text-charcoal dark:text-gray-400'"
+                    class="px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5"
+                    :class="currentTab === 'analysis' ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-matcha shadow-sm' : 'text-charcoal/60 hover:text-charcoal dark:text-gray-400'"
                 >
                     <Sparkles class="w-3 h-3" />
                     <span>分析</span>
@@ -307,22 +305,27 @@ onMounted(() => {
                 <button 
                      @click="handleTabChange('syntax')"
                      :aria-busy="isSyntaxTabPending"
-                     class="px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1"
+                     class="px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5"
                      :class="currentTab === 'syntax'
-                        ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-indigo-400 shadow-sm'
+                        ? 'bg-white dark:bg-zinc-700 text-deep-tea dark:text-matcha shadow-sm'
                         : isSyntaxTabPending
-                            ? 'text-matcha dark:text-indigo-400'
+                            ? 'text-matcha dark:text-matcha'
                             : 'text-charcoal/60 hover:text-charcoal dark:text-gray-400'"
                 >
                     <Network class="w-3 h-3" />
                     <span>句法</span>
-                    <span v-if="isSyntaxTabPending" class="ml-1 flex items-center gap-1 text-[10px] text-matcha dark:text-indigo-400">
+                    <span v-if="isSyntaxTabPending" class="ml-1 flex items-center gap-1 text-[10px] text-matcha dark:text-matcha">
                         <span class="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                         等待中
                     </span>
                 </button>
             </div>
-        </div>
+          </div>
+        </header>
+
+        <main class="p-6 max-w-2xl mx-auto space-y-8">
+        <!-- AI Analysis Section -->
+        <section>
 
         <div class="space-y-4">
             <!-- Manual Input (shown when idle) -->
@@ -444,9 +447,9 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-      </section>
-
-      </main>
+        </section>
+        </main>
+      </template>
     </div>
 
     <!-- Magic Card Modal -->

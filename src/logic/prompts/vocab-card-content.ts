@@ -3,6 +3,8 @@
  * 用于 AI 生成卡片正面的例句、搭配和等级信息
  */
 
+import { promptService, PROMPT_KEYS } from './prompt-service'
+
 export interface VocabCardContentContext {
   /** 目标单词 */
   word: string
@@ -63,17 +65,14 @@ export const VOCAB_CARD_CONTENT_PROMPT = `[系统 / 提示]
 `
 
 /**
- * 构建卡片内容生成的完整提示词
- * @param context 单词上下文
- * @returns 完整的提示词字符串
+ * 构建用户输入部分
  */
-export function buildVocabCardContentPrompt(context: VocabCardContentContext): string {
+function buildUserInput(context: VocabCardContentContext): string {
   const sentencePart = context.sourceSentence
     ? `【来源句子】: ${context.sourceSentence}`
     : '【来源句子】: (无)'
 
-  return `${VOCAB_CARD_CONTENT_PROMPT}
-
+  return `
 【目标单词】: ${context.word}
 【读音】: ${context.reading}
 【词义】: ${context.meaning}
@@ -83,3 +82,24 @@ ${sentencePart}
 请根据以上信息，生成符合格式要求的 JSON 数据。
 `
 }
+
+/**
+ * 构建卡片内容生成的完整提示词（同步版本，使用默认提示词）
+ * @param context 单词上下文
+ * @returns 完整的提示词字符串
+ * @deprecated 推荐使用 buildVocabCardContentPromptAsync 以支持用户自定义提示词
+ */
+export function buildVocabCardContentPrompt(context: VocabCardContentContext): string {
+  return `${VOCAB_CARD_CONTENT_PROMPT}${buildUserInput(context)}`
+}
+
+/**
+ * 构建卡片内容生成的完整提示词（异步版本，支持用户自定义提示词）
+ * @param context 单词上下文
+ * @returns 完整的提示词字符串
+ */
+export async function buildVocabCardContentPromptAsync(context: VocabCardContentContext): Promise<string> {
+  const systemPrompt = await promptService.getPrompt(PROMPT_KEYS.VOCAB_CARD_CONTENT)
+  return `${systemPrompt}${buildUserInput(context)}`
+}
+
