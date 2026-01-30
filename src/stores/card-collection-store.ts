@@ -135,10 +135,12 @@ export const useCardCollectionStore = defineStore('cardCollection', () => {
 
     /**
      * 关闭完成通知
+     * 只隐藏通知气泡，不清空 lastCompletedCard
+     * 这样其他组件（如 CardCreationConfirm）仍可以访问完成的卡片
      */
     function dismissNotification() {
         showCompletionNotification.value = false
-        lastCompletedCard.value = null
+        // 不再清空 lastCompletedCard，让其保留到下一次制卡开始
     }
 
     /**
@@ -217,6 +219,9 @@ export const useCardCollectionStore = defineStore('cardCollection', () => {
         currentCreatingWord.value = context.word
         currentProgressMessage.value = '正在准备制卡...'
         error.value = null
+        // 清空之前的完成状态，准备接收新的结果
+        lastCompletedCard.value = null
+        showCompletionNotification.value = false
 
         try {
             // 1. 创建任务记录
@@ -296,20 +301,7 @@ export const useCardCollectionStore = defineStore('cardCollection', () => {
             lastCompletedCard.value = savedCard
             showCompletionNotification.value = true
 
-            // 9. 发送通知到 content script（用于显示气泡）
-            try {
-                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-                if (tab?.id) {
-                    await chrome.tabs.sendMessage(tab.id, {
-                        action: 'card-creation-completed',
-                        card: savedCard
-                    })
-                }
-            } catch (e) {
-                console.warn('Failed to send completion notification:', e)
-            }
-
-            // 10. 更新 Badge
+            // 9. 更新 Badge（提供视觉反馈）
             try {
                 await chrome.action.setBadgeText({ text: '✓' })
                 await chrome.action.setBadgeBackgroundColor({ color: '#10b981' })

@@ -15,7 +15,7 @@
     <div v-if="isGenerating" class="loading-state">
       <div class="loading-spinner"></div>
       <p class="loading-text">正在创作场景画面...</p>
-      <p class="loading-subtext">这可能需要 10-20 秒</p>
+      <p class="loading-subtext">这可能需要 20-30 秒</p>
     </div>
 
     <!-- Error State -->

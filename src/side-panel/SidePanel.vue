@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { useCardCollectionStore } from '@/stores/card-collection-store'
@@ -14,7 +14,7 @@ import Settings from './components/Settings/Settings.vue'
 import CardCollection from './components/CardCollection/CardCollection.vue'
 import NotificationBubble from '@/components/ui/NotificationBubble.vue'
 import ToastProvider from '@/components/ui/Toast/ToastProvider.vue'
-import { onMessage, sendMessage } from 'webext-bridge/popup'
+
 import type { VocabCard } from '@/types/vocab-card'
 
 // View Management
@@ -22,7 +22,6 @@ const currentView = ref<'home' | 'settings' | 'collection'>('home')
 
 // Card Collection Store
 const cardCollectionStore = useCardCollectionStore()
-const { cardCount } = storeToRefs(cardCollectionStore)
 
 // Target card for jumping from notification
 const targetCardId = ref<number | undefined>(undefined)
@@ -225,46 +224,23 @@ onMounted(async () => {
 // Handle clipboard read trigger from keyboard shortcut
 // Clipboard automatic read removed by user request
 
-// Story 4-7: 在挂载时通知 Background Side Panel 已打开
+// 加载卡片收藏数据
 onMounted(() => {
-    sendMessage('sidepanel-opened', undefined, 'background')
-        .then(() => console.log('📌 Side Panel state: OPEN'))
-        .catch((e) => console.warn('Failed to notify sidepanel-opened:', e))
-    
-    // 加载卡片收藏数据
     cardCollectionStore.loadCards()
-})
-
-// Story 4-7: 在卸载时通知 Background Side Panel 已关闭
-onUnmounted(() => {
-    sendMessage('sidepanel-closed', undefined, 'background')
-        .then(() => console.log('📌 Side Panel state: CLOSED'))
-        .catch((e) => console.warn('Failed to notify sidepanel-closed:', e))
-})
-
-// Story 4-7: Handle Side Panel close trigger from keyboard shortcut toggle
-onMessage('close-sidepanel', () => {
-    console.log('🔄 Toggle Shortcut: Closing Side Panel...')
-    // 发送关闭消息给 Background，然后关闭窗口
-    sendMessage('sidepanel-closed', undefined, 'background')
-        .catch((e) => console.warn('Failed to notify sidepanel-closed:', e))
-        .finally(() => {
-            window.close()
-        })
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-rice-paper dark:bg-zinc-950 text-charcoal dark:text-gray-100 font-sans transition-colors duration-300">
+  <div class="h-screen flex flex-col bg-rice-paper dark:bg-zinc-950 text-charcoal dark:text-gray-100 font-sans transition-colors duration-300">
     <ToastProvider />
-    <!-- Header -->
-    <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-4 sticky top-0 z-10">
+    <!-- Header (固定不滚动) -->
+    <header class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 px-6 py-4 shrink-0">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-bold bg-matcha bg-clip-text text-transparent">
-            智阅伴侣
+            智阅
           </h1>
-          <p class="text-xs text-charcoal/60 dark:text-gray-400 font-medium">即时分析助手</p>
+          <p class="text-xs text-charcoal/60 dark:text-gray-400 font-medium">沉浸式的日语学习助手</p>
         </div>
         <div class="flex items-center gap-2">
             <button 
@@ -282,12 +258,6 @@ onMessage('close-sidepanel', () => {
               title="卡片收藏"
             >
               <Layers class="w-5 h-5" />
-              <span 
-                v-if="cardCount > 0" 
-                class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 text-[10px] font-bold bg-deep-tea text-rice-paper rounded-full flex items-center justify-center"
-              >
-                {{ cardCount > 99 ? '99+' : cardCount }}
-              </span>
             </button>
             <button 
               @click="currentView = 'settings'"
@@ -301,17 +271,19 @@ onMessage('close-sidepanel', () => {
       </div>
     </header>
 
-    <!-- Settings View -->
-    <Settings v-if="currentView === 'settings'" />
+    <!-- 可滚动内容区域 -->
+    <div class="flex-1 overflow-y-auto">
+      <!-- Settings View -->
+      <Settings v-if="currentView === 'settings'" />
 
-    <!-- Card Collection View -->
-    <CardCollection 
-      v-else-if="currentView === 'collection'" 
-      :target-card-id="targetCardId"
-    />
+      <!-- Card Collection View -->
+      <CardCollection 
+        v-else-if="currentView === 'collection'" 
+        :target-card-id="targetCardId"
+      />
 
-    <!-- Main Analysis View -->
-    <main v-else class="p-6 max-w-2xl mx-auto space-y-8">
+      <!-- Main Analysis View -->
+      <main v-else class="p-6 max-w-2xl mx-auto space-y-8">
       
       <!-- AI Analysis Section -->
       <section>
@@ -439,7 +411,9 @@ onMessage('close-sidepanel', () => {
                              </div>
                         </div>
 
+                        <!-- Token Detail (Only show in analysis tab when token is selected) -->
                         <TokenDetail 
+                            v-if="selectedToken && currentTab === 'analysis'"
                             :token-detail-data="tokenDetailData"
                             :is-token-detail-loading="isTokenDetailLoading"
                             :token-detail-error="tokenDetailError"
@@ -472,7 +446,8 @@ onMessage('close-sidepanel', () => {
         </div>
       </section>
 
-    </main>
+      </main>
+    </div>
 
     <!-- Magic Card Modal -->
     <Transition name="modal">

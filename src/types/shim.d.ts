@@ -21,10 +21,7 @@ declare module 'webext-bridge' {
 
         'trigger-clipboard-read': ProtocolWithReturn<void, void>
 
-        // Story 4-7: Side Panel Toggle
-        'close-sidepanel': ProtocolWithReturn<void, void>
-        'sidepanel-opened': ProtocolWithReturn<void, void>
-        'sidepanel-closed': ProtocolWithReturn<void, void>
+
 
         // AI Analysis Messages (Note: Main streaming uses chrome.runtime.connect Ports)
         'analyze-image': ProtocolWithReturn<

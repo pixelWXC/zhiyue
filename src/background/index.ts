@@ -3,7 +3,7 @@
  * Handles Side Panel activation, IPC, and AI API calls
  */
 
-import { onMessage, sendMessage } from 'webext-bridge/background'
+import { onMessage } from 'webext-bridge/background'
 
 console.log('Zhiyue Background Service Worker initialized')
 
@@ -25,59 +25,29 @@ chrome.windows.getLastFocused().then(w => {
     if (w.id) currentWindowId = w.id
 }).catch(console.error)
 
-// Story 4-7: 使用内存变量跟踪 Side Panel 是否打开
-// 注意：不能使用 chrome.storage 因为 await 会打破用户手势上下文
-let isSidePanelOpen = false
-
+// 快捷键处理：始终打开 Side Panel
+// 注意：Chrome 没有 sidePanel.close() API，toggle 行为不可靠
+// 因此选择简单稳定的方案：快捷键始终打开侧栏
 chrome.commands.onCommand.addListener((command) => {
     if (command === 'toggle-sidepanel') {
         // 关键：不能在 sidePanel.open() 之前使用任何 await
         // 否则会丢失用户手势上下文
+        console.log('⌨️ Shortcut: Opening Side Panel...')
 
-        if (isSidePanelOpen) {
-            // Side Panel 已打开，发送关闭消息
-            console.log('⌨️ Shortcut: Side Panel is open, sending close message...')
-            sendMessage('close-sidepanel', undefined, 'popup')
+        // 使用缓存的 windowId，避免 await
+        const windowId = currentWindowId
+        if (windowId) {
+            chrome.sidePanel.open({ windowId })
                 .then(() => {
-                    console.log('⌨️ Shortcut: Side Panel close message sent')
+                    console.log('⌨️ Shortcut: Side Panel opened for window:', windowId)
                 })
-                .catch((e) => {
-                    console.warn('⌨️ Shortcut: Failed to send close message:', e)
-                    // 消息发送失败，重置状态
-                    isSidePanelOpen = false
+                .catch((error) => {
+                    console.error('❌ Failed to open Side Panel:', error)
                 })
         } else {
-            // Side Panel 未打开，打开它
-            console.log('⌨️ Shortcut: Side Panel not open, opening...')
-
-            // 使用缓存的 windowId，避免 await
-            const windowId = currentWindowId
-            if (windowId) {
-                chrome.sidePanel.open({ windowId })
-                    .then(() => {
-                        console.log('⌨️ Shortcut: Side Panel opened for window:', windowId)
-                        // Notify Side Panel to read clipboard
-                        // Clipboard automatic read removed by user request
-                    })
-                    .catch((error) => {
-                        console.error('❌ Failed to open Side Panel:', error)
-                    })
-            } else {
-                console.error('❌ No window ID available')
-            }
+            console.error('❌ No window ID available')
         }
     }
-})
-
-// Story 4-7: 监听 Side Panel 状态变化消息
-onMessage('sidepanel-opened', () => {
-    isSidePanelOpen = true
-    console.log('📌 Side Panel state updated: OPEN')
-})
-
-onMessage('sidepanel-closed', () => {
-    isSidePanelOpen = false
-    console.log('📌 Side Panel state updated: CLOSED')
 })
 
 // ====================

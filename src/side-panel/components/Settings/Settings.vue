@@ -268,7 +268,7 @@ onMounted(async () => {
           <div class="flex items-center justify-between p-4 bg-rice-paper/70 dark:bg-[#17201c] rounded-lg border border-matcha/20 dark:border-[#2a3a32]">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
-                <h3 class="font-medium text-sm">⌨️ 打开/关闭侧边栏</h3>
+                <h3 class="font-medium text-sm">⌨️ 打开侧边栏</h3>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 默认快捷键：<kbd class="px-2 py-0.5 bg-gray-200 dark:bg-zinc-600 rounded text-xs font-mono">Alt+U</kbd>

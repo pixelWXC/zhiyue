@@ -8,7 +8,7 @@
             <Sparkles class="w-5 h-5" />
             制作魔法卡片
           </h3>
-          <button @click="handleCancel" class="close-button" :disabled="isCreating">
+          <button @click="handleCancel" class="close-button">
             <X class="w-5 h-5" />
           </button>
         </div>
@@ -34,16 +34,11 @@
         <div v-if="isCreating" class="progress-section">
           <div class="progress-spinner"></div>
           <p class="progress-text">{{ progressMessage }}</p>
-          <p class="progress-hint">制卡完成后会自动保存到卡片收藏</p>
+          <p class="progress-hint">你可以关闭此窗口继续浏览，完成后会弹出通知</p>
         </div>
         
         <!-- Completed Section -->
         <div v-else-if="completedCard" class="completed-section">
-          <div class="completed-icon">
-            <CheckCircle class="w-12 h-12" />
-          </div>
-          <p class="completed-text">卡片制作完成！</p>
-          
           <!-- Thumbnail Preview -->
           <div v-if="completedCard.imageUrl" class="thumbnail-preview" @click="handleViewCard">
             <img :src="completedCard.imageUrl" :alt="completedCard.word" />
@@ -106,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { 
   Sparkles, X, Wand2, CheckCircle, Eye, Layers, 
   AlertCircle, RotateCw 
@@ -131,24 +126,54 @@ const store = useCardCollectionStore()
 const { 
   isCreatingCard: isCreating, 
   currentProgressMessage: progressMessage,
-  lastCompletedCard: completedCard,
+  lastCompletedCard,
   error 
 } = storeToRefs(store)
 
+// 本地状态：追踪当前弹窗上下文中完成的卡片
+// 这样即使通知气泡被关闭（清空 lastCompletedCard），弹窗仍能显示完成状态
+const completedCardLocal = ref<VocabCard | null>(null)
+
+// 监听 Store 的 lastCompletedCard，同步到本地状态
+// 仅当弹窗可见时才同步，确保是当前制卡会话的结果
+watch(lastCompletedCard, (newCard) => {
+  if (props.visible && newCard) {
+    completedCardLocal.value = newCard
+  }
+})
+
+// 弹窗打开时重置本地状态
+watch(() => props.visible, (visible) => {
+  if (visible) {
+    // 弹窗打开时，先检查是否有进行中的任务的完成结果
+    if (lastCompletedCard.value) {
+      completedCardLocal.value = lastCompletedCard.value
+    } else {
+      completedCardLocal.value = null
+    }
+  }
+})
+
+// 使用本地状态作为完成卡片的引用
+const completedCard = completedCardLocal
+
 // 开始制卡
 async function handleConfirm() {
+  // 重置本地完成状态
+  completedCardLocal.value = null
   await store.startCardCreation(props.context)
 }
 
-// 取消
+// 关闭弹窗（允许在制卡过程中关闭）
 function handleCancel() {
-  if (isCreating.value) return
+  // 即使正在制卡也允许关闭，任务会在后台继续
   emit('close')
 }
 
-// 关闭
+// 完成后关闭
 function handleClose() {
-  store.dismissNotification()
+  // 不再调用 dismissNotification，让通知气泡保持显示
+  // 用户可以通过点击气泡或手动关闭气泡来导航到卡片
   emit('close')
 }
 
@@ -161,15 +186,9 @@ function handleViewCard() {
 
 // 重试
 function handleRetry() {
+  completedCardLocal.value = null
   store.startCardCreation(props.context)
 }
-
-// 关闭弹窗时清理状态
-watch(() => props.visible, (visible) => {
-  if (!visible) {
-    // 弹窗关闭时的清理逻辑
-  }
-})
 </script>
 
 <style scoped>
@@ -239,17 +258,12 @@ watch(() => props.visible, (visible) => {
   transition: all 0.2s;
 }
 
-.close-button:hover:not(:disabled) {
+.close-button:hover {
   color: #1f4037;
   background: #edf3e6;
 }
 
-.close-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-:root.dark .close-button:hover:not(:disabled) {
+:root.dark .close-button:hover {
   background: #27312c;
   color: #e0ead6;
 }
@@ -316,6 +330,7 @@ watch(() => props.visible, (visible) => {
 .sentence-preview {
   margin-top: 16px;
   padding: 12px;
+  padding-bottom: 0;
   background: #f7faf5;
   border-radius: 8px;
 }
@@ -384,7 +399,7 @@ watch(() => props.visible, (visible) => {
 
 /* Completed Section */
 .completed-section {
-  padding: 32px 20px;
+  padding: 12px 20px;
   text-align: center;
 }
 
@@ -406,8 +421,6 @@ watch(() => props.visible, (visible) => {
 
 .thumbnail-preview {
   position: relative;
-  width: 200px;
-  height: 150px;
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
