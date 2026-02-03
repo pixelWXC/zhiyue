@@ -9,6 +9,7 @@ import { jsonrepair } from 'jsonrepair'
 import type { FlashcardData } from '../types/card'
 import type { WordContext } from '../logic/prompts'
 import { hasAnyApiKeyConfigured, getSettings } from '../logic/storage'
+import { useAuthStore } from './auth-store'
 
 export interface Token {
     word: string
@@ -42,6 +43,9 @@ export interface AnalysisResult {
 }
 
 export const useAiStore = defineStore('ai', () => {
+    // Dependencies
+    const authStore = useAuthStore()
+
     // State
     const isLoading = ref(false)
     const currentResult = ref<AnalysisResult | null>(null)
@@ -125,6 +129,7 @@ export const useAiStore = defineStore('ai', () => {
         currentResult.value = result
         history.value.unshift(result)
         streamingText.value = ''
+        if (authStore.isAuthenticated) authStore.refreshProfile()
     }
 
     function clearHistory() {
@@ -407,8 +412,9 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            if (!await hasAnyApiKeyConfigured()) {
-                throw new Error('未配置 API Key，请先在设置中配置')
+            // Check if any API key is configured or user is logged in
+            if (!authStore.isAuthenticated && !await hasAnyApiKeyConfigured()) {
+                throw new Error('未配置 API Key，请先在设置中配置或登录账号')
             }
 
             // Import and call card generator with options
@@ -421,7 +427,7 @@ export const useAiStore = defineStore('ai', () => {
             )
 
             cardData.value = result
-
+            if (authStore.isAuthenticated) authStore.refreshProfile()
         } catch (e) {
             console.error('[AI Store] Card generation failed', e)
             cardError.value = (e as Error).message
@@ -456,8 +462,9 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            if (!await hasAnyApiKeyConfigured()) {
-                throw new Error('未配置 API Key，请先在设置中配置')
+            // Check if any API key is configured or user is logged in
+            if (!authStore.isAuthenticated && !await hasAnyApiKeyConfigured()) {
+                throw new Error('未配置 API Key，请先在设置中配置或登录账号')
             }
 
             // Import and call image generation service
@@ -465,7 +472,7 @@ export const useAiStore = defineStore('ai', () => {
             const dataUrl = await generateImage('', sceneDescription) // apiKey 参数已废弃
 
             imageResult.value = dataUrl
-
+            if (authStore.isAuthenticated) authStore.refreshProfile()
         } catch (e) {
             console.error('[AI Store] Image generation failed', e)
             imageError.value = (e as Error).message
@@ -599,8 +606,9 @@ export const useAiStore = defineStore('ai', () => {
 
         try {
             // Check if any API key is configured
-            if (!await hasAnyApiKeyConfigured()) {
-                throw new Error('未配置 API Key，请先在设置中配置')
+            // Check if any API key is configured or user is logged in
+            if (!authStore.isAuthenticated && !await hasAnyApiKeyConfigured()) {
+                throw new Error('未配置 API Key，请先在设置中配置或登录账号')
             }
 
             // Import and call sentence card image generator
@@ -608,7 +616,7 @@ export const useAiStore = defineStore('ai', () => {
             const imageDataUrl = await generateSentenceImage('', sentence) // apiKey 参数已废弃
 
             sentenceCardImage.value = imageDataUrl
-
+            if (authStore.isAuthenticated) authStore.refreshProfile()
         } catch (e) {
             console.error('[AI Store] Sentence card generation failed', e)
             sentenceCardError.value = (e as Error).message
@@ -635,13 +643,14 @@ export const useAiStore = defineStore('ai', () => {
         wordCardError.value = null
 
         try {
-            // Check if any API key is configured
-            if (!await hasAnyApiKeyConfigured()) throw new Error('未配置 API Key，请先在设置中配置')
+            // Check if any API key is configured or user is logged in
+            if (!authStore.isAuthenticated && !await hasAnyApiKeyConfigured()) throw new Error('未配置 API Key，请先在设置中配置或登录账号')
 
             const { generateWordImage } = await import('../logic/ai/card-generator')
             const imageDataUrl = await generateWordImage('', context) // apiKey 参数已废弃
 
             wordCardImage.value = imageDataUrl
+            if (authStore.isAuthenticated) authStore.refreshProfile()
         } catch (e) {
             console.error('[AI Store] Word card generation failed', e)
             wordCardError.value = (e as Error).message

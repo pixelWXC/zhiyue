@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Settings as SettingsIcon, FileText, AlertTriangle, Zap, MessageCircle, Keyboard, ExternalLink } from 'lucide-vue-next'
+import { Settings as SettingsIcon, FileText, AlertTriangle, Zap, MessageCircle, Keyboard, ExternalLink, LogIn } from 'lucide-vue-next'
 import { usePromptService, type PromptKey } from '@/logic/prompts/prompt-service'
 import { useSettings } from '@/logic/storage'
+import { useAuthStore } from '@/stores/auth-store'
 import PromptEditor from './PromptEditor.vue'
 import ModelConfig from './ModelConfig.vue'
+import LoginModal from '../Auth/LoginModal.vue'
+import UserStatusCard from '../Auth/UserStatusCard.vue'
+
+// Authentication
+const authStore = useAuthStore()
+const showLoginModal = ref(false)
 
 // Prompt Management
 const promptService = usePromptService()
@@ -113,6 +120,10 @@ function handleCloseEditor() {
 
 // Initialize
 onMounted(async () => {
+  // 刷新用户配额信息（如果已登录）
+  if (authStore.isAuthenticated) {
+    authStore.refreshProfile()
+  }
   await loadPrompts()
 })
 </script>
@@ -128,8 +139,34 @@ onMounted(async () => {
     </header>
 
     <main class="p-6 max-w-3xl mx-auto space-y-8">
-      <!-- Model Configuration Section -->
-      <ModelConfig />
+      <!-- User Authentication Section -->
+      <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <LogIn class="w-4 h-4 text-deep-tea dark:text-matcha" />
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-deep-tea dark:text-matcha">
+            账户
+          </h2>
+        </div>
+        
+        <!-- Show UserStatusCard if logged in, otherwise show login button -->
+        <UserStatusCard v-if="authStore.isAuthenticated" />
+        
+        <div v-else class="space-y-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            登录后可使用官方配额，无需配置 API Key。
+          </p>
+          <button
+            @click="showLoginModal = true"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-deep-tea to-matcha hover:from-deep-tea/90 hover:to-matcha/90 text-white font-medium rounded-xl transition-all shadow-lg shadow-deep-tea/25"
+          >
+            <LogIn class="w-4 h-4" />
+            <span>登录账号</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Model Configuration Section - Hidden when user is logged in -->
+      <ModelConfig v-if="!authStore.isAuthenticated" />
 
       <!-- Rapid Services Configuration Section -->
       <section class="bg-white/90 dark:bg-[#111815]/90 rounded-xl border border-matcha/20 dark:border-[#243128] p-6">
@@ -393,6 +430,13 @@ onMounted(async () => {
         </div>
       </div>
     </Transition>
+
+    <!-- Login Modal -->
+    <LoginModal 
+      v-if="showLoginModal" 
+      @close="showLoginModal = false"
+      @success="showLoginModal = false"
+    />
   </div>
 </template>
 

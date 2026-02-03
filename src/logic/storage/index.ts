@@ -28,6 +28,9 @@ export const STORAGE_KEYS = {
     SHOW_BUBBLE: `${PREFIX}showBubble`, // Story 4-7: 页面气泡显示开关
     PROVIDER_CREDENTIALS: `${PREFIX}providerCredentials`,
     SCENE_CONFIG: `${PREFIX}sceneConfig`,
+    // Authentication
+    AUTH_TOKEN: `${PREFIX}authToken`,
+    AUTH_USER: `${PREFIX}authUser`,
 } as const
 
 /**

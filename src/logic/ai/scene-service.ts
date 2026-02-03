@@ -5,22 +5,35 @@ import { createTextProvider, createImageProvider } from "./providers/factory";
 export type SceneType = "qualityFirst" | "speedFirst";
 export type CapabilityType = "text" | "image";
 
+import { ServerProxyTextProvider, ServerProxyImageProvider } from "./providers/server-proxy";
+import { getAuthState } from "@/logic/auth";
+import { apiClient } from "@/logic/api/client";
+
 /**
  * 场景服务 - 根据场景获取对应的 Provider
  */
 export class SceneService {
     private credentials: ProviderCredentials;
     private sceneConfig: SceneConfig;
+    private isAuthenticated: boolean;
 
-    constructor(credentials: ProviderCredentials, sceneConfig: SceneConfig) {
+    constructor(credentials: ProviderCredentials, sceneConfig: SceneConfig, isAuthenticated: boolean) {
         this.credentials = credentials;
         this.sceneConfig = sceneConfig;
+        this.isAuthenticated = isAuthenticated;
+    }
+
+    private get isAuthProxy(): boolean {
+        return this.isAuthenticated;
     }
 
     /**
      * 获取质量优先场景的文本 Provider
      */
     getQualityTextProvider(): ITextProvider {
+        if (this.isAuthProxy) {
+            return new ServerProxyTextProvider('quality');
+        }
         const { provider, model } = this.sceneConfig.qualityFirst.text;
         return createTextProvider(provider, model, this.credentials);
     }
@@ -29,6 +42,9 @@ export class SceneService {
      * 获取质量优先场景的图像 Provider
      */
     getQualityImageProvider(): IImageProvider {
+        if (this.isAuthProxy) {
+            return new ServerProxyImageProvider();
+        }
         const { provider, model } = this.sceneConfig.qualityFirst.image;
         return createImageProvider(provider, model, this.credentials);
     }
@@ -37,6 +53,9 @@ export class SceneService {
      * 获取速度优先场景的文本 Provider
      */
     getSpeedTextProvider(): ITextProvider {
+        if (this.isAuthProxy) {
+            return new ServerProxyTextProvider('speed');
+        }
         const { provider, model } = this.sceneConfig.speedFirst.text;
         return createTextProvider(provider, model, this.credentials);
     }
@@ -124,5 +143,16 @@ export async function getSceneService(): Promise<SceneService> {
         hasCredentials: !!credentials[sceneConfig.speedFirst.text.provider as keyof ProviderCredentials]?.apiKey
     });
 
-    return new SceneService(credentials, sceneConfig);
+    // 获取当前认证状态
+    const { token, user } = await getAuthState();
+    const isAuthenticated = !!token;
+
+    // 确保 API Client 在 Background Context 中也有 Token
+    if (token) {
+        apiClient.setToken(token);
+    }
+
+    console.log('[SceneService] Auth state:', { isAuthenticated, hasToken: !!token, hasUser: !!user });
+
+    return new SceneService(credentials, sceneConfig, isAuthenticated);
 }

@@ -109,9 +109,10 @@ const hasApiKey = ref(false)
 const checkApiKey = async () => {
     try {
         // Check both legacy apiKey and new providerCredentials
-        const result = await chrome.storage.local.get([
+    const result = await chrome.storage.local.get([
             STORAGE_KEYS.API_KEY,
-            STORAGE_KEYS.PROVIDER_CREDENTIALS
+            STORAGE_KEYS.PROVIDER_CREDENTIALS,
+            STORAGE_KEYS.AUTH_TOKEN
         ])
         
         // Parse providerCredentials (may be JSON string from useStorageAsync)
@@ -130,8 +131,9 @@ const checkApiKey = async () => {
             credentials.deepseek?.apiKey
         )
         
-        // Support both old and new configuration
-        hasApiKey.value = !!result[STORAGE_KEYS.API_KEY] || !!hasNewConfig
+        const hasAuthToken = !!result[STORAGE_KEYS.AUTH_TOKEN]
+        // Support both old and new configuration, or authenticated token
+        hasApiKey.value = hasAuthToken || !!result[STORAGE_KEYS.API_KEY] || !!hasNewConfig
     } catch (e) {
         console.warn('Failed to check API key', e)
         hasApiKey.value = false
@@ -172,7 +174,12 @@ const loadRapidSettings = async () => {
 
 // Listen for storage changes
 const onStorageChange = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
-    if (areaName === 'local' && (changes[STORAGE_KEYS.API_KEY] || changes[STORAGE_KEYS.PROVIDER_CREDENTIALS])) {
+    if (areaName === 'local' && (
+        changes[STORAGE_KEYS.API_KEY] ||
+        changes[STORAGE_KEYS.PROVIDER_CREDENTIALS] ||
+        changes[STORAGE_KEYS.AUTH_TOKEN] ||
+        changes[STORAGE_KEYS.AUTH_USER]
+    )) {
         // Re-check API key when any credential changes
         checkApiKey()
     }
