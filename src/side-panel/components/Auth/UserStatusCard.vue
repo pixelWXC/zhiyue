@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { User, LogOut, Zap, BarChart3, Crown } from 'lucide-vue-next'
+import { User, LogOut, Zap, Crown } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth-store'
 
 const authStore = useAuthStore()

@@ -144,14 +144,6 @@ function handleClose() {
           <LogIn v-else class="w-4 h-4" />
           <span>{{ authStore.isLoading ? '登录中...' : '登录' }}</span>
         </button>
-
-        <!-- Test Account Hint -->
-        <div class="text-center">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            测试账号：<code class="px-1.5 py-0.5 bg-gray-100 dark:bg-[#1a2420] rounded">tester</code> / 
-            <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-[#1a2420] rounded">test123</code>
-          </p>
-        </div>
       </form>
     </div>
   </div>

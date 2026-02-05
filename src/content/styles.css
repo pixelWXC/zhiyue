@@ -1,3 +1,69 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * CSS 隔离层 - 阻止宿主页面样式污染
+ * 
+ * 问题：虽然使用 Shadow DOM，但 CSS 可继承属性（font-size, text-align, color 等）
+ * 仍会从宿主页面穿透到 Shadow DOM 内部。
+ * 
+ * 解决方案：只重置可继承的 CSS 属性，保留其他属性让 Tailwind 正常工作。
+ */
+.zhiyue-overlay {
+  /* 字体系统 - 明确设置，阻止继承 */
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji" !important;
+  font-size: 16px !important;
+  font-weight: 400;
+  font-style: normal;
+  font-variant: normal;
+
+  /* 文本属性 - 明确设置，防止被宿主页面覆盖 */
+  line-height: 1.5 !important;
+  text-align: left !important;
+  text-transform: none;
+  text-decoration: none;
+  text-shadow: none;
+  text-indent: 0;
+  letter-spacing: normal;
+  word-spacing: normal;
+
+  /* 颜色 - 设置基础颜色 */
+  color: #2d3748;
+
+  /* 文本渲染 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  /* 其他可继承属性重置 */
+  direction: ltr;
+  visibility: visible;
+  cursor: auto;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* 确保所有子元素不受外部样式影响 */
+.zhiyue-overlay,
+.zhiyue-overlay *,
+.zhiyue-overlay *::before,
+.zhiyue-overlay *::after {
+  /* 锁定盒模型 */
+  box-sizing: border-box !important;
+}
