@@ -94,13 +94,13 @@ async function handleLogout() {
     </div>
 
     <!-- Quick Stats (placeholder) -->
-    <div class="mt-4 pt-4 border-t border-matcha/20 dark:border-[#2a3a32]">
+    <!-- <div class="mt-4 pt-4 border-t border-matcha/20 dark:border-[#2a3a32]">
       <button 
         class="w-full flex items-center justify-center gap-2 py-2 text-sm text-deep-tea dark:text-matcha hover:bg-matcha/10 dark:hover:bg-deep-tea/20 rounded-lg transition-colors"
       >
         <BarChart3 class="w-4 h-4" />
         <span>查看使用统计</span>
       </button>
-    </div>
+    </div> -->
   </div>
 </template>

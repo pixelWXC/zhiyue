@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "智阅",
-  "version": "1.0.2",
-  "description": "智阅是一款日语学习插件：一键解析句子结构、词汇与语法，支持 AI 问答和 Anki 制卡，让阅读变成高效学习。",
+  "version": "1.0.3",
+  "description": "智阅是一款日语学习插件：一键解析句子结构、词汇与语法，支持 AI 问答和 AI 绘画，轻松制卡，让阅读变成高效学习。",
   "icons": {
     "16": "logo-16.png",
     "48": "logo-48.png",

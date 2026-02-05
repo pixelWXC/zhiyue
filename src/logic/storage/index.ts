@@ -126,10 +126,6 @@ function getDefaultSceneConfig(): import('@/types/model-config').SceneConfig {
     return {
         qualityFirst: {
             text: { provider: "gemini", model: "gemini-2.5-pro-preview-05-06" },
-            image: {
-                provider: "gemini",
-                model: "gemini-2.0-flash-preview-image-generation",
-            },
         },
         speedFirst: {
             text: { provider: "gemini", model: "gemini-2.5-flash-preview-05-20" },

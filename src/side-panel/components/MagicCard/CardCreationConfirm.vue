@@ -145,8 +145,10 @@ watch(lastCompletedCard, (newCard) => {
 // 弹窗打开时重置本地状态
 watch(() => props.visible, (visible) => {
   if (visible) {
-    // 弹窗打开时，先检查是否有进行中的任务的完成结果
-    if (lastCompletedCard.value) {
+    // 弹窗打开时，检查是否有进行中的任务的完成结果
+    // 关键：必须验证 lastCompletedCard 的单词与当前 context.word 匹配
+    // 否则会出现切换单词后仍显示上一个单词图片的 bug
+    if (lastCompletedCard.value && lastCompletedCard.value.word === props.context.word) {
       completedCardLocal.value = lastCompletedCard.value
     } else {
       completedCardLocal.value = null

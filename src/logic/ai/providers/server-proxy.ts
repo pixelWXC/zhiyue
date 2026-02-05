@@ -120,7 +120,7 @@ export class ServerProxyImageProvider implements IImageProvider {
             },
             body: JSON.stringify({
                 prompt,
-                size: '1024x768'
+                size: '2560x1920'
             })
         });
 

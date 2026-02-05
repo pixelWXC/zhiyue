@@ -18,7 +18,7 @@ export interface ModelSelection {
 export interface SceneConfig {
     qualityFirst: {
         text: ModelSelection;
-        image: ModelSelection;
+        image?: ModelSelection; // 可选，已废弃 gemini-2.0-flash-preview-image-generation
     };
     speedFirst: {
         text: ModelSelection;
@@ -86,13 +86,8 @@ export const PRESET_MODELS: Record<
             {
                 id: "deepseek-chat",
                 name: "DeepSeek Chat",
-                description: "快速对话模型",
-            },
-            {
-                id: "deepseek-reasoner",
-                name: "DeepSeek Reasoner",
-                description: "深度推理模型",
-            },
+                description: "标准对话模型",
+            }
         ],
     },
 };

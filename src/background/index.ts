@@ -163,6 +163,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     if (analysisResult) {
                         storageData['pending_analysis_result'] = analysisResult
                         console.log('📦 Storing cached analysis result for sidebar')
+                    } else {
+                        // ⚠️ 重要：如果没有新的分析结果，必须清理旧的缓存
+                        // 否则 storage 变化监听器会错误地使用残留的旧结果
+                        chrome.storage.local.remove('pending_analysis_result')
+                        console.log('🧹 Clearing old cached analysis result')
                     }
 
                     chrome.storage.local.set(storageData)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import AnalysisResult from '@/components/Analysis/AnalysisResult.vue'
 import { useAiStore } from '@/stores/ai-store'
 import { useCardCollectionStore } from '@/stores/card-collection-store'
@@ -227,6 +227,57 @@ onMounted(async () => {
 // 加载卡片收藏数据
 onMounted(() => {
     cardCollectionStore.loadCards()
+})
+
+// 监听 storage 变化，处理侧栏已打开时的分析请求
+// 这解决了侧栏已打开时点击"深度分析"无反应的问题
+const onStorageChange = async (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+    if (areaName !== 'local') return
+    
+    // 检查是否有新的待分析文本
+    if (changes['pending_analysis_text']?.newValue) {
+        const text = changes['pending_analysis_text'].newValue as string
+        console.log('📬 Storage changed - new pending analysis:', text)
+        
+        // 获取完整的 pending 数据
+        const data = await chrome.storage.local.get(['pending_analysis_text', 'pending_analysis_result', 'pending_view'])
+        
+        // 处理待定的视图导航
+        if (data.pending_view === 'settings') {
+            console.log('⚙️ Opening Settings view from storage change')
+            currentView.value = 'settings'
+            await chrome.storage.local.remove('pending_view')
+            return
+        }
+        
+        const cachedResult = data['pending_analysis_result'] as { data: any, rapidTranslation?: string } | undefined
+        
+        // 清除已处理的数据
+        await chrome.storage.local.remove(['pending_analysis_text', 'pending_analysis_result'])
+        
+        // 切换到主页视图
+        currentView.value = 'home'
+        
+        // 保存文本用于重试
+        lastAnalyzedText.value = text
+        
+        // 检查是否有缓存的分析结果
+        if (cachedResult && cachedResult.data) {
+            console.log('✨ Loading cached analysis result from storage change')
+            aiStore.loadCachedResult(text, cachedResult.data, cachedResult.rapidTranslation)
+        } else {
+            console.log('🔄 Starting new analysis from storage change')
+            handleAnalyze(text)
+        }
+    }
+}
+
+onMounted(() => {
+    chrome.storage.onChanged.addListener(onStorageChange)
+})
+
+onUnmounted(() => {
+    chrome.storage.onChanged.removeListener(onStorageChange)
 })
 </script>
 

@@ -354,7 +354,7 @@ const triggerRapidTranslation = async (text: string) => {
 
 const onExplain = () => {
     // Explanation requests should go to the heavy-feature Sidebar
-    onOpenSidePanel()
+    onOpenSidePanel({ forceNewAnalysis: true })
 }
 
 const onConfigure = () => {
@@ -374,12 +374,13 @@ const onCloseModal = () => {
     isQaStreaming.value = false
 }
 
-const onOpenSidePanel = (options?: { skipText?: boolean }) => {
+const onOpenSidePanel = (options?: { skipText?: boolean; forceNewAnalysis?: boolean }) => {
     // ✅ 立即发送消息，不能有任何 await，否则会丢失用户手势
     // Background script 会负责存储文本和分析结果
     
     // 检查是否分析已完成（有结果且不在流式传输中）
-    const analysisComplete = !isStreaming.value && parsedData.value && parsedData.value.tokens.length > 0
+    // forceNewAnalysis 用于"深度分析"按钮，强制执行新分析而不使用缓存
+    const analysisComplete = !options?.forceNewAnalysis && !isStreaming.value && parsedData.value && parsedData.value.tokens.length > 0
     
     const messagePayload: any = {
         type: 'open-side-panel',

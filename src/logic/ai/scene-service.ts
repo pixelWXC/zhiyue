@@ -40,13 +40,17 @@ export class SceneService {
 
     /**
      * 获取质量优先场景的图像 Provider
+     * 注意：已废弃 gemini-2.0-flash-preview-image-generation，如果失败不再兼容
      */
     getQualityImageProvider(): IImageProvider {
         if (this.isAuthProxy) {
             return new ServerProxyImageProvider();
         }
-        const { provider, model } = this.sceneConfig.qualityFirst.image;
-        return createImageProvider(provider, model, this.credentials);
+        const imageConfig = this.sceneConfig.qualityFirst.image;
+        if (!imageConfig) {
+            throw new Error('图像生成功能未配置');
+        }
+        return createImageProvider(imageConfig.provider, imageConfig.model, this.credentials);
     }
 
     /**
@@ -126,10 +130,6 @@ export async function getSceneService(): Promise<SceneService> {
         sceneConfig = {
             qualityFirst: {
                 text: { provider: "gemini", model: "gemini-3-pro-preview" },
-                image: {
-                    provider: "gemini",
-                    model: "gemini-3-pro-image-preview",
-                },
             },
             speedFirst: {
                 text: { provider: "gemini", model: "gemini-3-flash-preview" },
