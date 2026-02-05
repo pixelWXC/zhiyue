@@ -7,6 +7,7 @@ import * as path from 'path';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../users/entities/user.entity';
+import { UsageRecord } from '../usage/entities/usage-record.entity';
 
 // Load environment variables from .env file
 dotenv.config({ path: path.join(__dirname, '../../.env') });
@@ -18,9 +19,10 @@ const dataSource = new DataSource({
     username: process.env.DATABASE_USERNAME || 'postgres',
     password: process.env.DATABASE_PASSWORD || 'postgres',
     database: process.env.DATABASE_NAME || 'zhiyue',
-    entities: [User],
-    synchronize: false, // Don't sync here
+    entities: [User, UsageRecord],
+    synchronize: true, // Auto-create tables if missing
 });
+
 
 async function seed() {
     console.log('🌱 Starting database seed...');

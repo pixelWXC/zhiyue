@@ -21,7 +21,10 @@
     "seed": "ts-node src/seeds/seed-users.ts",
     "user:add": "ts-node src/scripts/add-user.ts",
     "user:list": "ts-node src/scripts/manage-users.ts list",
-    "user:manage": "ts-node src/scripts/manage-users.ts"
+    "user:manage": "ts-node src/scripts/manage-users.ts",
+    "seed:prod": "node dist/seeds/seed-users.js",
+    "db:sync": "ts-node src/scripts/sync-database.ts",
+    "db:sync:prod": "node dist/scripts/sync-database.js"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -41,7 +44,8 @@
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -55,7 +59,6 @@
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
-    "dotenv": "^17.2.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
